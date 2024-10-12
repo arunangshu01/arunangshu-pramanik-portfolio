@@ -1,0 +1,37 @@
+{
+  "experience": [
+    {
+      "role": "Digital Engineering Lead Engineer",
+      "company": "Apisero Inc. (Now Acquired by NTT Data Services)",
+      "location": "Bangalore, Karnataka, India",
+      "duration": "August 2021 - Present",
+      "client": "Blue Yonder India, Bangalore, Karnataka, India",
+      "responsibilities": [
+        "Developed a SaaS application leveraging event-driven architecture with Azure Event Hubs, ELK Stack, Snowflake, Azure Blob Storage, and Python.",
+        "Modernized, modularized, and upgraded codebases to contemporary development standards within a Data Platform, delivering data pipeline solutions to over a dozen clients, including JCPenney, ASDA, 7-Eleven, CVS, Heineken, and Walmart, enabling real-time data transfer.",
+        "Designed and maintained ETL applications for analytics platforms, facilitating the processing of billions of transaction records for customers.",
+        "Identified and resolved bottlenecks from a customer perspective, enhancing the integration and utilization of various OLAP and OLTP databases for homogeneous and heterogeneous data migration processes.",
+        "Managed and upgraded standalone codebases and existing systems, achieving over 90% code coverage for decoupling techniques and deploying software tools, processes, visualization, and metrics.",
+        "Collaborated closely with senior stakeholders to understand business requirements, creating configuration blueprints for data migration platforms to enhance customer usage and analysis."
+      ]
+    },
+    {
+      "role": "Systems Engineer",
+      "company": "Infosys Limited",
+      "location": "Bangalore, Karnataka, India",
+      "duration": "October 2019 - July 2021",
+      "client": "Cisco Systems, Bangalore, Karnataka, India",
+      "responsibilities": [
+        "Researched, designed, implemented, and managed software programs to ensure optimal performance and scalability.",
+        "Collaborated with project team members to identify and implement modifications and enhancements in existing programs.",
+        "Authored and implemented efficient code, ensuring operational practicality and robustness.",
+        "Developed client-side and server-side architecture utilizing essential front-end and back-end technologies.",
+        "Engineered and maintained robust databases and applications to support business needs.",
+        "Created and documented effective APIs, rigorously testing features to ensure responsiveness and efficiency.",
+        "Implemented comprehensive security and data protection measures.",
+        "Tested and evaluated new programs, developing quality assurance procedures with 95% efficiency.",
+        "Maintained and upgraded existing systems, deploying software tools, processes, and metrics to enhance performance."
+      ]
+    }
+  ]
+}

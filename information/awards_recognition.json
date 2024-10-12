@@ -1,0 +1,35 @@
+{
+  "awards": [
+    {
+      "award": "Most Valuable Player of the Quarter",
+      "organization": "Cisco Systems - Infosys Limited",
+      "date": "March 2020"
+    },
+    {
+      "award": "Rookie of the Quarter",
+      "organization": "Apisero Inc.",
+      "date": "October 2021"
+    },
+    {
+      "award": "Apisero Aces Award",
+      "organization": "Apisero Inc.",
+      "date": "October 2022"
+    },
+    {
+      "award": "Raving Reviews Awards",
+      "organization": "Apisero Inc.",
+      "dates": [
+        "October 2021",
+        "December 2021",
+        "March 2022",
+        "January 2023",
+        "February 2023"
+      ]
+    },
+    {
+      "award": "Vendustrious Award",
+      "organization": "Apisero Inc.",
+      "date": "March 2023"
+    }
+  ]
+}

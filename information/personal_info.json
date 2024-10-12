@@ -1,0 +1,15 @@
+{
+  "name": "Arunangshu Pramanik",
+  "phone": "+91-78906-69228",
+  "location": {
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "country": "India"
+  },
+  "email": "arunangshu01@gmail.com",
+  "social_media_profiles": {
+    "linkedin": "https://www.linkedin.com/in/arunangshu-pramanik-1896168b",
+    "github": "https://github.com/arunangshu01",
+    "leetcode": "https://leetcode.com/u/arunangshu01"
+  }
+}

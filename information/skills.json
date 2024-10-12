@@ -1,0 +1,9 @@
+{
+  "skills": {
+    "programming_languages": ["Python", "YAML", "SQL", "Java"],
+    "databases": ["MSSQL", "Oracle", "Snowflake"],
+    "data_analysis": ["Pandas", "NumPy"],
+    "frameworks": ["FastAPI", "Django", "REST", "Spring"],
+    "others": ["Event Hub", "File Storage", "Container Registry", "Storage Explorer", "Key Vault", "Container Services", "Blob Store", "Docker", "Kubernetes", "Elasticsearch", "Shell", "Kibana", "Kafka", "Redis", "Offset Explorer", "Jira", "Confluence", "Jenkins", "Git", "GitHub Actions", "JavaScript", "TypeScript", "HTML", "CSS", "Bootstrap", "Angular", "React"]
+  }
+}
