@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import health_check, personal_info, profile_summary, skills
+from routers import health_check, personal_info, profile_summary, skills, education_details
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE
 
 tags_metadata = [
@@ -16,6 +16,10 @@ tags_metadata = [
     {
         "name": "Profile Summary",
         "description": "Extract Profile Summary"
+    },
+    {
+        "name": "Education Details",
+        "description": "Extract Education Details"
     },
     {
         "name": "Skills",
@@ -36,6 +40,7 @@ app = FastAPI(
 app.include_router(health_check.router, prefix=API_COMMON_PREFIX)
 app.include_router(personal_info.router, prefix=API_COMMON_PREFIX)
 app.include_router(profile_summary.router, prefix=API_COMMON_PREFIX)
+app.include_router(education_details.router, prefix=API_COMMON_PREFIX)
 app.include_router(skills.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
