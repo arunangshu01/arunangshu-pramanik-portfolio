@@ -2,4 +2,6 @@ import model.base_models_personal_info as base_models_personal_info
 import model.base_models_profile_summary as base_models_profile_summary
 import model.base_models_skills as base_models_skills
 import model.base_models_education_details as base_models_education_details
+import model.base_models_experience as base_models_experience
+import model.base_models_awards_recognitions as base_models_awards_recognitions
 import model.base_models_errors as base_models_errors

@@ -14,13 +14,13 @@ experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.jso
 skills_file = os.path.join(f'{BASE_DIR.parent}/information', 'skills.json')
 education_details_file = os.path.join(f'{BASE_DIR.parent}/information', 'education_details.json')
 profile_summary_file = os.path.join(f'{BASE_DIR.parent}/information', 'profile_summary.json')
-awards_recognition_file = os.path.join(f'{BASE_DIR.parent}/information', 'awards_recognition.json')
+awards_recognitions_file = os.path.join(f'{BASE_DIR.parent}/information', 'awards_recognitions.json')
 
 personal_info_data = extract_data_from_json_file(json_file_path=personal_info_file)
 experience_data = extract_data_from_json_file(json_file_path=experience_file)
 skills_data = extract_data_from_json_file(json_file_path=skills_file)
 education_details_data = extract_data_from_json_file(json_file_path=education_details_file)
 profile_summary_data = extract_data_from_json_file(json_file_path=profile_summary_file)
-awards_recognition_data = extract_data_from_json_file(json_file_path=awards_recognition_file)
+awards_recognitions_data = extract_data_from_json_file(json_file_path=awards_recognitions_file)
 
 

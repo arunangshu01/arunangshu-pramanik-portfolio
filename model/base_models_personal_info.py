@@ -30,26 +30,26 @@ class PersonalInformation(BaseModel):
 
     @field_validator('name')
     @classmethod
-    def validate_name(cls, value: str) -> str:
+    def validate_name(cls, value: str, field_info: ValidationInfo) -> str:
         if ' ' not in value:
-            raise ValueError("No Space Present in Name.")
+            raise ValueError(f"No Space Present in {field_info.field_name}.")
         return value.title()
 
     @field_validator('phone')
     @classmethod
-    def validate_phone_number(cls, value: str) -> str:
+    def validate_phone_number(cls, value: str, field_info: ValidationInfo) -> str:
         phone_number_pattern = r"\+91-\d{5}-\d{5}"
         phone_number_match = re.match(phone_number_pattern, value)
         if not phone_number_match:
-            raise ValueError("Invalid Phone Number.")
+            raise ValueError(f"Invalid {field_info.field_name}.")
         return value
 
     @field_validator('email')
     @classmethod
-    def validate_email(cls, value: str) -> str:
+    def validate_email(cls, value: str, field_info: ValidationInfo) -> str:
         email_pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         email_match = re.match(email_pattern, value)
         if not email_match:
-            raise ValueError('Invalid Email.')
+            raise ValueError(f'Invalid {field_info.field_name}.')
         return value
 

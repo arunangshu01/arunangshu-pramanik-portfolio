@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 
 class ProfileSummary(BaseModel):
@@ -6,7 +6,7 @@ class ProfileSummary(BaseModel):
 
     @field_validator('summary')
     @classmethod
-    def validate_summary(cls, value: str) -> str:
+    def validate_summary(cls, value: str, field_info: ValidationInfo) -> str:
         if not len(value) <= 500:
-            raise ValueError("Profile Summary should be within 500 characters.")
+            raise ValueError(f"{field_info.field_name} should be within 500 characters.")
         return value

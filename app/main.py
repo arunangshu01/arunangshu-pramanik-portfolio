@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import health_check, personal_info, profile_summary, skills, education_details
+from routers import health_check, personal_info, profile_summary, skills, education_details, experience, awards_recognitions
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE
 
 tags_metadata = [
@@ -24,6 +24,14 @@ tags_metadata = [
     {
         "name": "Skills",
         "description": "Extract Skills"
+    },
+    {
+        "name": "Experience",
+        "description": "Extract Experience"
+    },
+    {
+        "name": "Awards & Recognitions",
+        "description": "Extract Awards & Recognitions"
     }
 ]
 
@@ -42,6 +50,8 @@ app.include_router(personal_info.router, prefix=API_COMMON_PREFIX)
 app.include_router(profile_summary.router, prefix=API_COMMON_PREFIX)
 app.include_router(education_details.router, prefix=API_COMMON_PREFIX)
 app.include_router(skills.router, prefix=API_COMMON_PREFIX)
+app.include_router(experience.router, prefix=API_COMMON_PREFIX)
+app.include_router(awards_recognitions.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
     CORSMiddleware,

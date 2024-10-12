@@ -21,10 +21,15 @@ class PersonalInformationGenerator:
         personal_info_data_df = pd.json_normalize(
             self._personal_info_data,
             meta=[
-                'name', "phone",
-                ["location", "city"], ["location", "state"], ["location", "country"],
-                "email", ["social_media_profiles", "linkedin"], ["social_media_profiles", "github"],
-                ["social_media_profiles", "leetcode"]
+                'name',
+                'phone',
+                ['location', 'city'],
+                ['location', 'state'],
+                ['location', 'country'],
+                'email',
+                ['social_media_profiles', 'linkedin'],
+                ['social_media_profiles', 'github'],
+                ['social_media_profiles', 'leetcode']
             ],
             errors='ignore'
         )
