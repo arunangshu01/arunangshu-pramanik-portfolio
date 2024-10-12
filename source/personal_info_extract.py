@@ -46,7 +46,7 @@ class PersonalInformationGenerator:
                 email=personal_info_data_df['email'].iloc[0],
                 social_media_profiles=social_media_profiles
             )
-            logger.info(f"Personal Information has been generated. Value: {personal_info}")
+            logger.info(f"Personal Information Data has been generated. Value: {personal_info}")
             return personal_info
         raise EmptyDataError("No Data is present in the JSON File.")
 

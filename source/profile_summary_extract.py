@@ -29,7 +29,7 @@ class ProfileSummaryGenerator:
             profile_summary = ProfileSummary(
                 summary=profile_summary_data_df['summary'].iloc[0]
             )
-            logger.info(f"Profile Summary has been generated. Value: {profile_summary}")
+            logger.info(f"Profile Summary Data has been generated. Value: {profile_summary}")
             return profile_summary
         raise EmptyDataError("No Data is present in the JSON File.")
 
