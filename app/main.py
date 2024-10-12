@@ -1,7 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import health_check, personal_info, profile_summary, skills, education_details, experience, awards_recognitions
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
+    awards_recognitions
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE
 
 tags_metadata = [
@@ -59,7 +61,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"]
+)
 
 if __name__ == '__main__':
     uvicorn.run("app.main:app",
