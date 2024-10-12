@@ -4,56 +4,39 @@ from json import JSONDecodeError
 from starlette import status
 from pydantic import ValidationError
 from fastapi import HTTPException
-from model.base_models_personal_info import PersonalInformation, Location, SocialMediaProfiles
+from model.base_models_profile_summary import ProfileSummary
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import personal_info_data
+from utility.settings import profile_summary_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
-class PersonalInformationGenerator:
+class ProfileSummaryGenerator:
 
     def __init__(self):
-        self._personal_info_data = personal_info_data
+        self._profile_summary_data = profile_summary_data
 
-    def _format_and_validate_personal_info_data(self):
-        personal_info_data_df = pd.json_normalize(
-            self._personal_info_data,
+    def _format_and_validate_profile_summary_data(self):
+        profile_summary_data_df = pd.json_normalize(
+            self._profile_summary_data,
             meta=[
-                'name', "phone",
-                ["location", "city"], ["location", "state"], ["location", "country"],
-                "email", ["social_media_profiles", "linkedin"], ["social_media_profiles", "github"],
-                ["social_media_profiles", "leetcode"]
+                'summary'
             ],
             errors='ignore'
         )
-        if not personal_info_data_df.empty:
-            location = Location(
-                city=personal_info_data_df['location.city'].iloc[0],
-                state=personal_info_data_df['location.state'].iloc[0],
-                country=personal_info_data_df['location.country'].iloc[0]
+        if not profile_summary_data_df.empty:
+            profile_summary = ProfileSummary(
+                summary=profile_summary_data_df['summary'].iloc[0]
             )
-            social_media_profiles = SocialMediaProfiles(
-                linkedin=personal_info_data_df['social_media_profiles.linkedin'].iloc[0],
-                github=personal_info_data_df['social_media_profiles.github'].iloc[0],
-                leetcode=personal_info_data_df['social_media_profiles.leetcode'].iloc[0],
-            )
-            personal_info = PersonalInformation(
-                name=personal_info_data_df['name'].iloc[0],
-                phone=personal_info_data_df['phone'].iloc[0],
-                location=location,
-                email=personal_info_data_df['email'].iloc[0],
-                social_media_profiles=social_media_profiles
-            )
-            logger.info(f"Personal Information has been generated. Value: {personal_info}")
-            return personal_info
+            logger.info(f"Profile Summary has been generated. Value: {profile_summary}")
+            return profile_summary
         raise EmptyDataError("No Data is present in the JSON File.")
 
-    def display_personal_info(self):
+    def display_profile_summary(self):
         try:
-            personal_info = self._format_and_validate_personal_info_data()
-            return personal_info.model_dump()
+            profile_summary = self._format_and_validate_profile_summary_data()
+            return profile_summary.model_dump()
         except ValidationError as vde:
             error_message = f"Error: {vde}"
             logger.error(error_message)

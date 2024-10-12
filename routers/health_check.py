@@ -1,5 +1,7 @@
 from fastapi import APIRouter, status
-from utility.settings import logger
+from utility.logger import Logger
+
+logger = Logger(__name__)
 
 router = APIRouter(tags=["Health Check"])
 

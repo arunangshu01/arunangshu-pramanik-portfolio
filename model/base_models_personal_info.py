@@ -15,14 +15,10 @@ class Location(BaseModel):
 
     @field_validator('*')
     @classmethod
-    def validate_location_fields(cls, value: str, field_info: ValidationInfo):
-        if not 2 < len(value) < 50:
+    def validate_location_fields(cls, value: str, field_info: ValidationInfo) -> str:
+        if not 2 < len(value) <= 50:
             raise ValueError(f"{field_info.field_name} is not within proper length size.")
         return value
-
-    def __str__(self):
-        location = f"{self.city}, {self.state}, {self.country}"
-        return location
 
 
 class PersonalInformation(BaseModel):
@@ -57,7 +53,3 @@ class PersonalInformation(BaseModel):
             raise ValueError('Invalid Email.')
         return value
 
-
-class ErrorResponseModel(BaseModel):
-    error_message: str
-    error_type: str

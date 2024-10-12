@@ -1,12 +1,9 @@
 import os
 from pathlib import Path
-from utility.logger import Logger
 from utility.extract_json_data import extract_data_from_json_file
 
 BASE_DIR = Path(__file__).resolve().parent
 API_COMMON_PREFIX = '/arunangshu_pramanik/portfolio/v1'
-
-logger = Logger(__name__)
 
 HOST = os.getenv('HOST', '0.0.0.0')
 PORT = int(os.getenv('PORT', '8080'))

@@ -1,1 +1,3 @@
-import model.base_models_portfolio as base_models_portfolio
+import model.base_models_personal_info as base_models_personal_info
+import model.base_models_profile_summary as base_models_profile_summary
+import model.base_models_errors as base_models_errors
