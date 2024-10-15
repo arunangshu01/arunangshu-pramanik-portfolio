@@ -7,7 +7,7 @@ API_COMMON_PREFIX = '/arunangshu_pramanik/portfolio/v1'
 
 HOST = os.getenv('HOST', '0.0.0.0')
 PORT = int(os.getenv('PORT', '8080'))
-DEBUG_MODE = "True" if os.getenv('DEBUG_MODE',True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
+DEBUG_MODE = "True" if os.getenv('DEBUG_MODE', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')
 experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.json')
