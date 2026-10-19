@@ -4,9 +4,11 @@ from typing import List
 
 class Skills(BaseModel):
     programming_languages: List[str]
-    databases: List[str]
+    databases_and_datawarehouses: List[str]
     data_analysis: List[str]
     frameworks: List[str]
+    cloud_platforms: List[str]
+    orchestrator: List[str]
     others: List[str]
 
     @field_validator('*')

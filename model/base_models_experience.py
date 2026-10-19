@@ -7,10 +7,10 @@ class Experience(BaseModel):
     company: str
     location: str
     duration: str
-    client: str
+    clients_or_customers: str
     responsibilities: List[str]
 
-    @field_validator('role', 'company', 'location', 'duration', 'client')
+    @field_validator('role', 'company', 'location', 'duration', 'clients_or_customers')
     @classmethod
     def validate_role_company_location_duration_client(cls, value: str, field_info: ValidationInfo) -> str:
         if not len(value) <= 100:
