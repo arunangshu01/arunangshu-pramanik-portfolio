@@ -18,25 +18,8 @@ class SkillsGenerator:
         self._skills_data = skills_data
 
     def _format_and_validate_skills_data(self):
-        skills_data_df = pd.json_normalize(
-            self._skills_data['skills'],
-            meta=[
-                'programming_languages',
-                'databases',
-                'data_analysis',
-                'frameworks',
-                'others'
-            ],
-            errors='ignore'
-        )
-        if not skills_data_df.empty:
-            skills = Skills(
-                programming_languages=skills_data_df['programming_languages'].iloc[0],
-                databases=skills_data_df['databases'].iloc[0],
-                data_analysis=skills_data_df['data_analysis'].iloc[0],
-                frameworks=skills_data_df['frameworks'].iloc[0],
-                others=skills_data_df['others'].iloc[0]
-            )
+        if self._skills_data and 'skills' in self._skills_data:
+            skills = Skills(**self._skills_data['skills'])
             logger.info(f"Skills Data has been generated. Value: {skills}")
             return skills
         raise EmptyDataError("No Data is present in the JSON File.")

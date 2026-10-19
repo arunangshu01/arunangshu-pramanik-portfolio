@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 from utility.extract_json_data import extract_data_from_json_file
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 API_COMMON_PREFIX = '/arunangshu_pramanik/portfolio/v1'

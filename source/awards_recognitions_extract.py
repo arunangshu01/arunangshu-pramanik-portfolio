@@ -23,7 +23,7 @@ class AwardsRecognitionsGenerator:
             meta=[
                 'award',
                 'organization',
-                'dates'
+                'timeline_period'
             ],
             errors='ignore'
         )
@@ -33,7 +33,7 @@ class AwardsRecognitionsGenerator:
                     AwardsRecognitions(
                         award=row['award'],
                         organization=row['organization'],
-                        dates=row['dates']
+                        timeline_period=row['timeline_period']
                     ) for _, row in awards_recognitions_data_df.iterrows()
                 ]
             )

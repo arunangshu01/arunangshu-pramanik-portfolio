@@ -1,14 +1,36 @@
 {
   "experience": [
     {
+      "role": "Senior Software Engineer",
+      "company": "Impact Analytics",
+      "location": "Bangalore, Karnataka, India",
+      "duration": "December 2024 - Present",
+      "clients_or_customers": "Different Retail & FMCG Companies - Notable Name: Bealls, Ralph Lauren, Peter Millar, Swarovski, Gap, Foot Locker, Patagonia, Under Armour, Levi's",
+      "responsibilities": [
+        "Designed, developed, tested, and integrated core data engineering pipelines powering Impact Analytics' AI-driven retail product suite, including PlanSmart, DemandSmart, InventorySmart, PriceSmart, PromoSmart, MarkSmart, and DataSmart, for Retail and FMCG clients.",
+        "Built Airflow and GCP pipelines in two stages: Sourcing, extracting data from varied databases, warehouses, cloud storage, and file transfer sources into BigQuery, and Ingestion, cleaning, validating, and transforming data with mathematical and business logic into master entity tables consumed by in-house products.",
+        "Worked across OLTP and OLAP databases, data warehouses and their workspaces, cloud storage, and file transfer connectors to source and integrate client data for every retailer subscribed to the products.",
+        "Architected the pipeline codebase and designed the near real-time integration framework, covering ingestion and cancellation flows, using Cloud SQL, Cloud Run Functions, Cloud Tasks, BigQuery, Cloud Storage, Secret Manager, Workflows, Eventarc, and PostgreSQL.",
+        "Collaborated closely with team members in design sessions to shape pipeline architecture, data models, and integration approaches.",
+        "Built an AI agent for internal pipelines that detects and identifies failed database, warehouse, cloud storage, and file transfer connectors based on pipeline flow, reducing manual triage effort.",
+        "Developed a chatbot that generates the tasks and processes to be added to each pipeline based on client requirements and insights from their data.",
+        "Developed an AI chatbot and search engine over databases, warehouses, workspaces, and BigQuery services, similar to the assistants in Databricks and Snowflake, providing a browsable data catalog, schema-based data inspection, table relationship mapping, and SQL query generation from client requirements.",
+        "Developed cost and time report dashboards for Cloud Run, Cloud Run Functions, and Compute Engine VMs, tracking the usage and cost of each resource to give visibility into cloud spend and runtime.",
+        "Integrated Google Authentication SSO for Airflow services, enabling secure user login through the Airflow UI.",
+        "Led and trained a team of 3 junior engineers, building their skills for the work and reviewing their deliverables.",
+        "Upgraded standalone codebases and existing systems, achieving ~90% code efficiency and accuracy.",
+        "Troubleshot and resolved customer issues, identifying recurring bottlenecks on both the internal and client side to prevent repeat incidents."
+      ]
+    },
+    {
       "role": "Digital Engineering Lead Engineer",
       "company": "Apisero Inc. (Now Acquired by NTT Data Services)",
-      "location": "Bangalore, Karnataka, India",
-      "duration": "August 2021 - Present",
-      "client": "Blue Yonder India, Bangalore, Karnataka, India",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "August 2021 - December 2024",
+      "clients_or_customers": "Blue Yonder",
       "responsibilities": [
         "Developed a SaaS application leveraging event-driven architecture with Azure Event Hubs, ELK Stack, Snowflake, Azure Blob Storage, and Python.",
-        "Modernized, modularized, and upgraded codebases to contemporary development standards within a Data Platform, delivering data pipeline solutions to over a dozen clients, including JCPenney, ASDA, 7-Eleven, CVS, Heineken, and Walmart, enabling real-time data transfer.",
+        "Modernized, modularized, and upgraded codebases to contemporary development standards within a Data Platform, delivering data pipeline solutions to over a dozen customers, including JCPenney, ASDA, 7-Eleven, CVS, Heineken, and Walmart, enabling real-time data transfer.",
         "Designed and maintained ETL applications for analytics platforms, facilitating the processing of billions of transaction records for customers.",
         "Identified and resolved bottlenecks from a customer perspective, enhancing the integration and utilization of various OLAP and OLTP databases for homogeneous and heterogeneous data migration processes.",
         "Managed and upgraded standalone codebases and existing systems, achieving over 90% code coverage for decoupling techniques and deploying software tools, processes, visualization, and metrics.",
@@ -18,9 +40,9 @@
     {
       "role": "Systems Engineer",
       "company": "Infosys Limited",
-      "location": "Bangalore, Karnataka, India",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
       "duration": "October 2019 - July 2021",
-      "client": "Cisco Systems, Bangalore, Karnataka, India",
+      "clients_or_customers": "Cisco Systems",
       "responsibilities": [
         "Researched, designed, implemented, and managed software programs to ensure optimal performance and scalability.",
         "Collaborated with project team members to identify and implement modifications and enhancements in existing programs.",

@@ -1,15 +1,24 @@
 from pydantic import BaseModel, ValidationInfo, field_validator
-from typing import List
+from typing import Dict, List
 
 
 class Skills(BaseModel):
     programming_languages: List[str]
-    databases: List[str]
+    databases_and_datawarehouses: List[str]
     data_analysis: List[str]
     frameworks: List[str]
-    others: List[str]
+    cloud_platforms: List[str]
+    orchestrator: List[str]
+    others: Dict[str, List[str]]
 
-    @field_validator('*')
+    @field_validator(
+        'programming_languages',
+        'databases_and_datawarehouses',
+        'data_analysis',
+        'frameworks',
+        'cloud_platforms',
+        'orchestrator'
+    )
     @classmethod
     def validate_skill_fields(cls, values: List[str], field_info: ValidationInfo) -> List[str]:
         for value in values:

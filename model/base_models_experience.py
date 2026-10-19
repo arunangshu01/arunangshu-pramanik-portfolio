@@ -7,13 +7,13 @@ class Experience(BaseModel):
     company: str
     location: str
     duration: str
-    client: str
+    clients_or_customers: str
     responsibilities: List[str]
 
-    @field_validator('role', 'company', 'location', 'duration', 'client')
+    @field_validator('role', 'company', 'location', 'duration', 'clients_or_customers')
     @classmethod
     def validate_role_company_location_duration_client(cls, value: str, field_info: ValidationInfo) -> str:
-        if not len(value) <= 100:
+        if not len(value) <= 500:
             raise ValueError(f"Value in {field_info.field_name} is of improper size.")
         return value
 
@@ -21,9 +21,9 @@ class Experience(BaseModel):
     @classmethod
     def validate_responsibilities(cls, values: List[str], field_info: ValidationInfo) -> List[str]:
         for value in values:
-            if not len(value) <= 500:
+            if not len(value) <= 1000:
                 raise ValueError(f"Value in {field_info.field_name} is of improper size.")
-        if not len(values) <= 10:
+        if not len(values) <= 25:
             raise ValueError(f"{field_info.field_name} is of improper length.")
         return values
 
