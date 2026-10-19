@@ -5,7 +5,7 @@ from typing import List, Union
 class AwardsRecognitions(BaseModel):
     award: str
     organization: str
-    dates: Union[str, List[str]]
+    timeline_period: Union[str, List[str]]
 
     @field_validator('award', 'organization')
     @classmethod
@@ -14,9 +14,9 @@ class AwardsRecognitions(BaseModel):
             raise ValueError(f"Value in {field_info.field_name} is of improper size.")
         return value
 
-    @field_validator('dates')
+    @field_validator('timeline_period')
     @classmethod
-    def validate_dates(cls, value: Union[str, List[str]], field_info: ValidationInfo) -> Union[str, List[str]]:
+    def validate_timeline_period(cls, value: Union[str, List[str]], field_info: ValidationInfo) -> Union[str, List[str]]:
         if not (isinstance(value, str) or isinstance(value, list)):
             raise ValueError(f'Invalid format in for {field_info.field_name}')
         return value

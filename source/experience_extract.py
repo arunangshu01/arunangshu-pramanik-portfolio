@@ -25,7 +25,7 @@ class ExperienceGenerator:
                 'company',
                 'location',
                 'duration',
-                'client',
+                'clients_or_customers',
                 'responsibilities'
             ],
             errors='ignore'
@@ -38,7 +38,7 @@ class ExperienceGenerator:
                         company=row['company'],
                         location=row['location'],
                         duration=row['duration'],
-                        client=row['client'],
+                        clients_or_customers=row['clients_or_customers'],
                         responsibilities=row['responsibilities']
                     ) for _, row in experience_data_df.iterrows()
                 ]
