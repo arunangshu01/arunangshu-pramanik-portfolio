@@ -6,6 +6,7 @@ export default function Footer({ info }) {
           {info.email} · {info.phone}
         </p>
       )}
+      <img src="/mask.svg" alt="" className="mx-auto mt-3 h-8 w-8 opacity-70" />
       <p className="mt-2 font-mono text-xs text-slate-600">
         designed & built by {info?.name ?? "Arunangshu Pramanik"} · React × FastAPI
       </p>

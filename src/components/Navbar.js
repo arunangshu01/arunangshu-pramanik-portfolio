@@ -9,10 +9,6 @@ const LINKS = [
 ];
 
 export default function Navbar({ name }) {
-  const initials = name
-    ? name.split(" ").map((w) => w[0]).join("")
-    : "AP";
-
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
@@ -22,8 +18,8 @@ export default function Navbar({ name }) {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <a href="#top" className="flex items-center gap-3">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent2 font-mono text-sm font-bold text-ink shadow-[0_0_16px_rgba(245,184,61,0.55)] ring-2 ring-accent/50">
-            {initials}
+          <span className="relative flex h-10 w-10 items-center justify-center rounded-full shadow-[0_0_16px_rgba(245,184,61,0.55)] ring-2 ring-accent/50">
+            <img src="/reactor.svg" alt="" className="h-8 w-8" />
           </span>
           <span className="hidden font-semibold tracking-tight sm:inline">
             {name ?? "Portfolio"}
