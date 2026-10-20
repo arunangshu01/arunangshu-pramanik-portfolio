@@ -11,14 +11,9 @@ API_COMMON_PREFIX = '/arunangshu_pramanik/portfolio/v1'
 HOST = os.getenv('HOST', '0.0.0.0')
 PORT = int(os.getenv('PORT', '8080'))
 DEBUG_MODE = "True" if os.getenv('DEBUG_MODE', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else False
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
+MAIL_FROM = os.getenv('MAIL_FROM')
 RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
-RECEIVER_PASSWORD = os.getenv('RECEIVER_PASSWORD')
-EMAIL_SERVER = os.getenv('EMAIL_SERVER')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
-EMAIL_STARTTLS = "True" if os.getenv('EMAIL_STARTTLS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
-EMAIL_SSL_TLS = "True" if os.getenv('EMAIL_SSL_TLS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
-USE_CREDENTIALS = "True" if os.getenv('USE_CREDENTIALS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
-VALIDATE_CERTS = "True" if os.getenv('VALIDATE_CERTS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
 
 # Comma-separated list of frontend origins allowed to call the API.
 CORS_ORIGINS = [o.strip() for o in os.getenv(

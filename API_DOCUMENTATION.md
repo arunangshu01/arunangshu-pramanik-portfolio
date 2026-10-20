@@ -234,7 +234,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `POST /send_email`
 
-Queues a contact-form email via SMTP (`BackgroundTasks`). Returns immediately; delivery happens in the background, so **a `201` does not guarantee the email was sent**.
+Sends a contact-form email through the Brevo transactional email API. The request waits for Brevo to accept the email, so a `201` means it was handed off successfully and a `500` means it was not.
 
 **Request** - `multipart/form-data` or `application/x-www-form-urlencoded` (NOT JSON)
 
@@ -255,7 +255,7 @@ Queues a contact-form email via SMTP (`BackgroundTasks`). Returns immediately; d
 **Errors**
 
 - `422` - missing/invalid form fields (FastAPI validation shape, see below)
-- `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` on unexpected errors during request handling
+- `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` when the email could not be sent (e.g. Brevo rejected the request)
 
 ## Error responses
 

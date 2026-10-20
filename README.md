@@ -37,9 +37,9 @@ Environment variables (see `utility/settings.py`):
 | `HOST` / `PORT` | Bind address (default `0.0.0.0:8080`) |
 | `DEBUG_MODE` | FastAPI debug flag |
 | `CORS_ORIGINS` | Comma-separated allowed origins - **required** for the frontend to call the API from the browser, e.g. `https://arunangshu-pramanik-portfolio-frontend.onrender.com,http://localhost:3000` |
-| `RECEIVER_EMAIL` / `RECEIVER_PASSWORD` | SMTP credentials for `/send_email` |
-| `EMAIL_SERVER` / `EMAIL_PORT` / `EMAIL_STARTTLS` / `EMAIL_SSL_TLS` | SMTP transport |
-| `USE_CREDENTIALS` / `VALIDATE_CERTS` | SMTP auth/TLS toggles |
+| `BREVO_API_KEY` | Brevo API key used by `/send_email` (sent over HTTPS - Render free instances block SMTP ports) |
+| `MAIL_FROM` | Sender address - must be a verified sender in Brevo |
+| `RECEIVER_EMAIL` | Inbox that receives contact-form messages |
 
 ## Getting Started
 
