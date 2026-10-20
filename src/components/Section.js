@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export default function Section({ id, eyebrow, title, state, children }) {
+export default function Section({ id, num, eyebrow, title, state, children }) {
   return (
     <motion.section
       id={id}
@@ -12,6 +12,7 @@ export default function Section({ id, eyebrow, title, state, children }) {
     >
       {eyebrow && (
         <p className="mb-2 font-mono text-sm uppercase tracking-widest text-accent">
+          <span className="mr-3 text-slate-600">{num} /</span>
           {eyebrow}
         </p>
       )}

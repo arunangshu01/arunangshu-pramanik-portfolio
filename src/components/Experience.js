@@ -3,7 +3,7 @@ import Section from "./Section";
 
 export default function Experience({ state }) {
   return (
-    <Section id="experience" eyebrow="where i've been" title="Experience" state={state}>
+    <Section id="experience" num="02" eyebrow="where i've been" title="Experience" state={state}>
       {(jobs) => (
         <div className="relative ml-3 border-l border-edge pl-8 sm:ml-6">
           {jobs.map((job, i) => (
