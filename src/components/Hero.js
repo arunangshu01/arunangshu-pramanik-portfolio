@@ -87,7 +87,7 @@ export default function Hero({ info, summary }) {
 
         <motion.div
           {...fadeUp(0.55)}
-          className="mt-8 flex items-center gap-3 border-t border-edge/60 pt-4 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-600"
+          className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-edge/60 pt-4 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-600"
         >
           <span>unit // ap.mk-vii</span>
           <span className="text-accent/50">|</span>

@@ -32,7 +32,7 @@ export default function BootSequence() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="w-80 font-mono text-sm">
+          <div className="w-80 max-w-[85vw] font-mono text-sm">
             <motion.img
               src="/reactor.svg"
               alt=""

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { FiMenu, FiX } from "react-icons/fi";
 
 const LINKS = [
   ["Skills", "#skills"],
@@ -9,6 +11,7 @@ const LINKS = [
 ];
 
 export default function Navbar({ name, light, onToggleTheme }) {
+  const [open, setOpen] = useState(false);
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
@@ -26,7 +29,7 @@ export default function Navbar({ name, light, onToggleTheme }) {
           </span>
         </a>
         <div className="flex items-center gap-1 sm:gap-2">
-          <span className="mr-2 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-accent/70 md:flex">
+          <span className="mr-2 hidden items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-accent/70 lg:flex">
             <motion.span
               className="h-1.5 w-1.5 rounded-full bg-accent"
               animate={{ opacity: [1, 0.2] }}
@@ -34,15 +37,17 @@ export default function Navbar({ name, light, onToggleTheme }) {
             />
             sys.online
           </span>
-          {LINKS.map(([label, href]) => (
-            <a
-              key={href}
-              href={href}
-              className="rounded-lg px-2.5 py-1.5 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              {label}
-            </a>
-          ))}
+          <div className="hidden items-center gap-1 sm:gap-2 md:flex">
+            {LINKS.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="rounded-lg px-2.5 py-1.5 font-mono text-xs uppercase tracking-widest text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
           <button
             type="button"
             onClick={onToggleTheme}
@@ -58,8 +63,31 @@ export default function Navbar({ name, light, onToggleTheme }) {
               <img src="/reactor.svg" alt="" className="h-5 w-5" />
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={open}
+            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border border-edge text-slate-300 transition-colors hover:border-accent/60 hover:text-accent md:hidden"
+          >
+            {open ? <FiX /> : <FiMenu />}
+          </button>
         </div>
       </div>
+      {open && (
+        <div className="border-t border-edge/60 bg-ink/95 px-6 py-3 backdrop-blur-xl md:hidden">
+          {LINKS.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className="block rounded-lg px-3 py-2.5 font-mono text-sm uppercase tracking-widest text-slate-300 transition-colors hover:bg-white/5 hover:text-accent"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
     </motion.nav>
   );
 }
