@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -39,7 +39,7 @@ body {
   }
 }
 
-/* Bright gradient that sweeps across text — no dark tail. */
+/* Bright gradient that sweeps across text - no dark tail. */
 .shimmer-text {
   background-image: linear-gradient(
     90deg,
@@ -62,13 +62,30 @@ body {
 
 @layer components {
   .glass-card {
-    @apply rounded-2xl border border-edge bg-surface/60 backdrop-blur-md
+    @apply relative rounded-2xl border border-edge bg-surface/60 backdrop-blur-md
       shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-300
       hover:border-accent/40 hover:shadow-[0_8px_40px_rgba(245,184,61,0.14)];
   }
 
+  /* HUD corner brackets - engineered spec-sheet detail */
+  .glass-card::before,
+  .glass-card::after {
+    content: "";
+    @apply pointer-events-none absolute h-3 w-3 border-accent/50 transition-opacity duration-300 opacity-40;
+  }
+  .glass-card::before {
+    @apply left-2 top-2 border-l border-t;
+  }
+  .glass-card::after {
+    @apply bottom-2 right-2 border-b border-r;
+  }
+  .glass-card:hover::before,
+  .glass-card:hover::after {
+    @apply opacity-100;
+  }
+
   .section-title {
-    @apply text-3xl sm:text-4xl font-extrabold tracking-tight;
+    @apply font-display text-3xl sm:text-4xl font-bold uppercase tracking-wider;
   }
 
   .gradient-text {

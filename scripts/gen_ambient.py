@@ -1,4 +1,4 @@
-"""Generates public/ambient.m4a — BR2049-style dark synthwave score.
+"""Generates public/ambient.m4a - BR2049-style dark synthwave score.
 
 Deterministic: fixed seed => identical output every run. Tweak CONFIG and rerun:
 
@@ -65,14 +65,14 @@ def render():
                 for n in notes:
                     s += env * 0.032 * supersaw(FREQ[n], rel)
 
-        # giant brass stabs — the "sea wall" hits
+        # giant brass stabs - the "sea wall" hits
         for st0 in CONFIG["stab_times"]:
             rel = t - st0
             if 0 <= rel < 6:
                 env = min(rel / 0.03, 1.0) * math.exp(-rel / 1.6)
                 s += env * 0.16 * supersaw(FREQ["C2"], rel)
 
-        # sparse reverb-y pings — distant synth calls
+        # sparse reverb-y pings - distant synth calls
         pings = [(4.0, "C4"), (13.5, "Eb4"), (22.0, "G4"), (31.0, "Eb4"), (37.0, "C4")]
         for start, n in pings:
             rel = t - start

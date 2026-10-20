@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const LINES = [
-  "J.A.R.V.I.S. OS v7.4 — initializing…",
+  "J.A.R.V.I.S. OS v7.4 - initializing…",
   "Loading portfolio modules… OK",
   "Arc reactor output… STABLE",
   "All systems nominal. Welcome.",

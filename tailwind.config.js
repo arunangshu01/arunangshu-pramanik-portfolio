@@ -13,6 +13,7 @@ module.exports = {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "Menlo", "monospace"],
+        display: ["Orbitron", "Inter", "sans-serif"],
       },
     },
   },

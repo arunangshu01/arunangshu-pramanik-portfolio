@@ -21,7 +21,7 @@ export default function Navbar({ name }) {
           <span className="relative flex h-10 w-10 items-center justify-center rounded-full shadow-[0_0_16px_rgba(245,184,61,0.55)] ring-2 ring-accent/50">
             <img src="/reactor.svg" alt="" className="h-8 w-8" />
           </span>
-          <span className="hidden font-semibold tracking-tight sm:inline">
+          <span className="hidden font-display text-sm font-bold uppercase tracking-widest sm:inline">
             {name ?? "Portfolio"}
           </span>
         </a>
