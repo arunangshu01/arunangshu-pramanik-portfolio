@@ -1,72 +1,47 @@
-# arunangshu-pramanik-portfolio-frontend
+# Arunangshu Pramanik — Portfolio Frontend
 
-This is my own personal portfolio frontend repository
+Personal portfolio website — an Iron Man / J.A.R.V.I.S.-themed single-page React app
+serving resume data from the companion FastAPI backend.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Live site:** https://arunangshu-pramanik-portfolio-frontend.onrender.com/
 
-## Available Scripts
+**Backend API docs (Swagger):** https://arunangshu-pramanik-portfolio.onrender.com/arunangshu_pramanik/portfolio/v1/docs
 
-In the project directory, you can run:
+## Highlights
 
-### `npm start`
+- J.A.R.V.I.S. boot sequence, arc-reactor animations, HUD grid, shimmer typography
+- Skills grid with real brand icons, animated experience timeline, awards wall
+- Contact form wired to the backend's `/send_email`
+- Optional ambient synthwave score (`public/ambient.m4a`, synthesized in-repo)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+React 18 (CRA) · Tailwind CSS · Framer Motion · react-icons
 
-### `npm test`
+## Backend API
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Data comes from the FastAPI service:
 
-### `npm run build`
+- Local: `http://localhost:8080/arunangshu_pramanik/portfolio/v1` (via CRA `proxy` in `package.json`)
+- Prod: set `REACT_APP_API_BASE` to the deployed API base URL
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+All GET endpoints return JSON; `POST /send_email` expects `multipart/form-data`.
+See `API_DOCUMENTATION.md` in the backend repo for the full contract.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+> CORS note: the backend must list this site's origin in its `CORS_ORIGINS`
+> env var, otherwise production requests are blocked by the browser.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Scripts
 
-### `npm run eject`
+| Command | What it does |
+|---|---|
+| `npm start` | Dev server on :3000 (proxies API calls to `proxy` target) |
+| `npm test` | CRA test runner |
+| `npm run build` | Production build into `build/` |
+| `python3 scripts/gen_ambient.py` | Regenerate the ambient loop WAV |
+| `afconvert -f m4af -d aac -b 96000 /tmp/ambient.wav public/ambient.m4a` | Encode it to AAC |
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Deploy (Render)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Static site — build `npm install && npm run build`, publish dir `build`,
+env `REACT_APP_API_BASE=<backend base URL>`, rewrite rule `/* → /index.html`.
