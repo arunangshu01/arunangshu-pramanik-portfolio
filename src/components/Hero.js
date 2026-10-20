@@ -31,13 +31,13 @@ export default function Hero({ info, summary }) {
           {...fadeUp(0.05)}
           className="mb-3 font-mono text-sm text-slate-400"
         >
-          <span className="text-accent">J.A.R.V.I.S.</span> — "Sir, allow me to
+          <span className="text-accent">J.A.R.V.I.S.</span> - "Sir, allow me to
           introduce…"
         </motion.p>
 
         <motion.h1
           {...fadeUp(0.1)}
-          className="text-4xl font-black leading-[1.15] tracking-tight sm:text-6xl"
+          className="font-display text-4xl font-black uppercase leading-[1.15] tracking-wide sm:text-6xl"
         >
           {(() => {
             const [first, ...rest] = (info?.name ?? "Arunangshu Pramanik").split(" ");
@@ -63,7 +63,7 @@ export default function Hero({ info, summary }) {
           {...fadeUp(0.25)}
           className="mt-2 font-mono text-sm italic text-slate-400"
         >
-          <span className="text-accent2">S.T.A.R.K. protocol</span> — "Genius,
+          <span className="text-accent2">S.T.A.R.K. protocol</span> - "Genius,
           engineer, data architect. The suit runs on pipelines."
         </motion.p>
 
@@ -85,7 +85,18 @@ export default function Hero({ info, summary }) {
           </motion.div>
         )}
 
-        <motion.div {...fadeUp(0.6)} className="mt-10 flex flex-wrap gap-4">
+        <motion.div
+          {...fadeUp(0.55)}
+          className="mt-8 flex items-center gap-3 border-t border-edge/60 pt-4 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-600"
+        >
+          <span>unit // ap.mk-vii</span>
+          <span className="text-accent/50">|</span>
+          <span>class: senior engineer</span>
+          <span className="text-accent/50">|</span>
+          <span>status: deployed</span>
+        </motion.div>
+
+        <motion.div {...fadeUp(0.65)} className="mt-8 flex flex-wrap gap-4">
           <a href="#contact" className="btn-primary">
             Get in touch
           </a>

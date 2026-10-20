@@ -1,6 +1,6 @@
-# Arunangshu Pramanik — Portfolio Frontend
+# Arunangshu Pramanik - Portfolio Frontend
 
-Personal portfolio website — an Iron Man / J.A.R.V.I.S.-themed single-page React app
+Personal portfolio website - an Iron Man / J.A.R.V.I.S.-themed single-page React app
 serving resume data from the companion FastAPI backend.
 
 **Live site:** https://arunangshu-pramanik-portfolio-frontend.onrender.com/
@@ -43,5 +43,5 @@ See `API_DOCUMENTATION.md` in the backend repo for the full contract.
 
 ## Deploy (Render)
 
-Static site — build `npm install && npm run build`, publish dir `build`,
+Static site - build `npm install && npm run build`, publish dir `build`,
 env `REACT_APP_API_BASE=<backend base URL>`, rewrite rule `/* → /index.html`.
