@@ -5,7 +5,7 @@
       "company": "Impact Analytics",
       "location": "Bangalore (Bengaluru), Karnataka, India",
       "duration": "December 2024 - Present",
-      "clients_or_customers": "Different Retail & FMCG Companies - Notable Name: Bealls, Ralph Lauren, Peter Millar, Swarovski, Gap, Foot Locker, Patagonia, Under Armour, Levi's",
+      "clients_or_customers": "Different Retail & FMCG Companies - Notable Names: Bealls, Ralph Lauren, Peter Millar, Swarovski, Gap, Foot Locker, Patagonia, Under Armour, Levi's",
       "responsibilities": [
         "Designed, developed, tested, and integrated core data engineering pipelines powering Impact Analytics' AI-driven retail product suite, including PlanSmart, DemandSmart, InventorySmart, PriceSmart, PromoSmart, MarkSmart, and DataSmart, for Retail and FMCG clients.",
         "Built Airflow and GCP pipelines in two stages: Sourcing, extracting data from varied databases, warehouses, cloud storage, and file transfer sources into BigQuery, and Ingestion, cleaning, validating, and transforming data with mathematical and business logic into master entity tables consumed by in-house products.",
