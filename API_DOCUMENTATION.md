@@ -1,4 +1,4 @@
-# API Documentation — Portfolio Backend
+# API Documentation - Portfolio Backend
 
 REST API for the portfolio frontend. Built with FastAPI; serves resume/portfolio data from static JSON files and dispatches contact-form emails.
 
@@ -15,18 +15,18 @@ All endpoints below are relative to the base URL.
 
 - **Swagger UI:** `{base}/docs`
 - **ReDoc:** `{base}/redoc`
-- **OpenAPI schema:** `{host}/openapi.json` — note this lives at the server root, **not** under the `/arunangshu_pramanik/portfolio/v1` prefix.
+- **OpenAPI schema:** `{host}/openapi.json` - note this lives at the server root, **not** under the `/arunangshu_pramanik/portfolio/v1` prefix.
 
 ## Conventions
 
 - **Auth:** none. All endpoints are public.
 - **GET endpoints** return `application/json` with no request body, no query params.
-- **POST /send_email** consumes `multipart/form-data` (or `application/x-www-form-urlencoded`), **not** `application/json`. From the browser, use `FormData` — a JSON body returns `422`.
+- **POST /send_email** consumes `multipart/form-data` (or `application/x-www-form-urlencoded`), **not** `application/json`. From the browser, use `FormData` - a JSON body returns `422`.
 - **Errors** are JSON (see [Error responses](#error-responses)).
 
-### CORS — important for frontend setup
+### CORS - important for frontend setup
 
-`CORSMiddleware` is configured with `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]` — but **`allow_origins` is never set**, so the API sends no `Access-Control-Allow-Origin` header and browser cross-origin requests are blocked. Options:
+`CORSMiddleware` is configured with `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]` - but **`allow_origins` is never set**, so the API sends no `Access-Control-Allow-Origin` header and browser cross-origin requests are blocked. Options:
 
 1. Backend: add `allow_origins=["http://localhost:3000", "<prod-frontend-url>"]` in `app/main.py`.
 2. Frontend dev: add `"proxy": "http://localhost:8080"` to `package.json` (CRA) and call same-origin paths.
@@ -66,7 +66,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /personal_info`
 
-**Response `200`** — `PersonalInformation`
+**Response `200`** - `PersonalInformation`
 
 | Field | Type | Notes |
 |---|---|---|
@@ -102,7 +102,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /profile_summary`
 
-**Response `200`** — `ProfileSummary`
+**Response `200`** - `ProfileSummary`
 
 | Field | Type | Notes |
 |---|---|---|
@@ -118,7 +118,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /education_details`
 
-**Response `200`** — `EducationDetails` (a single object, **not** a list — only the latest degree is returned)
+**Response `200`** - `EducationDetails` (a single object, **not** a list - only the latest degree is returned)
 
 | Field | Type | Notes |
 |---|---|---|
@@ -140,7 +140,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /skills`
 
-**Response `200`** — `Skills`
+**Response `200`** - `Skills`
 
 | Field | Type |
 |---|---|
@@ -150,7 +150,7 @@ Liveness/readiness probe. Returns `200 OK`.
 | `frameworks` | string[] |
 | `cloud_platforms` | string[] |
 | `orchestrator` | string[] |
-| `others` | object — map of category name → string[] |
+| `others` | object - map of category name → string[] |
 
 `others` is an open-ended map; current keys include `azure_resources`, `gcp_resources`, `devops`, `monitoring_and_logging`, `messaging_and_caching`, `collaboration_and_project_management`, `database_and_api_tools`, `ides_and_editors`, `ai_tools`, `web_technologies`. Iterate over it rather than hard-coding keys.
 
@@ -176,7 +176,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /experience`
 
-**Response `200`** — array of `Experience` objects (top level is a bare JSON array, not wrapped)
+**Response `200`** - array of `Experience` objects (top level is a bare JSON array, not wrapped)
 
 | Field | Type | Notes |
 |---|---|---|
@@ -207,7 +207,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ### `GET /awards_recognitions`
 
-**Response `200`** — array of `AwardsRecognitions` objects (bare JSON array)
+**Response `200`** - array of `AwardsRecognitions` objects (bare JSON array)
 
 | Field | Type | Notes |
 |---|---|---|
@@ -236,7 +236,7 @@ Liveness/readiness probe. Returns `200 OK`.
 
 Queues a contact-form email via SMTP (`BackgroundTasks`). Returns immediately; delivery happens in the background, so **a `201` does not guarantee the email was sent**.
 
-**Request** — `multipart/form-data` or `application/x-www-form-urlencoded` (NOT JSON)
+**Request** - `multipart/form-data` or `application/x-www-form-urlencoded` (NOT JSON)
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
@@ -244,7 +244,7 @@ Queues a contact-form email via SMTP (`BackgroundTasks`). Returns immediately; d
 | `email` | string | yes | Must be a valid email; becomes the reply-to |
 | `message` | string | yes | Message body |
 
-**Response `201`** — `SendMessageSuccess`
+**Response `201`** - `SendMessageSuccess`
 
 ```json
 {
@@ -254,12 +254,12 @@ Queues a contact-form email via SMTP (`BackgroundTasks`). Returns immediately; d
 
 **Errors**
 
-- `422` — missing/invalid form fields (FastAPI validation shape, see below)
-- `500` — `{ "detail": { "error_message": "...", "error_type": "..." } }` on unexpected errors during request handling
+- `422` - missing/invalid form fields (FastAPI validation shape, see below)
+- `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` on unexpected errors during request handling
 
 ## Error responses
 
-**Data/validation errors on GET endpoints** (`422`): the `detail` field contains a serialized `ErrorResponseModel` — note it is an **object**, not the usual FastAPI array:
+**Data/validation errors on GET endpoints** (`422`): the `detail` field contains a serialized `ErrorResponseModel` - note it is an **object**, not the usual FastAPI array:
 
 ```json
 {
@@ -365,14 +365,14 @@ interface ApiErrorDetail {          // GET endpoints, 422/500
 const API_BASE = process.env.REACT_APP_API_BASE ??
   "http://localhost:8080/arunangshu_pramanik/portfolio/v1";
 
-// GET — all data endpoints are the same shape of call
+// GET - all data endpoints are the same shape of call
 export async function getSkills(): Promise<Skills> {
   const res = await fetch(`${API_BASE}/skills`);
   if (!res.ok) throw new Error(`GET /skills failed: ${res.status}`);
   return res.json();
 }
 
-// POST /send_email — must be FormData, not JSON
+// POST /send_email - must be FormData, not JSON
 export async function sendContactEmail(name: string, email: string, message: string) {
   const body = new FormData();
   body.append("name", name);
@@ -392,6 +392,6 @@ const periods = (a: Award) => Array.isArray(a.timeline_period)
 ## Versioning & ops notes
 
 - The URL carries a `v1` segment; breaking changes would presumably ship under a new prefix.
-- Data is read from the `information/*.json` files into memory at startup, then re-validated per request — content edits require a redeploy/restart.
-- GET endpoints can return `422` (not `500`) when the underlying JSON data is missing or fails validation — the frontend should treat any non-2xx as "content unavailable" and render a fallback.
+- Data is read from the `information/*.json` files into memory at startup, then re-validated per request - content edits require a redeploy/restart.
+- GET endpoints can return `422` (not `500`) when the underlying JSON data is missing or fails validation - the frontend should treat any non-2xx as "content unavailable" and render a fallback.
 - Health-check `/health` for uptime monitors and render.com cold-start warm-up.

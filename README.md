@@ -1,6 +1,6 @@
-# Arunangshu Pramanik — Portfolio Backend
+# Arunangshu Pramanik - Portfolio Backend
 
-FastAPI service powering the portfolio frontend — serves resume/portfolio data
+FastAPI service powering the portfolio frontend - serves resume/portfolio data
 from static JSON files and dispatches contact-form emails in the background.
 
 **Live API docs (Swagger):** https://arunangshu-pramanik-portfolio.onrender.com/arunangshu_pramanik/portfolio/v1/docs
@@ -36,7 +36,7 @@ Environment variables (see `utility/settings.py`):
 |---|---|
 | `HOST` / `PORT` | Bind address (default `0.0.0.0:8080`) |
 | `DEBUG_MODE` | FastAPI debug flag |
-| `CORS_ORIGINS` | Comma-separated allowed origins — **required** for the frontend to call the API from the browser, e.g. `https://arunangshu-pramanik-portfolio-frontend.onrender.com,http://localhost:3000` |
+| `CORS_ORIGINS` | Comma-separated allowed origins - **required** for the frontend to call the API from the browser, e.g. `https://arunangshu-pramanik-portfolio-frontend.onrender.com,http://localhost:3000` |
 | `RECEIVER_EMAIL` / `RECEIVER_PASSWORD` | SMTP credentials for `/send_email` |
 | `EMAIL_SERVER` / `EMAIL_PORT` / `EMAIL_STARTTLS` / `EMAIL_SSL_TLS` | SMTP transport |
 | `USE_CREDENTIALS` / `VALIDATE_CERTS` | SMTP auth/TLS toggles |
@@ -54,7 +54,7 @@ Swagger UI then lives at `http://localhost:8080/arunangshu_pramanik/portfolio/v1
 
 ## Deploy (Render)
 
-Web service — `Procfile` provides the start command. Set the env vars above,
+Web service - `Procfile` provides the start command. Set the env vars above,
 then redeploy after any change to `information/*.json` (data loads at startup).
 
 ## Let's Connect
