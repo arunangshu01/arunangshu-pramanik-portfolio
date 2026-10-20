@@ -1,13 +1,95 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  @apply bg-ink text-slate-200 font-sans antialiased;
+  background-image:
+    linear-gradient(rgba(245, 184, 61, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 184, 61, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@keyframes reactor-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(245, 184, 61, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 70px rgba(245, 184, 61, 0.7);
+  }
+}
+
+.reactor-glow {
+  animation: reactor-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Bright gradient that sweeps across text — no dark tail. */
+.shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    #fcd34d,
+    #fffbeb,
+    #f5b83d,
+    #fdba74,
+    #fcd34d
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+::selection {
+  @apply bg-accent/30 text-white;
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-2xl border border-edge bg-surface/60 backdrop-blur-md
+      shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-300
+      hover:border-accent/40 hover:shadow-[0_8px_40px_rgba(245,184,61,0.14)];
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl font-extrabold tracking-tight;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-amber-300 via-accent to-amber-200 bg-clip-text
+      text-transparent drop-shadow-[0_0_14px_rgba(245,184,61,0.25)];
+  }
+
+  .gradient-text-red {
+    @apply bg-gradient-to-r from-red-400 via-orange-400 to-amber-300
+      bg-clip-text text-transparent drop-shadow-[0_0_14px_rgba(224,52,43,0.25)];
+  }
+
+  .chip {
+    @apply inline-block rounded-full border border-accent/30 bg-accent/10
+      px-3 py-1 text-xs font-medium text-amber-300 transition-colors
+      hover:bg-accent/20;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-accent to-accent2 px-6 py-3
+      font-semibold text-ink transition-transform hover:scale-[1.02]
+      active:scale-95 disabled:opacity-60;
+  }
 }

@@ -1,0 +1,34 @@
+import { motion } from "framer-motion";
+
+export default function Section({ id, eyebrow, title, state, children }) {
+  return (
+    <motion.section
+      id={id}
+      className="scroll-mt-24 py-16 sm:py-20"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      {eyebrow && (
+        <p className="mb-2 font-mono text-sm uppercase tracking-widest text-accent">
+          {eyebrow}
+        </p>
+      )}
+      <h2 className="section-title mb-10">
+        <span className="shimmer-text">{title}</span>
+      </h2>
+      {state?.loading && (
+        <p className="animate-pulse font-mono text-sm text-slate-500">
+          Loading…
+        </p>
+      )}
+      {state?.error && (
+        <p className="font-mono text-sm text-slate-500">
+          {"// content unavailable"}
+        </p>
+      )}
+      {state?.data && children(state.data)}
+    </motion.section>
+  );
+}
