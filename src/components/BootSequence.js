@@ -33,6 +33,14 @@ export default function BootSequence() {
           transition={{ duration: 0.6 }}
         >
           <div className="w-80 font-mono text-sm">
+            <motion.img
+              src="/reactor.svg"
+              alt=""
+              className="reactor-glow mx-auto mb-8 h-24 w-24 rounded-full"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+            />
             {LINES.slice(0, step).map((line, i) => (
               <motion.p
                 key={i}
