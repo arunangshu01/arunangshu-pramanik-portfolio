@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
     awards_recognitions, send_email
-from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE
+from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE, CORS_ORIGINS
 
 tags_metadata = [
     {
@@ -62,6 +62,7 @@ app.include_router(send_email.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

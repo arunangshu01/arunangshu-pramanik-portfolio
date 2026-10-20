@@ -20,6 +20,10 @@ EMAIL_SSL_TLS = "True" if os.getenv('EMAIL_SSL_TLS', True) in [True, 'True', 1, 
 USE_CREDENTIALS = "True" if os.getenv('USE_CREDENTIALS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
 VALIDATE_CERTS = "True" if os.getenv('VALIDATE_CERTS', True) in [True, 'True', 1, '1', 'true', 'TRUE'] else "False"
 
+# Comma-separated list of frontend origins allowed to call the API.
+CORS_ORIGINS = [o.strip() for o in os.getenv(
+    'CORS_ORIGINS', 'http://localhost:3000').split(',') if o.strip()]
+
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')
 experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.json')
