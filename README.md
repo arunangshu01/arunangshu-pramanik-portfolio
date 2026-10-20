@@ -3,7 +3,9 @@
 Personal portfolio website — an Iron Man / J.A.R.V.I.S.-themed single-page React app
 serving resume data from the companion FastAPI backend.
 
-**Live:** https://arunangshu-pramanik-portfolio-frontend.onrender.com/
+**Live site:** https://arunangshu-pramanik-portfolio-frontend.onrender.com/
+
+**Backend API docs (Swagger):** https://arunangshu-pramanik-portfolio.onrender.com/arunangshu_pramanik/portfolio/v1/docs
 
 ## Highlights
 
