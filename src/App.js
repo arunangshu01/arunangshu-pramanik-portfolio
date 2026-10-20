@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useApi } from "./useApi";
 import {
   getPersonalInfo,
@@ -25,6 +26,14 @@ function App() {
   const experience = useApi(getExperience);
   const education = useApi(getEducationDetails);
   const awards = useApi(getAwards);
+  const [light, setLight] = useState(
+    () => localStorage.getItem("theme") === "light"
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", light);
+    localStorage.setItem("theme", light ? "light" : "dark");
+  }, [light]);
 
   return (
     <div className="relative min-h-screen overflow-x-clip">
@@ -37,7 +46,7 @@ function App() {
 
       <BootSequence />
       <MusicToggle />
-      <Navbar name={info.data?.name} />
+      <Navbar name={info.data?.name} light={light} onToggleTheme={() => setLight((v) => !v)} />
       <Hero info={info.data} summary={summary.data?.summary} />
       <main className="mx-auto max-w-5xl px-6">
         <Skills state={skills} />

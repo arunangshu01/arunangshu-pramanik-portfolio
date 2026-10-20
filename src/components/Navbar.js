@@ -8,7 +8,7 @@ const LINKS = [
   ["Contact", "#contact"],
 ];
 
-export default function Navbar({ name }) {
+export default function Navbar({ name, light, onToggleTheme }) {
   return (
     <motion.nav
       initial={{ y: -60, opacity: 0 }}
@@ -43,6 +43,21 @@ export default function Navbar({ name }) {
               {label}
             </a>
           ))}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
+            title={light ? "Lights out" : "Day mode"}
+            className={`ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-edge text-accent transition-colors hover:border-accent/60 ${
+              light ? "" : "reactor-glow"
+            }`}
+          >
+            {light ? (
+              <img src="/mask.svg" alt="" className="h-5 w-5" />
+            ) : (
+              <img src="/reactor.svg" alt="" className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
     </motion.nav>
