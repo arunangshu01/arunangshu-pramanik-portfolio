@@ -1,17 +1,33 @@
-from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException, Request, status
 from source.send_email_contact import SendContactEmail
 from model.base_models_send_contact_email import ContactForm
 from model.base_models_send_contact_email import SendMessageSuccess
 from model.base_models_errors import ErrorResponseModel
 from utility.logger import Logger
+from utility.rate_limit import InMemoryRateLimiter
+from utility.settings import EMAIL_RATE_LIMIT_MAX_REQUESTS, EMAIL_RATE_LIMIT_WINDOW_SECONDS
 
 logger = Logger(__name__)
 
 router = APIRouter(tags=["Drop Me A Message"])
 
+rate_limiter = InMemoryRateLimiter(
+    max_requests=EMAIL_RATE_LIMIT_MAX_REQUESTS,
+    window_seconds=EMAIL_RATE_LIMIT_WINDOW_SECONDS
+)
+
 
 @router.post('/send_email', status_code=status.HTTP_201_CREATED)
-async def send_email(contact_form: ContactForm = Depends(ContactForm.as_form)):
+async def send_email(request: Request, contact_form: ContactForm = Depends(ContactForm.as_form)):
+    client_ip = request.client.host if request.client else "unknown"
+    if not rate_limiter.allow(client_ip):
+        error_message = "Error: Too many messages sent. Please try again later."
+        logger.warning(f"{error_message} (rate limit exceeded for {client_ip})")
+        error_detail = ErrorResponseModel(
+            error_message=error_message,
+            error_type="RateLimitExceeded"
+        )
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=error_detail.model_dump())
     try:
         send_contact_email = SendContactEmail(
             sender_name=contact_form.name,

@@ -1,8 +1,8 @@
 {
   "awards": [
     {
-      "award": "Most Valuable Player of the Quarter",
-      "organization": "Cisco Systems - Infosys Limited",
+      "award": "Cisco Systems: Most Valuable Player of the Quarter",
+      "organization": "Infosys Limited",
       "timeline_period": "March 2020"
     },
     {
@@ -32,7 +32,7 @@
       "timeline_period": "March 2023"
     },
     {
-      "award": "Impact Excellence Award - Q2 2026",
+      "award": "Impact Excellence Award: Q2 2026",
       "organization": "Impact Analytics",
       "timeline_period": "June 2026"
     }
