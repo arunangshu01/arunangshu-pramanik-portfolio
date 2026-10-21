@@ -43,7 +43,13 @@ export default function About({ info, experience, awards, skills, education }) {
   const current = experience?.[0];
   const spec = [
     ["Role", current && `${current.role} @ ${current.company}`],
-    ["Base", info && `${info.location.city}, ${info.location.country}`],
+    [
+      "Base",
+      info &&
+        [info.location.city, info.location.state, info.location.country]
+          .filter(Boolean)
+          .join(", "),
+    ],
     ["Education", education && `${education.degree}, ${education.institution}`],
   ].filter(([, v]) => v);
 
