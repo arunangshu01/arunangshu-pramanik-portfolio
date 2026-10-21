@@ -1,21 +1,19 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 from json import JSONDecodeError
-from starlette import status
+from fastapi import status
 from pydantic import ValidationError
 from fastapi import HTTPException
 from model.base_models_experience import Experience, ExperienceList
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import experience_data
+from utility.settings import experience_file
+from utility.json_cache import get_json_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
 class ExperienceGenerator:
-
-    def __init__(self):
-        self._experience_data = experience_data
 
     def _format_and_validate_experience_data(self):
         experience_data_df = pd.json_normalize(
@@ -49,6 +47,7 @@ class ExperienceGenerator:
 
     def display_experience(self):
         try:
+            self._experience_data = get_json_data(experience_file)
             experience_list = self._format_and_validate_experience_data()
             return experience_list.model_dump()
         except ValidationError as vde:

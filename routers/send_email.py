@@ -3,6 +3,7 @@ from source.send_email_contact import SendContactEmail
 from model.base_models_send_contact_email import ContactForm
 from model.base_models_send_contact_email import SendMessageSuccess
 from model.base_models_errors import ErrorResponseModel
+from utility.analytics import tracker
 from utility.logger import Logger
 from utility.rate_limit import InMemoryRateLimiter
 from utility.settings import EMAIL_RATE_LIMIT_MAX_REQUESTS, EMAIL_RATE_LIMIT_WINDOW_SECONDS
@@ -44,6 +45,7 @@ async def send_email(request: Request, contact_form: ContactForm = Depends(Conta
         )
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=error_detail.model_dump())
     success_message = f"Your message has been sent successfully."
+    tracker.track(event="contact_submit", client=client_ip)
     logger.info(success_message)
     email_success = SendMessageSuccess(
         message=success_message

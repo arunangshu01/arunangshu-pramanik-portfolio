@@ -47,6 +47,8 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/resume/view` | Resume PDF, opens inline in browser |
 | GET | `/resume/download` | Resume PDF, downloads as attachment |
 | POST | `/send_email` | Contact form → email (multipart form, rate-limited) |
+| POST | `/analytics/track` | Record a frontend event (JSON body, rate-limited) |
+| GET | `/analytics/summary` | Aggregated event counts (admin token required) |
 
 ---
 
@@ -291,6 +293,65 @@ Sends a contact-form email through the Brevo transactional email API. The reques
 - `429` - `{ "detail": { "error_message": "...", "error_type": "RateLimitExceeded" } }` when the client IP has exceeded the rate limit. The frontend should surface "please try again later" and **not** retry immediately.
 - `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` when the email could not be sent (e.g. Brevo rejected the request)
 
+Successful submissions are counted in analytics under the `contact_submit` event automatically - the frontend does not need to track this itself.
+
+---
+
+### `POST /analytics/track`
+
+Records a frontend event (page view, button click, section visit, etc.) in the in-memory tracker. Unlike `/send_email`, this endpoint takes a **JSON body**.
+
+**Request** - `application/json`
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `event` | string (1-64 chars) | yes | e.g. `"page_view"`, `"section_view"`, `"project_click"` |
+| `page` | string (≤256 chars) | no | Frontend route/path the event came from |
+| `metadata` | object | no | Free-form extra data (keep it small) |
+
+**Response `201`**
+
+```json
+{ "message": "Event tracked." }
+```
+
+**Errors**
+
+- `422` - missing/invalid fields
+- `429` - rate limited (default **30 requests/minute** per IP; `ANALYTICS_RATE_LIMIT_*` env vars)
+
+**Server-side events** are tracked automatically with no frontend call needed: `resume_view`, `resume_download`, `contact_submit`.
+
+---
+
+### `GET /analytics/summary`
+
+Returns aggregated analytics. **Protected** - requires the `X-Admin-Token` header matching the `ANALYTICS_ADMIN_TOKEN` env var. This endpoint is for you, not the public frontend.
+
+| Query param | Type | Default | Notes |
+|---|---|---|---|
+| `recent` | int | 20 | Number of recent events to include (max 500) |
+
+**Response `200`**
+
+```json
+{
+  "since": 1729500000.0,
+  "total_events": 42,
+  "counts": { "page_view": 30, "resume_view": 7, "contact_submit": 3, "resume_download": 2 },
+  "recent_events": [
+    { "event": "page_view", "page": "/experience", "client": "203.0.113.7", "metadata": {}, "timestamp": 1729500000.0 }
+  ]
+}
+```
+
+**Errors**
+
+- `401` - missing/wrong `X-Admin-Token`
+- `503` - `ANALYTICS_ADMIN_TOKEN` not configured on the server (endpoint disabled)
+
+⚠️ Data is **in-memory only** - it resets on every restart/redeploy. Render's free tier spins down on inactivity, so treat numbers as approximate. If you need durable analytics, this is the same Redis-upgrade path as the rate limiter.
+
 ## Error responses
 
 **Data/validation errors on GET endpoints** (`422`): the `detail` field contains a serialized `ErrorResponseModel` - note it is an **object**, not the usual FastAPI array:
@@ -422,6 +483,15 @@ export async function sendContactEmail(name: string, email: string, message: str
 const resumeViewUrl = `${API_BASE}/resume/view`;         // opens in-browser
 const resumeDownloadUrl = `${API_BASE}/resume/download`; // saves as PDF
 
+// POST /analytics/track - JSON body (unlike /send_email)
+export async function trackEvent(event: string, page?: string, metadata?: object) {
+  await fetch(`${API_BASE}/analytics/track`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, page, metadata }),
+  }); // fire-and-forget: don't block UX on this
+}
+
 // Normalize the polymorphic award field
 const periods = (a: Award) => Array.isArray(a.timeline_period)
   ? a.timeline_period
@@ -431,6 +501,6 @@ const periods = (a: Award) => Array.isArray(a.timeline_period)
 ## Versioning & ops notes
 
 - The URL carries a `v1` segment; breaking changes would presumably ship under a new prefix.
-- Data is read from the `information/*.json` files into memory at startup, then re-validated per request - content edits require a redeploy/restart.
+- Data is cached in memory via `utility/json_cache.py` and **auto-reloaded when a JSON file's mtime changes** - content edits go live on the next request without a restart (but on Render, filesystem changes still require a redeploy since the files ship with the repo).
 - GET endpoints can return `422` (not `500`) when the underlying JSON data is missing or fails validation - the frontend should treat any non-2xx as "content unavailable" and render a fallback.
 - Health-check `/health` for uptime monitors and render.com cold-start warm-up.
