@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from utility.extract_json_data import extract_data_from_json_file
 
 load_dotenv()
 
@@ -23,6 +22,11 @@ CORS_ORIGINS = [o.strip() for o in os.getenv(
 EMAIL_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('EMAIL_RATE_LIMIT_MAX_REQUESTS', '3'))
 EMAIL_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('EMAIL_RATE_LIMIT_WINDOW_SECONDS', '3600'))
 
+# Analytics: admin token for GET /analytics/summary and rate limit for POST /analytics/track.
+ANALYTICS_ADMIN_TOKEN = os.getenv('ANALYTICS_ADMIN_TOKEN')
+ANALYTICS_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_MAX_REQUESTS', '30'))
+ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW_SECONDS', '60'))
+
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')
 experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.json')
@@ -32,11 +36,7 @@ profile_summary_file = os.path.join(f'{BASE_DIR.parent}/information', 'profile_s
 awards_recognitions_file = os.path.join(f'{BASE_DIR.parent}/information', 'awards_recognitions.json')
 resume_file = os.path.join(f'{BASE_DIR.parent}/assets', 'Arunangshu_Pramanik_CV.pdf')
 
-personal_info_data = extract_data_from_json_file(json_file_path=personal_info_file)
-experience_data = extract_data_from_json_file(json_file_path=experience_file)
-skills_data = extract_data_from_json_file(json_file_path=skills_file)
-education_details_data = extract_data_from_json_file(json_file_path=education_details_file)
-profile_summary_data = extract_data_from_json_file(json_file_path=profile_summary_file)
-awards_recognitions_data = extract_data_from_json_file(json_file_path=awards_recognitions_file)
+# JSON payloads are served through utility.json_cache.get_json_data(), which
+# caches per file and reloads automatically when the file's mtime changes.
 
 

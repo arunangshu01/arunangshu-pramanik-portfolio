@@ -1,21 +1,19 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 from json import JSONDecodeError
-from starlette import status
+from fastapi import status
 from pydantic import ValidationError
 from fastapi import HTTPException
 from model.base_models_personal_info import PersonalInformation, Location, SocialMediaProfiles
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import personal_info_data
+from utility.settings import personal_info_file
+from utility.json_cache import get_json_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
 class PersonalInformationGenerator:
-
-    def __init__(self):
-        self._personal_info_data = personal_info_data
 
     def _format_and_validate_personal_info_data(self):
         personal_info_data_df = pd.json_normalize(
@@ -57,6 +55,7 @@ class PersonalInformationGenerator:
 
     def display_personal_info(self):
         try:
+            self._personal_info_data = get_json_data(personal_info_file)
             personal_info = self._format_and_validate_personal_info_data()
             return personal_info.model_dump()
         except ValidationError as vde:

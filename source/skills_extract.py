@@ -1,21 +1,19 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 from json import JSONDecodeError
-from starlette import status
+from fastapi import status
 from pydantic import ValidationError
 from fastapi import HTTPException
 from model.base_models_skills import Skills
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import skills_data
+from utility.settings import skills_file
+from utility.json_cache import get_json_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
 class SkillsGenerator:
-
-    def __init__(self):
-        self._skills_data = skills_data
 
     def _format_and_validate_skills_data(self):
         if self._skills_data and 'skills' in self._skills_data:
@@ -26,6 +24,7 @@ class SkillsGenerator:
 
     def display_skills(self):
         try:
+            self._skills_data = get_json_data(skills_file)
             skills = self._format_and_validate_skills_data()
             return skills.model_dump()
         except ValidationError as vde:

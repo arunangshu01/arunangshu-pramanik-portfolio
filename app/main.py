@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
-    awards_recognitions, send_email, resume
+    awards_recognitions, send_email, resume, analytics
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE, CORS_ORIGINS
 
 tags_metadata = [
@@ -42,6 +42,10 @@ tags_metadata = [
     {
         "name": "Resume",
         "description": "View or Download Resume"
+    },
+    {
+        "name": "Analytics",
+        "description": "Track and summarize site events"
     }
 ]
 
@@ -64,6 +68,7 @@ app.include_router(experience.router, prefix=API_COMMON_PREFIX)
 app.include_router(awards_recognitions.router, prefix=API_COMMON_PREFIX)
 app.include_router(send_email.router, prefix=API_COMMON_PREFIX)
 app.include_router(resume.router, prefix=API_COMMON_PREFIX)
+app.include_router(analytics.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
     CORSMiddleware,

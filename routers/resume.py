@@ -1,7 +1,8 @@
 import os
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import FileResponse
 from model.base_models_errors import ErrorResponseModel
+from utility.analytics import tracker
 from utility.settings import resume_file
 from utility.logger import Logger
 
@@ -30,10 +31,12 @@ def _resume_response(content_disposition: str) -> FileResponse:
 
 
 @router.get('/resume/view', status_code=status.HTTP_200_OK)
-async def view_resume():
+async def view_resume(request: Request):
+    tracker.track(event="resume_view", client=request.client.host if request.client else "unknown")
     return _resume_response("inline")
 
 
 @router.get('/resume/download', status_code=status.HTTP_200_OK)
-async def download_resume():
+async def download_resume(request: Request):
+    tracker.track(event="resume_download", client=request.client.host if request.client else "unknown")
     return _resume_response("attachment")

@@ -1,21 +1,19 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 from json import JSONDecodeError
-from starlette import status
+from fastapi import status
 from pydantic import ValidationError
 from fastapi import HTTPException
 from model.base_models_awards_recognitions import AwardsRecognitions, AwardsRecognitionsList
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import awards_recognitions_data
+from utility.settings import awards_recognitions_file
+from utility.json_cache import get_json_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
 class AwardsRecognitionsGenerator:
-
-    def __init__(self):
-        self._awards_recognitions_data = awards_recognitions_data
 
     def _format_and_validate_awards_recognitions_data(self):
         awards_recognitions_data_df = pd.json_normalize(
@@ -43,6 +41,7 @@ class AwardsRecognitionsGenerator:
 
     def display_awards_recognitions(self):
         try:
+            self._awards_recognitions_data = get_json_data(awards_recognitions_file)
             awards_recognitions_list = self._format_and_validate_awards_recognitions_data()
             return awards_recognitions_list.model_dump()
         except ValidationError as vde:

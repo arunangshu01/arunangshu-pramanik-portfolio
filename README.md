@@ -24,7 +24,11 @@ Python 3.12 · FastAPI · Pydantic · Uvicorn
 | GET | `/skills` | Categorized skill lists |
 | GET | `/experience` | Roles + responsibilities |
 | GET | `/awards_recognitions` | Awards list |
-| POST | `/send_email` | Contact form → email (multipart form) |
+| GET | `/resume/view` | Resume PDF, inline in browser |
+| GET | `/resume/download` | Resume PDF, downloads as attachment |
+| POST | `/send_email` | Contact form → email (multipart form, rate-limited) |
+| POST | `/analytics/track` | Record a frontend event (JSON body, rate-limited) |
+| GET | `/analytics/summary` | Event counts (`X-Admin-Token` header required) |
 
 All paths sit under the prefix `/arunangshu_pramanik/portfolio/v1`.
 
@@ -40,6 +44,9 @@ Environment variables (see `utility/settings.py`):
 | `BREVO_API_KEY` | Brevo API key used by `/send_email` (sent over HTTPS - Render free instances block SMTP ports) |
 | `MAIL_FROM` | Sender address - must be a verified sender in Brevo |
 | `RECEIVER_EMAIL` | Inbox that receives contact-form messages |
+| `EMAIL_RATE_LIMIT_MAX_REQUESTS` / `EMAIL_RATE_LIMIT_WINDOW_SECONDS` | `/send_email` rate limit per IP (default `3` / `3600`) |
+| `ANALYTICS_ADMIN_TOKEN` | Token required on `X-Admin-Token` for `/analytics/summary` - if unset, the endpoint returns `503` |
+| `ANALYTICS_RATE_LIMIT_MAX_REQUESTS` / `ANALYTICS_RATE_LIMIT_WINDOW_SECONDS` | `/analytics/track` rate limit per IP (default `30` / `60`) |
 
 ## Getting Started
 
@@ -55,7 +62,18 @@ Swagger UI then lives at `http://localhost:8080/arunangshu_pramanik/portfolio/v1
 ## Deploy (Render)
 
 Web service - `Procfile` provides the start command. Set the env vars above,
-then redeploy after any change to `information/*.json` (data loads at startup).
+then redeploy after any change to `information/*.json` or `assets/` (they ship
+with the repo; at runtime the JSON is served from an in-memory cache that
+reloads when a file changes).
+
+## Tests
+
+```sh
+python -m pytest tests -v
+```
+
+Covers all endpoints, rate limiting, and analytics (Brevo calls are mocked).
+CI runs the same suite via `.github/workflows/ci.yml` on push/PR.
 
 ## Let's Connect
 

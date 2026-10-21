@@ -1,21 +1,19 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 from json import JSONDecodeError
-from starlette import status
+from fastapi import status
 from pydantic import ValidationError
 from fastapi import HTTPException
 from model.base_models_education_details import EducationDetails
 from model.base_models_errors import ErrorResponseModel
-from utility.settings import education_details_data
+from utility.settings import education_details_file
+from utility.json_cache import get_json_data
 from utility.logger import Logger
 
 logger = Logger(__name__)
 
 
 class EducationDetailsGenerator:
-
-    def __init__(self):
-        self._education_details_data = education_details_data
 
     def _format_and_validate_education_details_data(self):
         education_details_data_df = pd.json_normalize(
@@ -41,6 +39,7 @@ class EducationDetailsGenerator:
 
     def display_education_details(self):
         try:
+            self._education_details_data = get_json_data(education_details_file)
             education_details = self._format_and_validate_education_details_data()
             return education_details.model_dump()
         except ValidationError as vde:
