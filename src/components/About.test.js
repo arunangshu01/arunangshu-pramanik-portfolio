@@ -44,7 +44,10 @@ test("aboutStats yields placeholders while data is loading", () => {
 test("renders stats and the spec sheet from API data", () => {
   render(
     <About
-      info={{ name: "Arunangshu Pramanik", location: { city: "Bangalore", country: "India" } }}
+      info={{
+        name: "Arunangshu Pramanik",
+        location: { city: "Bangalore (Bengaluru)", state: "Karnataka", country: "India" },
+      }}
       experience={experience}
       awards={[{}, {}, {}]}
       skills={skills}
@@ -53,7 +56,7 @@ test("renders stats and the spec sheet from API data", () => {
   );
   expect(screen.getByRole("heading", { name: "About" })).toBeInTheDocument();
   expect(screen.getByText("Senior Software Engineer @ Impact Analytics")).toBeInTheDocument();
-  expect(screen.getByText("Bangalore, India")).toBeInTheDocument();
+  expect(screen.getByText("Bangalore (Bengaluru), Karnataka, India")).toBeInTheDocument();
   expect(screen.getByText("B.Tech CSE, IEM Kolkata")).toBeInTheDocument();
   expect(screen.getByText("Companies").previousSibling).toHaveTextContent("3");
   expect(screen.getByText("Awards").previousSibling).toHaveTextContent("3");
