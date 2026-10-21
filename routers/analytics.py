@@ -1,5 +1,5 @@
 import secrets
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Header, HTTPException, Request, status
 from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess
 from model.base_models_errors import ErrorResponseModel
 from utility.analytics import tracker
@@ -39,12 +39,12 @@ async def track_event(event: AnalyticsEvent, request: Request):
 
 
 @router.get('/analytics/summary', status_code=status.HTTP_200_OK)
-async def analytics_summary(request: Request, recent: int = 20):
+async def analytics_summary(request: Request, recent: int = 20,
+                            x_admin_token: str = Header(default="")):
     if not ANALYTICS_ADMIN_TOKEN:
         _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
                "Error: Analytics summary is not enabled on this server.")
-    token = request.headers.get("X-Admin-Token", "")
-    if not secrets.compare_digest(token, ANALYTICS_ADMIN_TOKEN):
+    if not secrets.compare_digest(x_admin_token, ANALYTICS_ADMIN_TOKEN):
         logger.warning(f"Unauthorized analytics summary request from {request.client.host if request.client else 'unknown'}")
         _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
                "Error: Invalid or missing admin token.")
