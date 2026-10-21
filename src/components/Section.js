@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
+import { trackOnce } from "../api";
 
 export default function Section({ id, num, eyebrow, title, state, children }) {
   return (
     <motion.section
       id={id}
-      className="scroll-mt-24 py-16 sm:py-20"
+      className="scroll-mt-20 py-12 sm:scroll-mt-24 sm:py-20"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
+      onViewportEnter={() => trackOnce("section_view", id, { section: id })}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {eyebrow && (

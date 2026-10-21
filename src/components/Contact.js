@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { sendContactEmail } from "../api";
+import { sendContactEmail, trackOnce } from "../api";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -27,10 +27,11 @@ export default function Contact() {
   return (
     <motion.section
       id="contact"
-      className="scroll-mt-24 py-16 sm:py-20"
+      className="scroll-mt-20 py-12 sm:scroll-mt-24 sm:py-20"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
+      onViewportEnter={() => trackOnce("section_view", "contact", { section: "contact" })}
       transition={{ duration: 0.6 }}
     >
       <p className="mb-2 font-mono text-sm uppercase tracking-widest text-accent">
@@ -43,7 +44,7 @@ export default function Contact() {
 
       <form
         onSubmit={onSubmit}
-        className="glass-card grid w-full gap-4 p-6 sm:grid-cols-2 sm:p-8"
+        className="glass-card grid w-full gap-4 p-5 sm:grid-cols-2 sm:p-8"
       >
         <input name="name" placeholder="Your name" value={form.name} onChange={onChange} required className={field} />
         <input name="email" type="email" placeholder="Your email" value={form.email} onChange={onChange} required className={field} />

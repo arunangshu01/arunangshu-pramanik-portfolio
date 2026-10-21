@@ -2,7 +2,16 @@ import { motion } from "framer-motion";
 import Section from "./Section";
 import { skillIcon } from "../skillIcons";
 
+const LABELS = {
+  databases_and_datawarehouses: "Databases and Data Warehouses",
+  gcp_resources: "GCP Resources",
+  devops: "DevOps",
+  ides_and_editors: "IDEs and Editors",
+  ai_tools: "AI Tools",
+};
+
 const toTitle = (key) =>
+  LABELS[key] ??
   key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Skills({ state }) {
