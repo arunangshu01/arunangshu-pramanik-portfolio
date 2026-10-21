@@ -20,19 +20,18 @@ All endpoints below are relative to the base URL.
 ## Conventions
 
 - **Auth:** none. All endpoints are public.
-- **GET endpoints** return `application/json` with no request body, no query params.
+- **GET endpoints** return `application/json` with no request body, no query params - **except** the two resume endpoints, which return `application/pdf`.
 - **POST /send_email** consumes `multipart/form-data` (or `application/x-www-form-urlencoded`), **not** `application/json`. From the browser, use `FormData` - a JSON body returns `422`.
+- **POST /send_email** is rate-limited per client IP (default **3 requests/hour**); exceeding it returns `429`.
 - **Errors** are JSON (see [Error responses](#error-responses)).
 
 ### CORS - important for frontend setup
 
-`CORSMiddleware` is configured with `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]` - but **`allow_origins` is never set**, so the API sends no `Access-Control-Allow-Origin` header and browser cross-origin requests are blocked. Options:
+`CORSMiddleware` is configured with `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]`, and `allow_origins` populated from the **`CORS_ORIGINS` env var** (comma-separated; defaults to `http://localhost:3000`).
 
-1. Backend: add `allow_origins=["http://localhost:3000", "<prod-frontend-url>"]` in `app/main.py`.
-2. Frontend dev: add `"proxy": "http://localhost:8080"` to `package.json` (CRA) and call same-origin paths.
-3. Frontend prod: serve the frontend from the same origin, or put a reverse proxy in front.
+The frontend origin **must be listed in `CORS_ORIGINS`** or browser requests are blocked. For production on Render, set e.g. `CORS_ORIGINS=https://arunangshu-portfolio.vercel.app` (add the localhost origin too if needed for dev). Note `*` is not usable here because `allow_credentials=True` forbids it.
 
-Until one of these is done, `fetch()` from a different origin will fail in the browser even though `curl` works.
+For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `package.json` (CRA) and calling same-origin paths.
 
 ## Endpoints
 
@@ -45,7 +44,9 @@ Until one of these is done, `fetch()` from a different origin will fail in the b
 | GET | `/skills` | Categorized skill lists |
 | GET | `/experience` | List of roles with responsibilities |
 | GET | `/awards_recognitions` | List of awards |
-| POST | `/send_email` | Contact form → email (multipart form) |
+| GET | `/resume/view` | Resume PDF, opens inline in browser |
+| GET | `/resume/download` | Resume PDF, downloads as attachment |
+| POST | `/send_email` | Contact form → email (multipart form, rate-limited) |
 
 ---
 
@@ -232,9 +233,41 @@ Liveness/readiness probe. Returns `200 OK`.
 
 ---
 
+### `GET /resume/view`
+
+Serves the resume PDF with `Content-Disposition: inline` - the browser renders it in a tab instead of downloading. Returns `application/pdf`, not JSON.
+
+Best used as a plain link rather than `fetch()`:
+
+```html
+<a href="{base}/resume/view" target="_blank" rel="noopener">View Resume</a>
+```
+
+**Response `200`** - binary PDF (`Content-Type: application/pdf`, `Content-Disposition: inline; filename="Arunangshu_Pramanik_CV.pdf"`)
+
+---
+
+### `GET /resume/download`
+
+Identical file, but served with `Content-Disposition: attachment` - the browser saves it as `Arunangshu_Pramanik_CV.pdf`.
+
+```html
+<a href="{base}/resume/download" download>Download Resume</a>
+```
+
+**Response `200`** - binary PDF (`Content-Disposition: attachment; filename="Arunangshu_Pramanik_CV.pdf"`)
+
+**Errors (both resume endpoints)**
+
+- `404` - `{ "detail": { "error_message": "...", "error_type": "FileNotFoundError" } }` when the PDF isn't on the server. For `fetch()`-based callers, check `res.headers.get("content-type")` before reading the body as `blob()` vs `json()`.
+
+---
+
 ### `POST /send_email`
 
 Sends a contact-form email through the Brevo transactional email API. The request waits for Brevo to accept the email, so a `201` means it was handed off successfully and a `500` means it was not.
+
+**Rate limit:** 3 requests/hour per client IP (configured via `EMAIL_RATE_LIMIT_MAX_REQUESTS` / `EMAIL_RATE_LIMIT_WINDOW_SECONDS` env vars). The check happens *before* the email is sent, so a rejected request consumes no Brevo quota. Note the limiter is in-memory - it resets on app restart/redeploy and is not shared across multiple instances.
 
 **Request** - `multipart/form-data` or `application/x-www-form-urlencoded` (NOT JSON)
 
@@ -255,6 +288,7 @@ Sends a contact-form email through the Brevo transactional email API. The reques
 **Errors**
 
 - `422` - missing/invalid form fields (FastAPI validation shape, see below)
+- `429` - `{ "detail": { "error_message": "...", "error_type": "RateLimitExceeded" } }` when the client IP has exceeded the rate limit. The frontend should surface "please try again later" and **not** retry immediately.
 - `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` when the email could not be sent (e.g. Brevo rejected the request)
 
 ## Error responses
@@ -379,9 +413,14 @@ export async function sendContactEmail(name: string, email: string, message: str
   body.append("email", email);
   body.append("message", message);
   const res = await fetch(`${API_BASE}/send_email`, { method: "POST", body });
+  if (res.status === 429) throw new Error("rate_limited"); // show "try again later"
   if (!res.ok) throw new Error(`POST /send_email failed: ${res.status}`);
   return res.json() as Promise<SendMessageSuccess>;
 }
+
+// Resume - plain links are simplest (no fetch needed)
+const resumeViewUrl = `${API_BASE}/resume/view`;         // opens in-browser
+const resumeDownloadUrl = `${API_BASE}/resume/download`; // saves as PDF
 
 // Normalize the polymorphic award field
 const periods = (a: Award) => Array.isArray(a.timeline_period)
