@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { TbVolume, TbVolumeOff } from "react-icons/tb";
+import { trackEvent } from "../api";
 
 export default function MusicToggle() {
   const audioRef = useRef(null);
@@ -14,7 +15,12 @@ export default function MusicToggle() {
       setPlaying(false);
     } else {
       el.volume = 0.35;
-      el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      el.play()
+        .then(() => {
+          setPlaying(true);
+          trackEvent("music_play");
+        })
+        .catch(() => setPlaying(false));
     }
   };
 
@@ -25,7 +31,7 @@ export default function MusicToggle() {
         onClick={toggle}
         aria-label={playing ? "Mute ambient audio" : "Play ambient audio"}
         title={playing ? "sound off" : "sound on"}
-        className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border text-lg transition-colors ${
+        className={`fixed bottom-4 right-4 z-50 flex h-11 w-11 sm:bottom-6 sm:right-6 sm:h-12 sm:w-12 items-center justify-center rounded-full border text-lg transition-colors ${
           playing
             ? "border-accent/60 bg-surface text-accent reactor-glow"
             : "border-edge bg-surface/80 text-slate-500 hover:border-accent/40 hover:text-accent"

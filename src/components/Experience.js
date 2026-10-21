@@ -3,9 +3,9 @@ import Section from "./Section";
 
 export default function Experience({ state }) {
   return (
-    <Section id="experience" num="02" eyebrow="where i've been" title="Experience" state={state}>
+    <Section id="experience" num="03" eyebrow="where i've been" title="Experience" state={state}>
       {(jobs) => (
-        <div className="relative ml-3 border-l border-edge pl-8 sm:ml-6">
+        <div className="relative ml-2 border-l border-edge pl-6 sm:ml-6 sm:pl-8">
           {jobs.map((job, i) => (
             <motion.div
               key={i}
@@ -15,11 +15,11 @@ export default function Experience({ state }) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
             >
-              <span className="absolute -left-[41px] top-1.5 h-4 w-4 rounded-full border-2 border-accent bg-ink shadow-[0_0_12px_rgba(245,184,61,0.7)]" />
-              <div className="glass-card p-6">
+              <span className="absolute -left-[33px] top-1.5 h-4 w-4 sm:-left-[41px] rounded-full border-2 border-accent bg-ink shadow-[0_0_12px_rgba(245,184,61,0.7)]" />
+              <div className="glass-card p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{job.role}</h3>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold text-white sm:text-xl">{job.role}</h3>
                     <p className="text-accent">{job.company}</p>
                     <p className="text-sm text-slate-500">{job.location}</p>
                   </div>

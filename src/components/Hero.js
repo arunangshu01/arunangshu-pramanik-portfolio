@@ -1,11 +1,19 @@
 import { motion } from "framer-motion";
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
+import { FiDownload, FiFileText } from "react-icons/fi";
+import { RESUME_DOWNLOAD_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 
 const SOCIAL_ICONS = {
   linkedin: FaLinkedin,
   github: SiGithub,
   leetcode: SiLeetcode,
+};
+
+const SOCIAL_LABELS = {
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  leetcode: "LeetCode",
 };
 
 const fadeUp = (delay) => ({
@@ -20,9 +28,9 @@ export default function Hero({ info, summary }) {
   return (
     <header
       id="top"
-      className="mx-auto flex max-w-5xl flex-col-reverse items-center gap-12 px-6 pb-20 pt-16 sm:flex-row sm:items-start sm:justify-between sm:pt-28"
+      className="mx-auto flex max-w-5xl flex-col-reverse items-center gap-10 px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-16 md:flex-row md:items-start md:justify-between md:gap-12 lg:pt-28"
     >
-      <div className="max-w-2xl">
+      <div className="w-full min-w-0 max-w-2xl">
         <motion.p {...fadeUp(0)} className="mb-4 font-mono text-sm text-accent">
           [ System Online ] · Senior Software Engineer · Data & Cloud
         </motion.p>
@@ -37,7 +45,7 @@ export default function Hero({ info, summary }) {
 
         <motion.h1
           {...fadeUp(0.1)}
-          className="font-display text-4xl font-black uppercase leading-[1.15] tracking-wide sm:text-6xl"
+          className="break-words font-display text-[1.75rem] font-black uppercase leading-[1.15] tracking-wide min-[400px]:text-4xl sm:text-5xl lg:text-6xl"
         >
           {(() => {
             const [first, ...rest] = (info?.name ?? "Arunangshu Pramanik").split(" ");
@@ -69,8 +77,8 @@ export default function Hero({ info, summary }) {
 
         {summary && (
           <motion.p
-            {...fadeUp(0.35)}
-            className="mt-6 text-lg leading-relaxed text-slate-400"
+            {...fadeUp(0)}
+            className="mt-6 text-base leading-relaxed text-slate-400 sm:text-lg"
           >
             {summary}
           </motion.p>
@@ -78,7 +86,7 @@ export default function Hero({ info, summary }) {
 
         {info && (
           <motion.div
-            {...fadeUp(0.45)}
+            {...fadeUp(0.1)}
             className="mt-6 font-mono text-sm text-slate-500"
           >
             {info.location.city}, {info.location.state} · {info.location.country}
@@ -96,9 +104,32 @@ export default function Hero({ info, summary }) {
           <span>status: deployed</span>
         </motion.div>
 
-        <motion.div {...fadeUp(0.65)} className="mt-8 flex flex-wrap gap-4">
-          <a href="#contact" className="btn-primary">
+        <motion.div {...fadeUp(0.65)} className="mt-8 flex flex-wrap gap-3 sm:gap-4">
+          <a
+            href="#contact"
+            onClick={() => trackEvent("cta_click", { cta: "get_in_touch" })}
+            className="btn-primary text-center"
+          >
             Get in touch
+          </a>
+          <a
+            href={RESUME_VIEW_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-xl border border-accent/50 bg-accent/10 px-6 py-3 font-medium text-accent transition-colors hover:bg-accent/20"
+          >
+            <FiFileText className="text-lg" />
+            View resume
+          </a>
+          <a
+            href={RESUME_DOWNLOAD_URL}
+            download
+            aria-label="Download resume PDF"
+            title="Download resume (PDF)"
+            className="flex items-center justify-center gap-2 rounded-xl border border-accent/50 px-4 py-3 text-accent transition-colors hover:bg-accent/10"
+          >
+            <FiDownload className="text-lg" />
+            <span className="sm:hidden">Download</span>
           </a>
           {socials &&
             Object.entries(socials).map(([label, url]) => {
@@ -107,12 +138,14 @@ export default function Hero({ info, summary }) {
                 <a
                   key={label}
                   href={url}
+                  onClick={() => trackEvent("social_click", { platform: label })}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 rounded-xl border border-edge px-6 py-3 font-medium capitalize text-slate-300 transition-colors hover:border-accent/50 hover:text-accent"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-edge px-5 py-3 font-medium text-slate-300 transition-colors hover:border-accent/50 hover:text-accent sm:px-6"
                 >
                   {Icon && <Icon className="text-lg" />}
-                  {label}
+                  {SOCIAL_LABELS[label] ??
+                    label.charAt(0).toUpperCase() + label.slice(1)}
                 </a>
               );
             })}
@@ -126,7 +159,7 @@ export default function Hero({ info, summary }) {
         transition={{ duration: 0.8, delay: 0.3 }}
         className="shrink-0"
       >
-        <div className="relative h-56 w-56 sm:h-64 sm:w-64">
+        <div className="relative h-44 w-44 min-[400px]:h-52 min-[400px]:w-52 sm:h-56 sm:w-56 lg:h-64 lg:w-64">
           {/* outer rotating dashed ring */}
           <motion.div
             aria-hidden
@@ -145,11 +178,21 @@ export default function Hero({ info, summary }) {
             animate={{ rotate: -360 }}
             transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
           />
-          <img
-            src="/profile.jpg"
-            alt={info?.name ?? "Profile"}
-            className="reactor-glow h-full w-full rounded-full border-2 border-accent/50 object-cover"
-          />
+          <picture>
+            <source
+              srcSet="/profile-256.webp 256w, /profile-512.webp 512w"
+              sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 208px"
+              type="image/webp"
+            />
+            <img
+              src="/profile-512.jpg"
+              alt={info?.name ?? "Profile"}
+              width="512"
+              height="512"
+              fetchpriority="high"
+              className="reactor-glow h-full w-full rounded-full border-2 border-accent/50 object-cover"
+            />
+          </picture>
         </div>
         <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-accent/60">
           arc reactor · mk vii

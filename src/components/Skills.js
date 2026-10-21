@@ -2,12 +2,21 @@ import { motion } from "framer-motion";
 import Section from "./Section";
 import { skillIcon } from "../skillIcons";
 
+const LABELS = {
+  databases_and_datawarehouses: "Databases and Data Warehouses",
+  gcp_resources: "GCP Resources",
+  devops: "DevOps",
+  ides_and_editors: "IDEs and Editors",
+  ai_tools: "AI Tools",
+};
+
 const toTitle = (key) =>
+  LABELS[key] ??
   key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Skills({ state }) {
   return (
-    <Section id="skills" num="01" eyebrow="what i work with" title="Skills" state={state}>
+    <Section id="skills" num="02" eyebrow="what i work with" title="Skills" state={state}>
       {(skills) => {
         const { others = {}, ...named } = skills;
         const groups = { ...named, ...others };

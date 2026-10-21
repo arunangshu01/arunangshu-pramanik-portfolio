@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@600;700;800;900&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,6 +31,18 @@ body {
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   transition: background-color 0.35s ease, color 0.35s ease;
+  overflow-wrap: break-word;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Light theme overrides for the neutral/amber utilities used across components */
@@ -152,7 +162,7 @@ html.light .glass-card {
   }
 
   .section-title {
-    @apply font-display text-3xl sm:text-4xl font-bold uppercase tracking-wider;
+    @apply font-display text-2xl min-[400px]:text-3xl sm:text-4xl font-bold uppercase tracking-wider;
   }
 
   .gradient-text {
