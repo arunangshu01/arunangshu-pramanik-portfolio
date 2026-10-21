@@ -16,7 +16,7 @@ const toTitle = (key) =>
 
 export default function Skills({ state }) {
   return (
-    <Section id="skills" num="01" eyebrow="what i work with" title="Skills" state={state}>
+    <Section id="skills" num="02" eyebrow="what i work with" title="Skills" state={state}>
       {(skills) => {
         const { others = {}, ...named } = skills;
         const groups = { ...named, ...others };

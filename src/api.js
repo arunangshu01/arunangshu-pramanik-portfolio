@@ -12,7 +12,9 @@ async function get(path) {
       detail && !Array.isArray(detail.detail) && detail.detail?.error_message
         ? detail.detail.error_message
         : `GET ${path} failed: ${res.status}`;
-    throw new Error(msg);
+    const error = new Error(msg);
+    error.status = res.status;
+    throw error;
   }
   return res.json();
 }
@@ -54,10 +56,11 @@ export async function sendContactEmail({ name, email, message }) {
 
 // POST /analytics/track takes JSON (unlike /send_email). Fire-and-forget: never
 // blocks or breaks the UI. Resume and contact events are tracked server-side.
-// Enabled in production builds only, so local dev doesn't pollute the numbers.
-const ANALYTICS_ENABLED =
-  process.env.NODE_ENV === "production" ||
-  process.env.REACT_APP_ENABLE_ANALYTICS === "true";
+// On in production builds and off in dev by default, so local work doesn't pollute
+// the numbers. REACT_APP_ENABLE_ANALYTICS=true/false overrides either way.
+const ANALYTICS_ENABLED = process.env.REACT_APP_ENABLE_ANALYTICS
+  ? process.env.REACT_APP_ENABLE_ANALYTICS === "true"
+  : process.env.NODE_ENV === "production";
 const trackedOnce = new Set();
 
 export function trackEvent(event, metadata) {

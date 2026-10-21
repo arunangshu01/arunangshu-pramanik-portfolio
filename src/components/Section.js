@@ -22,8 +22,15 @@ export default function Section({ id, num, eyebrow, title, state, children }) {
         <span className="shimmer-text">{title}</span>
       </h2>
       {state?.loading && (
-        <p className="animate-pulse font-mono text-sm text-slate-500">
-          Loading…
+        <p className="animate-pulse font-mono text-sm text-slate-500" role="status">
+          {state.slow ? (
+            <>
+              <span className="text-accent">J.A.R.V.I.S.</span> - "Bringing systems
+              online, sir." First load can take up to a minute.
+            </>
+          ) : (
+            "Loading…"
+          )}
         </p>
       )}
       {state?.error && (
@@ -31,7 +38,7 @@ export default function Section({ id, num, eyebrow, title, state, children }) {
           {"// content unavailable"}
         </p>
       )}
-      {state?.data && children(state.data)}
+      {state ? state.data && children(state.data) : children()}
     </motion.section>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useApi } from "./useApi";
 import {
   getPersonalInfo,
@@ -14,12 +14,15 @@ import BootSequence from "./components/BootSequence";
 import MusicToggle from "./components/MusicToggle";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import Skills from "./components/Skills";
+import About from "./components/About";
 import Experience from "./components/Experience";
 import Education from "./components/Education";
 import Awards from "./components/Awards";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+
+// Skills carries ~80 KB of brand icons; split it out of the critical bundle.
+const Skills = lazy(() => import("./components/Skills"));
 
 function App() {
   const info = useApi(getPersonalInfo);
@@ -61,7 +64,16 @@ function App() {
         }} />
       <Hero info={info.data} summary={summary.data?.summary} />
       <main className="mx-auto max-w-5xl px-4 sm:px-6">
-        <Skills state={skills} />
+        <About
+          info={info.data}
+          experience={experience.data}
+          awards={awards.data}
+          skills={skills.data}
+          education={education.data}
+        />
+        <Suspense fallback={<section id="skills" className="min-h-[60vh]" />}>
+          <Skills state={skills} />
+        </Suspense>
         <Experience state={experience} />
         <Education state={education} />
         <Awards state={awards} />

@@ -77,7 +77,7 @@ export default function Hero({ info, summary }) {
 
         {summary && (
           <motion.p
-            {...fadeUp(0.35)}
+            {...fadeUp(0)}
             className="mt-6 text-base leading-relaxed text-slate-400 sm:text-lg"
           >
             {summary}
@@ -86,7 +86,7 @@ export default function Hero({ info, summary }) {
 
         {info && (
           <motion.div
-            {...fadeUp(0.45)}
+            {...fadeUp(0.1)}
             className="mt-6 font-mono text-sm text-slate-500"
           >
             {info.location.city}, {info.location.state} · {info.location.country}
@@ -178,11 +178,21 @@ export default function Hero({ info, summary }) {
             animate={{ rotate: -360 }}
             transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
           />
-          <img
-            src="/profile.jpg"
-            alt={info?.name ?? "Profile"}
-            className="reactor-glow h-full w-full rounded-full border-2 border-accent/50 object-cover"
-          />
+          <picture>
+            <source
+              srcSet="/profile-256.webp 256w, /profile-512.webp 512w"
+              sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 208px"
+              type="image/webp"
+            />
+            <img
+              src="/profile-512.jpg"
+              alt={info?.name ?? "Profile"}
+              width="512"
+              height="512"
+              fetchpriority="high"
+              className="reactor-glow h-full w-full rounded-full border-2 border-accent/50 object-cover"
+            />
+          </picture>
         </div>
         <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-accent/60">
           arc reactor · mk vii
