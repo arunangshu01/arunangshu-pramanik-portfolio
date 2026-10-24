@@ -9,6 +9,17 @@ def test_health_check(client, api_base):
     assert body["code"] == 200
 
 
+def test_api_docs_schema_uses_hosting_rewrite(client, api_base):
+    schema_path = f"{api_base}/openapi.json"
+    res = client.get(schema_path)
+    assert res.status_code == 200
+    assert f"{api_base}/health" in res.json()["paths"]
+    for path in ("docs", "redoc"):
+        docs = client.get(f"{api_base}/{path}")
+        assert docs.status_code == 200
+        assert schema_path in docs.text
+
+
 def test_personal_info(client, api_base):
     res = client.get(f"{api_base}/personal_info")
     assert res.status_code == 200

@@ -54,6 +54,7 @@ debug_mode = True if DEBUG_MODE == "True" else False
 app = FastAPI(
     openapi_tags=tags_metadata,
     title="Arunangshu Pramanik's Personal Portfolio",
+    openapi_url=f"{API_COMMON_PREFIX}/openapi.json",
     docs_url=f"{API_COMMON_PREFIX}/docs",
     redoc_url=f"{API_COMMON_PREFIX}/redoc",
     debug=debug_mode
