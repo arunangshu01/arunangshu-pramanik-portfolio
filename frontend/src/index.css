@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: 10 8 5;
+  --surface: 20 16 10;
+  --edge: 46 36 19;
+  --accent: 245 184 61;
+  --accent2: 224 52 43;
+  --grid-line: rgba(245, 184, 61, 0.03);
+}
+
+html.light {
+  --ink: 246 243 236;
+  --surface: 255 255 255;
+  --edge: 219 209 189;
+  --accent: 176 122 20;
+  --accent2: 200 40 32;
+  --grid-line: rgba(176, 122, 20, 0.07);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ink text-slate-200 font-sans antialiased;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transition: background-color 0.35s ease, color 0.35s ease;
+  overflow-wrap: break-word;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Light theme overrides for the neutral/amber utilities used across components */
+html.light body {
+  color: #3f3f46;
+}
+html.light .text-white {
+  color: #1c1917;
+}
+html.light .text-slate-200,
+html.light .text-slate-300 {
+  color: #3f3f46;
+}
+html.light .text-slate-400,
+html.light .text-slate-500,
+html.light .text-slate-600 {
+  color: #57534e;
+}
+html.light .text-amber-200,
+html.light .text-amber-300 {
+  color: #92600e;
+}
+html.light .placeholder-slate-600::placeholder {
+  color: #a8a29e;
+}
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+html.light .hover\:text-white:hover {
+  color: #1c1917;
+}
+html.light .text-emerald-400 {
+  color: #047857;
+}
+html.light .text-red-400 {
+  color: #b91c1c;
+}
+html.light .shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    #92600e,
+    #b45309,
+    #78350f,
+    #92600e
+  );
+}
+html.light .glass-card {
+  box-shadow: 0 8px 30px rgba(120, 90, 30, 0.12);
+}
+
+@keyframes reactor-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(245, 184, 61, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 70px rgba(245, 184, 61, 0.7);
+  }
+}
+
+.reactor-glow {
+  animation: reactor-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Bright gradient that sweeps across text - no dark tail. */
+.shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    #fcd34d,
+    #fffbeb,
+    #f5b83d,
+    #fdba74,
+    #fcd34d
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+::selection {
+  @apply bg-accent/30 text-white;
+}
+
+@layer components {
+  .glass-card {
+    @apply relative rounded-2xl border border-edge bg-surface/60 backdrop-blur-md
+      shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-300
+      hover:border-accent/40 hover:shadow-[0_8px_40px_rgba(245,184,61,0.14)];
+  }
+
+  /* HUD corner brackets - engineered spec-sheet detail */
+  .glass-card::before,
+  .glass-card::after {
+    content: "";
+    @apply pointer-events-none absolute h-3 w-3 border-accent/50 transition-opacity duration-300 opacity-40;
+  }
+  .glass-card::before {
+    @apply left-2 top-2 border-l border-t;
+  }
+  .glass-card::after {
+    @apply bottom-2 right-2 border-b border-r;
+  }
+  .glass-card:hover::before,
+  .glass-card:hover::after {
+    @apply opacity-100;
+  }
+
+  .section-title {
+    @apply font-display text-2xl min-[400px]:text-3xl sm:text-4xl font-bold uppercase tracking-wider;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-amber-300 via-accent to-amber-200 bg-clip-text
+      text-transparent drop-shadow-[0_0_14px_rgba(245,184,61,0.25)];
+  }
+
+  .gradient-text-red {
+    @apply bg-gradient-to-r from-red-400 via-orange-400 to-amber-300
+      bg-clip-text text-transparent drop-shadow-[0_0_14px_rgba(224,52,43,0.25)];
+  }
+
+  .chip {
+    @apply inline-block rounded-full border border-accent/30 bg-accent/10
+      px-3 py-1 text-xs font-medium text-amber-300 transition-colors
+      hover:bg-accent/20;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-accent to-accent2 px-6 py-3
+      font-semibold text-ink transition-transform hover:scale-[1.02]
+      active:scale-95 disabled:opacity-60;
+  }
+}
