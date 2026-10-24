@@ -27,6 +27,7 @@ describe("GET endpoints", () => {
     ["getSkills", "/skills"],
     ["getExperience", "/experience"],
     ["getAwards", "/awards_recognitions"],
+    ["getProjects", "/projects"],
   ])("%s hits %s", async (fn, path) => {
     fetch.mockResolvedValue(jsonResponse(200, {}));
     await api[fn]();

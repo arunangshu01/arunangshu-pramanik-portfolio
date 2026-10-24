@@ -4,7 +4,7 @@ import { awardPeriods } from "../api";
 
 export default function Awards({ state }) {
   return (
-    <Section id="awards" num="05" eyebrow="recognition" title="Awards" state={state}>
+    <Section id="awards" num="06" eyebrow="recognition" title="Awards" state={state}>
       {(awards) => (
         <div className="grid gap-5 sm:grid-cols-2">
           {awards.map((a, i) => (

@@ -1,0 +1,21 @@
+[
+  {
+    "id": "mahakal",
+    "name": "M.A.H.A.K.A.L.",
+    "description": "M.A.H.A.K.A.L.: Modular Agentic Hub for Automation, Knowledge & Adaptive Logic. A personal voice AI assistant built with FastAPI and React, powered by Groq (GPT-OSS 120B + Whisper) with Gemini fallback, plus Edge TTS.",
+    "technologies": ["React", "Vite", "Python", "FastAPI", "Groq", "Whisper", "Gemini", "Edge TTS", "Firestore", "Cloud Run", "Firebase Hosting", "Docker"],
+    "live_url": "https://mahakal-ai.web.app/",
+    "github_url": "https://github.com/arunangshu01/mahakal",
+    "highlights": [
+      "Voice and text conversations with streamed responses, Whisper speech recognition, and Edge TTS playback.",
+      "Automatic Gemini fallback when the primary Groq provider fails or reaches its rate limit.",
+      "Google sign-in with guest-to-user conversation migration, persistent Firestore history, and long-term memory.",
+      "Tool calling for weather, time, Wikipedia lookup, and remembering or forgetting user preferences.",
+      "Cloud Run and Firebase Hosting deployment with Secret Manager, keyless GitHub authentication, and CI-gated releases."
+    ],
+    "status": "live",
+    "featured": true,
+    "image": "/mahakal-preview.png",
+    "preview_enabled": true
+  }
+]

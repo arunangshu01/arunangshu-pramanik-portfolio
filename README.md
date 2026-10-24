@@ -1,4 +1,4 @@
-# Arunangshu Pramanik — Portfolio
+# Arunangshu Pramanik - Portfolio
 
 Personal portfolio with a J.A.R.V.I.S.-themed React frontend and a FastAPI backend serving portfolio data, resume PDFs, contact emails, and analytics.
 
@@ -94,6 +94,7 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/education_details` | Education |
 | GET | `/skills` | Categorized skills |
 | GET | `/experience` | Roles and responsibilities |
+| GET | `/projects` | Validated project cards, technologies, highlights, and preview settings |
 | GET | `/awards_recognitions` | Awards |
 | GET | `/resume/view` | Inline resume PDF |
 | GET | `/resume/download` | Resume PDF attachment |
@@ -104,6 +105,23 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | POST | `/analytics/views` | Register a page load or refresh presence with anonymous UUIDs; rate-limited |
 
 Frontend events include page/section views, CTA/social clicks, theme toggles, and music playback. Resume and contact events are recorded server-side.
+
+### Projects and previews
+
+Edit `backend/information/projects.json` to add projects; its array order is the display order. Required fields are `id` (unique slug), `name`, `description`, and a non-empty `technologies` array. Optional fields: `live_url`, `github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, `image`, and `preview_enabled`. Use `null` for unavailable URLs/images. Keep screenshots in `frontend/public/` and reference them with a root-relative path such as `/mahakal-preview.png`.
+
+The Projects section uses a clickable screenshot card, not a live screenshot service or server-side URL scraper. Mahakal's thumbnail was captured from its public, signed-out page; it does not automatically refresh. The optional live demo is an explicitly loaded iframe for trusted external HTTPS sites only. It is sandboxed, sends no referrer, and cannot access the microphone, camera, or geolocation. Sign-in, browser cookie restrictions, and frame-blocking headers may limit embedded features; the full-app link remains available. Set `preview_enabled: false` for projects that should not be embedded. Only enable embeds for sites you trust. A failed/missing screenshot falls back to a branded card.
+
+To refresh the Mahakal screenshot using installed Google Chrome (the pinned Playwright CLI runs from npm's tool cache, not as an app dependency):
+
+```bash
+npm exec --yes --package=playwright@1.55.1 -- playwright screenshot \
+  --channel chrome --viewport-size '1440,900' --wait-for-timeout 12000 \
+  --timeout 60000 --block-service-workers https://mahakal-ai.web.app/ \
+  frontend/public/mahakal-preview.png
+```
+
+Project changes require a PR/deployment to update production. No extra cloud resource, secret, or paid preview service is needed. Project clicks and demo loads use the existing private event tracker.
 
 ### Public view counter
 
@@ -186,7 +204,7 @@ done
 
 TTL permanently deletes expired anonymous records; enable it only after approving the retention policy. These commands are a reference, not an idempotent script. Cloud Run uses its runtime identity automatically. Local development defaults to memory and needs no GCP credentials; testing against Firestore locally requires explicitly selecting that backend/project and configuring Application Default Credentials. Do not point development traffic at production counters unintentionally.
 
-### Manual GCP setup — do these in order
+### Manual GCP setup - do these in order
 
 The setup commands below are retained as a provisioning reference. Check the status above before running them: do not recreate existing resources. Secret entry in step 4 is complete; publishing and deployment follow step 8. Use an administrator account for any remaining provisioning. Stop if a command fails; these creation commands are not an idempotent setup script.
 

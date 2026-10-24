@@ -25,6 +25,7 @@ export const getEducationDetails = () => get("/education_details");
 export const getSkills = () => get("/skills");
 export const getExperience = () => get("/experience");
 export const getAwards = () => get("/awards_recognitions");
+export const getProjects = () => get("/projects");
 
 async function viewRequest(options) {
   const res = await fetch(`${API_BASE}/analytics/views`, { cache: "no-store", ...options });

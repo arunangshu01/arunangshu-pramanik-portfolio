@@ -7,6 +7,7 @@ import {
   getExperience,
   getEducationDetails,
   getAwards,
+  getProjects,
   trackEvent,
   trackOnce,
 } from "./api";
@@ -20,6 +21,7 @@ import Education from "./components/Education";
 import Awards from "./components/Awards";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import Projects from "./components/Projects";
 
 // Skills carries ~80 KB of brand icons; split it out of the critical bundle.
 const Skills = lazy(() => import("./components/Skills"));
@@ -31,6 +33,7 @@ function App() {
   const experience = useApi(getExperience);
   const education = useApi(getEducationDetails);
   const awards = useApi(getAwards);
+  const projects = useApi(getProjects);
   const [light, setLight] = useState(
     () => localStorage.getItem("theme") === "light"
   );
@@ -74,6 +77,7 @@ function App() {
         <Suspense fallback={<section id="skills" className="min-h-[60vh]" />}>
           <Skills state={skills} />
         </Suspense>
+        <Projects state={projects} />
         <Experience state={experience} />
         <Education state={education} />
         <Awards state={awards} />
