@@ -1,5 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from uuid import UUID
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnalyticsEvent(BaseModel):
@@ -10,3 +11,14 @@ class AnalyticsEvent(BaseModel):
 
 class AnalyticsTrackSuccess(BaseModel):
     message: str
+
+
+class ViewPresence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    view_id: UUID
+    session_id: UUID
+
+
+class PublicViewStats(BaseModel):
+    total_views: int = Field(ge=0)
+    viewing_now: int = Field(ge=0)
