@@ -128,3 +128,13 @@ dmypy.json
 .vscode/
 .DS_Store
 .env.prepush
+.env.*
+!.env.example
+node_modules/
+.pnp
+.pnp.js
+coverage/
+tmp/
+.firebase/
+firebase-debug.log*
+gha-creds-*.json
