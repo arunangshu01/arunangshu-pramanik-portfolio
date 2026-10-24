@@ -1,0 +1,66 @@
+{
+  "skills": {
+    "programming_languages": ["Python", "SQL", "Java", "JavaScript", "TypeScript"],
+    "databases_and_datawarehouses": ["Microsoft SQL Server", "Oracle", "PostgreSQL", "Snowflake", "Databricks", "BigQuery"],
+    "data_analysis": ["Pandas", "NumPy", "PySpark"],
+    "frameworks": ["FastAPI", "Django", "Spring Boot", "RESTful APIs"],
+    "cloud_platforms": ["Azure", "GCP"],
+    "orchestrator": ["Apache Airflow"],
+    "others": {
+      "azure_resources": [
+        "Azure Event Hubs",
+        "Azure Files",
+        "Azure Blob Storage",
+        "Azure Storage Explorer",
+        "Azure Container Registry",
+        "Azure Container Services",
+        "Azure Key Vault"
+      ],
+      "gcp_resources": [
+        "Cloud Tasks",
+        "Cloud Run",
+        "Cloud Run Functions",
+        "Cloud SQL",
+        "Cloud Scheduler",
+        "Workflows",
+        "Eventarc",
+        "Cloud Storage",
+        "Secret Manager",
+        "Pub/Sub",
+        "Dataflow",
+        "Compute Engine",
+        "Analytics Hub",
+        "IAM",
+        "VPC",
+        "Cloud Networking",
+        "Google Cloud APIs",
+        "Databricks Workspace"
+      ],
+      "devops": [
+        "Docker",
+        "Kubernetes",
+        "Jenkins",
+        "Git",
+        "GitHub",
+        "GitHub Actions",
+        "Bitbucket",
+        "Bitbucket Pipelines",
+        "Shell Scripting",
+        "YAML"
+      ],
+      "monitoring_and_logging": ["Datadog", "Elasticsearch", "Kibana"],
+      "messaging_and_caching": ["Kafka", "Redis"],
+      "collaboration_and_project_management": ["Jira", "Confluence", "Slack", "Microsoft Teams"],
+      "database_and_api_tools": ["DBeaver", "Offset Explorer", "Postman"],
+      "ides_and_editors": [
+        "Visual Studio Code",
+        "PyCharm",
+        "IntelliJ IDEA Community Edition",
+        "Eclipse IDE",
+        "Python IDLE"
+      ],
+      "ai_tools": ["Cursor", "Devin AI"],
+      "web_technologies": ["HTML", "CSS", "Bootstrap", "Angular", "React"]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "experience": [
+    {
+      "role": "Senior Software Engineer",
+      "company": "Impact Analytics",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "December 2024 - Present",
+      "clients_or_customers": "Retail & FMCG Enterprises - Notable customers include Bealls, Ralph Lauren, Peter Millar, Swarovski, Gap, Foot Locker, Patagonia, Under Armour, and Levi's",
+      "responsibilities": [
+        "Design, develop, test, and integrate core data engineering pipelines powering the organization's AI-driven retail product suite - PlanSmart, DemandSmart, InventorySmart, PriceSmart, PromoSmart, MarkSmart, and DataSmart - for Retail and FMCG customers.",
+        "Architected a two-stage Airflow and GCP pipeline: a Sourcing layer that extracts data from heterogeneous databases, warehouses, cloud storage, and file transfer systems into BigQuery, and an Ingestion layer that cleanses, validates, and transforms the data into master entity tables consumed by in-house products.",
+        "Integrated client data across OLTP and OLAP databases, data warehouses and workspaces, cloud storage, and file transfer connectors for every retailer subscribed to the product suite.",
+        "Architected the pipeline codebase and designed a near real-time integration framework covering ingestion and cancellation flows, leveraging Cloud SQL, Cloud Run Functions, Cloud Tasks, BigQuery, Cloud Storage, Secret Manager, Workflows, Eventarc, and PostgreSQL.",
+        "Collaborated with cross-functional team members in design sessions to define pipeline architecture, data models, and integration strategies.",
+        "Built an AI agent for internal pipelines that detects and diagnoses failed database, warehouse, cloud storage, and file transfer connectors based on pipeline flow, significantly reducing manual triage effort.",
+        "Developed a chatbot that generates pipeline tasks and processes tailored to client requirements and data-driven insights.",
+        "Developed an AI chatbot and search engine spanning databases, warehouses, workspaces, and BigQuery - comparable to the native assistants in Databricks and Snowflake - offering a browsable data catalog, schema-based data inspection, table relationship mapping, and SQL query generation from natural-language requirements.",
+        "Built cost and runtime reporting dashboards for Cloud Run, Cloud Run Functions, and Compute Engine VMs, providing granular visibility into cloud spend and resource utilization.",
+        "Integrated Google Authentication SSO for Airflow services, enabling secure, seamless user login through the Airflow UI.",
+        "Lead and mentor a team of junior engineers, developing their technical capabilities and reviewing their deliverables.",
+        "Upgraded standalone codebases and legacy systems, improving code efficiency and accuracy by ~90%.",
+        "Diagnosed and resolved customer issues, identifying recurring bottlenecks on both internal and client sides to prevent repeat incidents."
+      ]
+    },
+    {
+      "role": "Digital Engineering Lead Engineer",
+      "company": "Apisero Inc. (Now Acquired by NTT Data Services)",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "August 2021 - December 2024",
+      "clients_or_customers": "Blue Yonder",
+      "responsibilities": [
+        "Developed a SaaS application built on event-driven architecture using Azure Event Hubs, ELK Stack, Snowflake, Azure Blob Storage, and Python.",
+        "Modernized and modularized legacy codebases to contemporary development standards within a Data Platform, delivering real-time data pipeline solutions to over a dozen enterprise customers, including JCPenney, ASDA, 7-Eleven, CVS, Heineken, and Walmart.",
+        "Designed and maintained ETL applications for analytics platforms, processing billions of transaction records across the customer base.",
+        "Identified and resolved customer-facing bottlenecks, improving the integration and utilization of OLAP and OLTP databases across homogeneous and heterogeneous data migration processes.",
+        "Managed and upgraded standalone codebases and existing systems, achieving over 90% code coverage while deploying software tools, processes, visualization, and metrics.",
+        "Partnered with senior stakeholders to translate business requirements into configuration blueprints for data migration platforms, enhancing customer adoption and analytics capabilities."
+      ]
+    },
+    {
+      "role": "Systems Engineer",
+      "company": "Infosys Limited",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "October 2019 - July 2021",
+      "clients_or_customers": "Cisco Systems",
+      "responsibilities": [
+        "Researched, designed, implemented, and managed software programs to ensure optimal performance and scalability.",
+        "Collaborated with project team members to identify and deliver modifications and enhancements to existing programs.",
+        "Authored efficient, maintainable code with a focus on operational practicality and robustness.",
+        "Developed client-side and server-side architecture using modern front-end and back-end technologies.",
+        "Engineered and maintained robust databases and applications supporting core business needs.",
+        "Designed and documented APIs, rigorously testing features to ensure responsiveness and efficiency.",
+        "Implemented comprehensive security and data protection measures.",
+        "Tested and evaluated new programs, establishing quality assurance procedures that achieved 95% efficiency.",
+        "Maintained and upgraded existing systems, deploying software tools, processes, and metrics to improve performance."
+      ]
+    }
+  ]
+}
