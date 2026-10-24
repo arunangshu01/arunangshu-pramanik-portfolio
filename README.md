@@ -66,6 +66,8 @@ Open `http://localhost:3000`. The development proxy forwards `/arunangshu_praman
 | `RECEIVER_EMAIL` | Contact-form destination inbox |
 | `EMAIL_RATE_LIMIT_MAX_REQUESTS` | Contact requests per IP per window, `3` |
 | `EMAIL_RATE_LIMIT_WINDOW_SECONDS` | Contact rate-limit window, `3600` |
+| `VIEW_COUNTER_BACKEND` | Public counters: `memory` locally (default), `firestore` on Cloud Run |
+| `GOOGLE_CLOUD_PROJECT` | Firestore project ID; production uses `ap-portfolio-241026` |
 | `ANALYTICS_ADMIN_TOKEN` | Secret required in `X-Admin-Token` for analytics summary; unset returns `503` |
 | `ANALYTICS_RATE_LIMIT_MAX_REQUESTS` | Analytics requests per IP per window, `30` |
 | `ANALYTICS_RATE_LIMIT_WINDOW_SECONDS` | Analytics rate-limit window, `60` |
@@ -97,9 +99,23 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/resume/download` | Resume PDF attachment |
 | POST | `/send_email` | Multipart contact form; rate-limited, Brevo delivery in background |
 | POST | `/analytics/track` | JSON analytics event; rate-limited |
-| GET | `/analytics/summary` | Counts; requires `X-Admin-Token` |
+| GET | `/analytics/summary` | Private in-memory event counts; requires `X-Admin-Token` |
+| GET | `/analytics/views` | Public aggregate total views and estimated active sessions; does not increment |
+| POST | `/analytics/views` | Register a page load or refresh presence with anonymous UUIDs; rate-limited |
 
 Frontend events include page/section views, CTA/social clicks, theme toggles, and music playback. Resume and contact events are recorded server-side.
+
+### Public view counter
+
+The footer displays **total views** and **viewing now (approx.)**. It refreshes about every 30 seconds while the page is visible, stops requests in hidden tabs, and recovers from failures without showing a false zero. Requests are cancelled on unmount, time out after 10 seconds, and back off for 60 seconds after rate limiting.
+
+- A view is a page load, not a unique person. One page-load UUID is reused across request retries, React remounts, and heartbeats. A refresh creates a new view. A session UUID is stored in `sessionStorage`; storage-blocked browsers use an in-memory fallback. Tabs may share a copied session ID, so active sessions are only an estimate.
+- Active sessions have sent a heartbeat in the last 90 seconds. Counts can lag due to polling, cold starts, and a 10-second backend aggregation cache. These are near-real-time estimates, not exact concurrent visitors or bot-proof statistics.
+- The new public endpoint only accepts UUIDs and returns `total_views` and `viewing_now`. Firestore records contain anonymous IDs and timestamps, not IP addresses, referrers, or private event metadata. Existing private analytics remains separate and admin-only.
+- Production uses Firestore transactions to atomically deduplicate page-load IDs and increment the permanent `portfolio_stats/views` aggregate. `portfolio_views` and `portfolio_sessions` have `expires_at` TTL policies for cleanup after 24 hours of inactivity; the aggregate has no TTL. Cleanup is asynchronous, and activity filtering does not depend on deletion timing. A page returning after more than 24 hours of inactivity can be counted again once its deduplication record expires.
+- Totals start fresh when this feature is deployed; previous in-memory event history cannot be recovered. Development uses an isolated, bounded memory store. `REACT_APP_ENABLE_ANALYTICS=false` fetches public stats without registering views or heartbeats; use `true` in `.env.development.local` to exercise local tracking.
+- Heartbeats are limited to 10 requests/minute per IP using the existing process-local limiter design. This is best-effort protection, not a distributed abuse control; shared networks and multiple tabs can hit the limit.
+- Each heartbeat writes the session and view expiry records; a new page load also updates the total. Firestore reads/writes, TTL deletion, and Cloud Run requests can incur charges. Review billing if traffic grows; no zero-cost guarantee is made.
 
 ## Verification and contribution workflow
 
@@ -135,9 +151,9 @@ Firebase Hosting: arunangshu-pramanik-portfolio
 GitHub main push -> CI passes -> Deploy -> health checks
 ```
 
-This portfolio uses GCP project `ap-portfolio-241026` (project number `782289955945`), separate from Mahakal. The owner has created Firebase Hosting site `arunangshu-pramanik-portfolio`. No Firestore, OAuth client, or Google API key is needed by the current app.
+This portfolio uses GCP project `ap-portfolio-241026` (project number `782289955945`), separate from Mahakal. The owner has created Firebase Hosting site `arunangshu-pramanik-portfolio`. Public view counters use the Firestore Native `(default)` database in `asia-south1`; no OAuth client or Firebase browser SDK/API key is needed.
 
-Setup status on 24 October 2026: required APIs, the `portfolio` Artifact Registry repository in `asia-south1`, runtime/deployer service accounts, four populated secrets with enabled versions and runtime access, and repository-restricted WIF authentication have been provisioned. GitHub deployment variables and a `main`-only `production` environment are configured. The active `protect-main` ruleset requires PRs, resolved conversations, and both up-to-date CI checks; force pushes/deletion are blocked, with no bypass actors or mandatory reviewer approvals. Secret-version readiness has been verified without accessing payloads. The first deployment proceeds through the PR and CI workflow below.
+Setup status on 24 October 2026: required APIs, the `portfolio` Artifact Registry repository in `asia-south1`, runtime/deployer service accounts, four populated secrets with enabled versions and runtime access, and repository-restricted WIF authentication have been provisioned. GitHub deployment variables and a `main`-only `production` environment are configured. The active `protect-main` ruleset requires PRs, resolved conversations, and both up-to-date CI checks; force pushes/deletion are blocked, with no bypass actors or mandatory reviewer approvals. Secret-version readiness has been verified without accessing payloads. The initial GCP deployment has succeeded. Subsequent changes, including public view counters, use the same PR and CI workflow.
 
 | File | Purpose |
 | --- | --- |
@@ -148,7 +164,27 @@ Setup status on 24 October 2026: required APIs, the `portfolio` Artifact Registr
 
 Automatic deploys require successful CI on a push to `main`. Manual deploys are also restricted to `main` and rerun backend/frontend checks before authentication. Stale main commits are rejected. The `production` environment can add an approval gate. No production secrets or service-account JSON keys belong in GitHub.
 
-Cloud Run uses one Uvicorn worker, scales to zero, and is capped at one instance to limit costs and reduce split in-memory state. **Analytics and rate limits are still best-effort, process-local, and reset on restarts; rolling revisions can overlap.** Do not rely on these limits for strong abuse protection. Durable analytics/distributed rate limiting would require a separate storage design. The Cloud Run service is publicly invokable for Firebase Hosting compatibility; CORS does not make the direct API private. Proxy headers are trusted in this managed deployment; do not reuse this container on an untrusted proxy network without revisiting that setting.
+Cloud Run uses one Uvicorn worker, scales to zero, and is capped at one instance to limit costs. Public view totals are durable in Firestore. **The private event tracker and rate limits remain process-local and reset on restarts; rolling revisions can overlap.** Do not rely on these limits for strong abuse protection. Durable private event analytics/distributed rate limiting would require a separate storage design. The Cloud Run service is publicly invokable for Firebase Hosting compatibility; CORS does not make the direct API private. Proxy headers are trusted in this managed deployment; do not reuse this container on an untrusted proxy network without revisiting that setting.
+
+### Firestore setup reference
+
+Completed for `ap-portfolio-241026`: Firestore API enabled, Native `(default)` database created in `asia-south1`, `roles/datastore.user` granted to `portfolio-run`, and active TTL policies on `expires_at` for `portfolio_views` and `portfolio_sessions`. The public aggregate document has no TTL. No new secret or browser credential is required.
+
+For a fresh project only, provision these resources before enabling `VIEW_COUNTER_BACKEND=firestore`:
+
+```bash
+gcloud services enable firestore.googleapis.com --project="$PROJECT_ID"
+gcloud firestore databases create --database='(default)' --location=asia-south1 \
+  --type=firestore-native --project="$PROJECT_ID"
+gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:$RUN_SA" \
+  --role=roles/datastore.user
+for collection in portfolio_views portfolio_sessions; do
+  gcloud firestore fields ttls update expires_at --collection-group="$collection" \
+    --enable-ttl --database='(default)' --project="$PROJECT_ID"
+done
+```
+
+TTL permanently deletes expired anonymous records; enable it only after approving the retention policy. These commands are a reference, not an idempotent script. Cloud Run uses its runtime identity automatically. Local development defaults to memory and needs no GCP credentials; testing against Firestore locally requires explicitly selecting that backend/project and configuring Application Default Credentials. Do not point development traffic at production counters unintentionally.
 
 ### Manual GCP setup — do these in order
 

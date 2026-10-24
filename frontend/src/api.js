@@ -26,6 +26,24 @@ export const getSkills = () => get("/skills");
 export const getExperience = () => get("/experience");
 export const getAwards = () => get("/awards_recognitions");
 
+async function viewRequest(options) {
+  const res = await fetch(`${API_BASE}/analytics/views`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    const error = new Error("View statistics unavailable");
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+export const getViewStats = (signal) => viewRequest({ signal });
+export const updateViewPresence = (viewId, sessionId, signal) => viewRequest({
+  method: "POST",
+  signal,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ view_id: viewId, session_id: sessionId }),
+});
+
 // Resume endpoints return application/pdf and are used as plain links.
 export const RESUME_VIEW_URL = `${API_BASE}/resume/view`;
 export const RESUME_DOWNLOAD_URL = `${API_BASE}/resume/download`;
@@ -58,7 +76,7 @@ export async function sendContactEmail({ name, email, message }) {
 // blocks or breaks the UI. Resume and contact events are tracked server-side.
 // On in production builds and off in dev by default, so local work doesn't pollute
 // the numbers. REACT_APP_ENABLE_ANALYTICS=true/false overrides either way.
-const ANALYTICS_ENABLED = process.env.REACT_APP_ENABLE_ANALYTICS
+export const ANALYTICS_ENABLED = process.env.REACT_APP_ENABLE_ANALYTICS
   ? process.env.REACT_APP_ENABLE_ANALYTICS === "true"
   : process.env.NODE_ENV === "production";
 const trackedOnce = new Set();

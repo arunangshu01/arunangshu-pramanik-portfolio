@@ -1,6 +1,8 @@
 import secrets
-from fastapi import APIRouter, Header, HTTPException, Request, status
-from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess
+from fastapi import APIRouter, Header, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
+from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess, ViewPresence, PublicViewStats
+from utility.view_counter import view_counter
 from model.base_models_errors import ErrorResponseModel
 from utility.analytics import tracker
 from utility.logger import Logger
@@ -49,3 +51,31 @@ async def analytics_summary(request: Request, recent: int = 20,
         _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
                "Error: Invalid or missing admin token.")
     return tracker.summary(recent=max(1, min(recent, 500)))
+
+
+view_rate_limiter = InMemoryRateLimiter(max_requests=10, window_seconds=60)
+
+
+def _view_stats(operation):
+    try:
+        return operation()
+    except Exception:
+        logger.warning("Public view statistics are temporarily unavailable")
+        return JSONResponse(status_code=503, content={"detail": "View statistics unavailable"},
+                            headers={"Cache-Control": "no-store"})
+
+
+@router.get('/analytics/views', response_model=PublicViewStats)
+def public_view_stats(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return _view_stats(view_counter.stats)
+
+
+@router.post('/analytics/views', response_model=PublicViewStats)
+def view_presence(event: ViewPresence, request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    client_ip = request.client.host if request.client else "unknown"
+    if not view_rate_limiter.allow(client_ip):
+        return JSONResponse(status_code=429, content={"detail": "Too many presence requests"},
+                            headers={"Cache-Control": "no-store", "Retry-After": "60"})
+    return _view_stats(lambda: view_counter.heartbeat(str(event.view_id), str(event.session_id)))

@@ -23,6 +23,11 @@ EMAIL_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('EMAIL_RATE_LIMIT_MAX_REQUESTS', '
 EMAIL_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('EMAIL_RATE_LIMIT_WINDOW_SECONDS', '3600'))
 
 # Analytics: admin token for GET /analytics/summary and rate limit for POST /analytics/track.
+VIEW_COUNTER_BACKEND = os.getenv('VIEW_COUNTER_BACKEND', 'memory')
+GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT')
+if VIEW_COUNTER_BACKEND not in ('memory', 'firestore'):
+    raise ValueError('VIEW_COUNTER_BACKEND must be memory or firestore')
+
 ANALYTICS_ADMIN_TOKEN = os.getenv('ANALYTICS_ADMIN_TOKEN')
 ANALYTICS_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_MAX_REQUESTS', '30'))
 ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW_SECONDS', '60'))

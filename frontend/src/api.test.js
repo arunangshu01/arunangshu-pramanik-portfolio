@@ -90,6 +90,32 @@ describe("sendContactEmail", () => {
   });
 });
 
+describe("public view statistics", () => {
+  test("reads counts without incrementing or using an admin token", async () => {
+    fetch.mockResolvedValue(jsonResponse(200, { total_views: 9, viewing_now: 1 }));
+    const signal = new AbortController().signal;
+    await expect(api.getViewStats(signal)).resolves.toEqual({ total_views: 9, viewing_now: 1 });
+    expect(fetch).toHaveBeenCalledWith(`${BASE}/analytics/views`, { cache: "no-store", signal });
+  });
+
+  test("posts only anonymous IDs and forwards cancellation", async () => {
+    fetch.mockResolvedValue(jsonResponse(200, { total_views: 1, viewing_now: 1 }));
+    const signal = new AbortController().signal;
+    await api.updateViewPresence("view-id", "session-id", signal);
+    expect(fetch).toHaveBeenCalledWith(`${BASE}/analytics/views`, {
+      cache: "no-store", method: "POST", signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ view_id: "view-id", session_id: "session-id" }),
+    });
+  });
+
+  test("preserves rate-limit errors for polling backoff", async () => {
+    fetch.mockResolvedValue(jsonResponse(429, {}));
+    await expect(api.getViewStats()).rejects.toMatchObject({ status: 429 });
+  });
+});
+
+
 describe("helpers", () => {
   test("awardPeriods normalizes string and array", () => {
     expect(api.awardPeriods({ timeline_period: "March 2020" })).toEqual(["March 2020"]);

@@ -49,6 +49,8 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | POST | `/send_email` | Contact form → email (multipart form, rate-limited) |
 | POST | `/analytics/track` | Record a frontend event (JSON body, rate-limited) |
 | GET | `/analytics/summary` | Aggregated event counts (admin token required) |
+| GET | `/analytics/views` | Public aggregate total and estimated active sessions |
+| POST | `/analytics/views` | Register a view or heartbeat with anonymous UUIDs |
 
 ---
 
@@ -350,7 +352,32 @@ Returns aggregated analytics. **Protected** - requires the `X-Admin-Token` heade
 - `401` - missing/wrong `X-Admin-Token`
 - `503` - `ANALYTICS_ADMIN_TOKEN` not configured on the server (endpoint disabled)
 
-⚠️ Data is **in-memory only** - it resets on every restart/redeploy. Render's free tier spins down on inactivity, so treat numbers as approximate. If you need durable analytics, this is the same Redis-upgrade path as the rate limiter.
+⚠️ This private event summary is **in-memory only** and resets on every restart/redeploy. The public view counter below is separate and uses durable Firestore storage in production.
+
+### `GET /analytics/views` and `POST /analytics/views`
+
+Public endpoints; no admin token is needed or returned. GET reads aggregates without registering a view. POST accepts only the following JSON fields:
+
+```json
+{
+  "view_id": "44afd753-43e4-4dd6-b1ec-6639c36d15cb",
+  "session_id": "51cbd573-a477-4147-ac38-96e01f877080"
+}
+```
+
+Both fields must be UUIDs; extra fields are rejected. Keep `view_id` stable for one page load and retries; create a new one on reload. Reuse `session_id` in the same browser-tab session. A visible page sends a heartbeat every 30 seconds; stop in hidden tabs.
+
+Both return `200` with aggregate data only:
+
+```json
+{ "total_views": 1234, "viewing_now": 2 }
+```
+
+`total_views` counts page loads, not unique people. `viewing_now` estimates anonymous sessions seen in the last 90 seconds. Responses use `Cache-Control: no-store`; a 10-second backend Firestore aggregation cache limits read costs. Counts are approximate and can be inflated by bots; they are not an authentication, billing, or security signal.
+
+Firestore atomically deduplicates view IDs and retains the total across restarts. Anonymous view/session documents store timestamps and UUIDs only and expire after 24 hours of inactivity via TTL; TTL cleanup can be delayed and is not used to determine activity. Very old deduplication IDs may count again after expiry. The private `/analytics/track` and `/analytics/summary` behavior is unchanged. Local development defaults to an independent memory store.
+
+Errors: `422` for invalid IDs/extra fields, `429` for more than 10 presence POSTs/minute per IP (best-effort process-local limit, `Retry-After: 60`), and `503` when storage is unavailable. A storage failure never substitutes a false zero or silently switches to memory.
 
 ## Error responses
 
