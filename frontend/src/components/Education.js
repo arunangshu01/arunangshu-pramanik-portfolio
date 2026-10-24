@@ -2,7 +2,7 @@ import Section from "./Section";
 
 export default function Education({ state }) {
   return (
-    <Section id="education" num="04" eyebrow="background" title="Education" state={state}>
+    <Section id="education" num="05" eyebrow="background" title="Education" state={state}>
       {(ed) => (
         <div className="glass-card max-w-2xl p-5 sm:p-6">
           <h3 className="text-lg font-bold text-white sm:text-xl">{ed.degree}</h3>

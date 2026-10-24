@@ -35,7 +35,7 @@ export default function Contact() {
       transition={{ duration: 0.6 }}
     >
       <p className="mb-2 font-mono text-sm uppercase tracking-widest text-accent">
-        <span className="mr-3 text-slate-600">06 /</span>
+        <span className="mr-3 text-slate-600">07 /</span>
         let's talk
       </p>
       <h2 className="section-title mb-10">

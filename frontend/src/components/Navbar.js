@@ -6,6 +6,7 @@ import { RESUME_VIEW_URL } from "../api";
 const LINKS = [
   ["About", "#about"],
   ["Skills", "#skills"],
+  ["Projects", "#projects"],
   ["Experience", "#experience"],
   ["Education", "#education"],
   ["Awards", "#awards"],

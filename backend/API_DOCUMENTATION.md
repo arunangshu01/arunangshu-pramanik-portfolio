@@ -299,6 +299,12 @@ Successful submissions are counted in analytics under the `contact_submit` event
 
 ---
 
+### `GET /projects`
+
+Returns an array of projects in the order maintained in `backend/information/projects.json`. Fields: `id`, `name`, `description`, `technologies`, nullable `live_url`/`github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, nullable `image`, and `preview_enabled` (default `false`). IDs must be unique slugs; links must be HTTP(S), and images must be root-relative public asset paths. An empty array is valid; malformed project data returns a safe `422` response.
+
+The frontend shows a static screenshot by default. For trusted external HTTPS projects with `preview_enabled: true`, visitors may explicitly load a sandboxed iframe. No URL scraping or screenshot generation occurs on API requests. Voice input and sign-in may require opening the full project. New iframe requests contact the project host only after visitors choose to load it.
+
 ### `POST /analytics/track`
 
 Records a frontend event (page view, button click, section visit, etc.) in the in-memory tracker. Unlike `/send_email`, this endpoint takes a **JSON body**.

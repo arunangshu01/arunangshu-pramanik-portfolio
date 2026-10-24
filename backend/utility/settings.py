@@ -35,6 +35,7 @@ ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')
 experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.json')
+projects_file = os.path.join(f'{BASE_DIR.parent}/information', 'projects.json')
 skills_file = os.path.join(f'{BASE_DIR.parent}/information', 'skills.json')
 education_details_file = os.path.join(f'{BASE_DIR.parent}/information', 'education_details.json')
 profile_summary_file = os.path.join(f'{BASE_DIR.parent}/information', 'profile_summary.json')

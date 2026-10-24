@@ -17,7 +17,7 @@ def extract_data_from_json_file(json_file_path: str) -> Any:
         raise FileNotFoundError(error_message)
     except JSONDecodeError as jde:
         error_message = f"Error decoding JSON from the File: {json_file_path}. Extras: {jde}"
-        raise JSONDecodeError(error_message)
+        raise JSONDecodeError(error_message, jde.doc, jde.pos) from jde
     except Exception as e:
         error_message = f"An Error Occurred: {e}."
         raise Exception(error_message)
