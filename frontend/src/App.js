@@ -8,10 +8,12 @@ import {
   getEducationDetails,
   getAwards,
   getProjects,
+  getDashboard,
   trackEvent,
   trackOnce,
 } from "./api";
 import BootSequence from "./components/BootSequence";
+import CommandPalette from "./components/CommandPalette";
 import MusicToggle from "./components/MusicToggle";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -22,6 +24,7 @@ import Awards from "./components/Awards";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Projects from "./components/Projects";
+import Stats from "./components/Stats";
 
 // Skills carries ~80 KB of brand icons; split it out of the critical bundle.
 const Skills = lazy(() => import("./components/Skills"));
@@ -34,6 +37,7 @@ function App() {
   const education = useApi(getEducationDetails);
   const awards = useApi(getAwards);
   const projects = useApi(getProjects);
+  const dashboard = useApi(getDashboard);
   const [light, setLight] = useState(
     () => localStorage.getItem("theme") === "light"
   );
@@ -60,6 +64,10 @@ function App() {
       </div>
 
       <BootSequence />
+      <CommandPalette info={info.data} light={light} onToggleTheme={() => {
+          trackEvent("theme_toggle", { theme: light ? "dark" : "light", source: "palette" });
+          setLight((v) => !v);
+        }} />
       <MusicToggle />
       <Navbar name={info.data?.name} light={light} onToggleTheme={() => {
           trackEvent("theme_toggle", { theme: light ? "dark" : "light" });
@@ -82,6 +90,7 @@ function App() {
         <Education state={education} />
         <Awards state={awards} />
         <Contact />
+        <Stats state={dashboard} />
       </main>
       <Footer info={info.data} />
     </div>

@@ -29,6 +29,28 @@ test("loads a sandboxed demo only on request and unloads on close", () => {
   expect(document.querySelector("iframe")).toBeNull();
 });
 
+test("opens and closes the case study overlay", () => {
+  renderProject({
+    case_study: {
+      problem: "The problem.", approach: ["Step one."],
+      decisions: [{ title: "Chose X", detail: "Because Y." }],
+      challenges: ["Hard thing."], outcome: "It worked.",
+    },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /Read case study/ }));
+  const dialog = screen.getByRole("dialog", { name: /Case study: M\.A\.H\.A\.K\.A\.L\./ });
+  expect(dialog).toBeInTheDocument();
+  expect(screen.getByText("The problem.")).toBeInTheDocument();
+  expect(screen.getByText("Because Y.")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Close case study" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+test("hides the case study action when no study exists", () => {
+  renderProject();
+  expect(screen.queryByRole("button", { name: /Read case study/ })).not.toBeInTheDocument();
+});
+
 test("supports private projects and image failure without broken actions", () => {
   renderProject({ live_url: null, github_url: null });
   expect(screen.queryByRole("link")).not.toBeInTheDocument();
