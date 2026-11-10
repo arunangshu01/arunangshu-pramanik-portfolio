@@ -77,13 +77,14 @@ def test_concurrent_retries_count_once():
     assert store.stats(now=100) == {"total_views": 1, "viewing_now": 1}
 
 
-@pytest.mark.parametrize("existing,write_count", [(False, 3), (True, 2)])
+@pytest.mark.parametrize("existing,write_count", [(False, 4), (True, 2)])
 def test_firestore_transaction_only_increments_new_views(monkeypatch, existing, write_count):
     from google.cloud import firestore
     store = FirestoreViewCounter()
     store.client = MagicMock()
-    view, session, total = MagicMock(), MagicMock(), MagicMock()
-    refs = {"portfolio_views": view, "portfolio_sessions": session, "portfolio_stats": total}
+    view, session, total, daily = MagicMock(), MagicMock(), MagicMock(), MagicMock()
+    refs = {"portfolio_views": view, "portfolio_sessions": session,
+            "portfolio_stats": total, "portfolio_daily": daily}
     store.client.collection.side_effect = lambda name: MagicMock(document=MagicMock(return_value=refs[name]))
     view.get.return_value.exists = existing
     transaction = store.client.transaction.return_value
@@ -97,8 +98,42 @@ def test_firestore_transaction_only_increments_new_views(monkeypatch, existing, 
     assert (writes[session]["expires_at"] - writes[session]["last_seen"]).total_seconds() == 86400
     if existing:
         assert total not in writes
+        assert daily not in writes
     else:
         assert isinstance(writes[total]["total_views"], firestore.Increment)
+        assert isinstance(writes[daily]["views"], firestore.Increment)
+        assert "expires_at" in writes[daily]
+
+
+def test_memory_counter_dashboard_and_events():
+    counter = MemoryViewCounter()
+    counter.heartbeat(VIEW, SESSION)
+    counter.heartbeat(VIEW, SESSION)
+    counter.record_event("page_view")
+    counter.record_event("project_click", "doppel")
+    counter.record_event("project_case_study", "doppel")
+    counter.record_event("bad event!")
+    counter.record_event("project_click", "bad project!")
+    board = counter.dashboard()
+    assert board["total_views"] == 1
+    assert len(board["daily_views"]) == 14
+    assert board["daily_views"][-1]["views"] == 1
+    assert board["events"] == {"project_click": 2, "page_view": 1, "project_case_study": 1}
+    assert board["projects"] == {"doppel": {"clicks": 1, "case_studies": 1}}
+
+
+def test_dashboard_endpoint_returns_aggregates(client, api_base, counter):
+    client.post(f"{api_base}/analytics/views", json={"view_id": VIEW, "session_id": SESSION})
+    client.post(f"{api_base}/analytics/track",
+                json={"event": "project_click", "metadata": {"project": "mahakal", "destination": "live"}})
+    response = client.get(f"{api_base}/analytics/dashboard")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_views"] == 1
+    assert body["events"]["project_click"] == 1
+    assert body["projects"]["mahakal"]["clicks"] == 1
+    assert len(body["daily_views"]) == 14
+    assert response.headers["cache-control"] == "no-store"
 
 
 def test_firestore_aggregate_reads_are_cached(monkeypatch):

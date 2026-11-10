@@ -6,7 +6,7 @@ import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import { RESUME_DOWNLOAD_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 
-const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Contact"];
+const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Contact", "Stats"];
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
 const SOCIAL_LABELS = { github: "GitHub", linkedin: "LinkedIn", leetcode: "LeetCode" };
 

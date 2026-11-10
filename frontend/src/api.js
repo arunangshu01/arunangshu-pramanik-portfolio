@@ -38,6 +38,7 @@ async function viewRequest(options) {
 }
 
 export const getViewStats = (signal) => viewRequest({ signal });
+export const getDashboard = () => get("/analytics/dashboard");
 export const updateViewPresence = (viewId, sessionId, signal) => viewRequest({
   method: "POST",
   signal,

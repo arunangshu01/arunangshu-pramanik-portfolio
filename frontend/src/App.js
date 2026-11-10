@@ -8,6 +8,7 @@ import {
   getEducationDetails,
   getAwards,
   getProjects,
+  getDashboard,
   trackEvent,
   trackOnce,
 } from "./api";
@@ -23,6 +24,7 @@ import Awards from "./components/Awards";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Projects from "./components/Projects";
+import Stats from "./components/Stats";
 
 // Skills carries ~80 KB of brand icons; split it out of the critical bundle.
 const Skills = lazy(() => import("./components/Skills"));
@@ -35,6 +37,7 @@ function App() {
   const education = useApi(getEducationDetails);
   const awards = useApi(getAwards);
   const projects = useApi(getProjects);
+  const dashboard = useApi(getDashboard);
   const [light, setLight] = useState(
     () => localStorage.getItem("theme") === "light"
   );
@@ -87,6 +90,7 @@ function App() {
         <Education state={education} />
         <Awards state={awards} />
         <Contact />
+        <Stats state={dashboard} />
       </main>
       <Footer info={info.data} />
     </div>

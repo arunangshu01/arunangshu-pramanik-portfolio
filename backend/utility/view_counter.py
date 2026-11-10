@@ -1,4 +1,6 @@
+import re
 import time
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from functools import cached_property
 from threading import Lock
@@ -6,6 +8,22 @@ from utility.settings import VIEW_COUNTER_BACKEND, GOOGLE_CLOUD_PROJECT
 
 ACTIVE_SECONDS = 90
 RETENTION_SECONDS = 86400
+DAILY_RETENTION_DAYS = 90
+DASHBOARD_DAYS = 14
+EVENT_KEY_PATTERN = re.compile(r"[a-z0-9_]{1,64}")
+PROJECT_KEY_PATTERN = re.compile(r"[a-z0-9-]{1,80}")
+PROJECT_EVENT_FIELDS = {
+    "project_click": "clicks",
+    "project_preview": "previews",
+    "project_case_study": "case_studies",
+}
+
+
+def _daily_entries(daily_counts, days=DASHBOARD_DAYS, now=None):
+    today = (now or datetime.now(timezone.utc)).date()
+    return [{"date": (today - timedelta(days=offset)).isoformat(),
+             "views": daily_counts.get((today - timedelta(days=offset)).isoformat(), 0)}
+            for offset in range(days - 1, -1, -1)]
 
 
 class MemoryViewCounter:
@@ -13,6 +31,9 @@ class MemoryViewCounter:
         self._total = 0
         self._views = {}
         self._sessions = {}
+        self._daily = Counter()
+        self._events = Counter()
+        self._projects = defaultdict(Counter)
         self._lock = Lock()
 
     def _stats(self, now):
@@ -27,6 +48,7 @@ class MemoryViewCounter:
                 if len(self._views) >= 10000:
                     raise RuntimeError("Local view storage is full")
                 self._total += 1
+                self._daily[datetime.fromtimestamp(now, timezone.utc).date().isoformat()] += 1
             self._views[view_id] = now
             self._sessions[session_id] = now
             return self._stats(now)
@@ -34,6 +56,22 @@ class MemoryViewCounter:
     def stats(self, now=None):
         with self._lock:
             return self._stats(time.time() if now is None else now)
+
+    def record_event(self, event, project=None):
+        if not EVENT_KEY_PATTERN.fullmatch(event):
+            return
+        with self._lock:
+            self._events[event] += 1
+            field = PROJECT_EVENT_FIELDS.get(event)
+            if field and project and PROJECT_KEY_PATTERN.fullmatch(project):
+                self._projects[project][field] += 1
+
+    def dashboard(self):
+        with self._lock:
+            return {**self._stats(time.time()),
+                    "daily_views": _daily_entries(self._daily),
+                    "events": dict(self._events.most_common()),
+                    "projects": {key: dict(counts) for key, counts in self._projects.items()}}
 
 
 class FirestoreViewCounter:
@@ -54,17 +92,46 @@ class FirestoreViewCounter:
         view = self.client.collection("portfolio_views").document(view_id)
         session = self.client.collection("portfolio_sessions").document(session_id)
         total = self.client.collection("portfolio_stats").document("views")
+        daily = self.client.collection("portfolio_daily").document(now.date().isoformat())
 
         @firestore.transactional
         def record(transaction):
             existing = view.get(transaction=transaction, retry=None, timeout=5)
             if not existing.exists:
                 transaction.set(total, {"total_views": firestore.Increment(1)}, merge=True)
+                transaction.set(daily, {"views": firestore.Increment(1),
+                                        "expires_at": now + timedelta(days=DAILY_RETENTION_DAYS)},
+                                merge=True)
             transaction.set(view, {"expires_at": expires_at})
             transaction.set(session, {"last_seen": now, "expires_at": expires_at})
 
         record(self.client.transaction(max_attempts=3))
         return self.stats()
+
+    def record_event(self, event, project=None):
+        from google.cloud import firestore
+        if not EVENT_KEY_PATTERN.fullmatch(event):
+            return
+        fields = {"events": {event: firestore.Increment(1)}}
+        field = PROJECT_EVENT_FIELDS.get(event)
+        if field and project and PROJECT_KEY_PATTERN.fullmatch(project):
+            fields["projects"] = {project: {field: firestore.Increment(1)}}
+        self.client.collection("portfolio_stats").document("public").set(fields, merge=True)
+
+    def dashboard(self):
+        from google.cloud import firestore
+        result = self.stats()
+        public = self.client.collection("portfolio_stats").document("public").get(retry=None, timeout=5)
+        public_data = public.to_dict() or {}
+        daily_docs = (self.client.collection("portfolio_daily")
+                      .order_by("__name__", direction=firestore.Query.DESCENDING)
+                      .limit(DASHBOARD_DAYS).stream(retry=None, timeout=5))
+        daily_counts = {doc.id: (doc.to_dict() or {}).get("views", 0) for doc in daily_docs}
+        return {**result,
+                "daily_views": _daily_entries(daily_counts),
+                "events": dict(sorted((public_data.get("events") or {}).items(),
+                                      key=lambda item: item[1], reverse=True)),
+                "projects": public_data.get("projects") or {}}
 
     def stats(self):
         from google.cloud.firestore_v1.base_query import FieldFilter

@@ -11,6 +11,7 @@ const LINKS = [
   ["Education", "#education"],
   ["Awards", "#awards"],
   ["Contact", "#contact"],
+  ["Stats", "#stats"],
   ["Resume", RESUME_VIEW_URL, true],
 ];
 

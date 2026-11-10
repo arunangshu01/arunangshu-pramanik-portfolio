@@ -1,7 +1,8 @@
 import secrets
 from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess, ViewPresence, PublicViewStats
+from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess, ViewPresence, \
+    PublicViewStats, PublicDashboard
 from utility.view_counter import view_counter
 from model.base_models_errors import ErrorResponseModel
 from utility.analytics import tracker
@@ -37,6 +38,10 @@ async def track_event(event: AnalyticsEvent, request: Request):
         client=client_ip,
         metadata=event.metadata
     )
+    try:
+        view_counter.record_event(event.event, (event.metadata or {}).get("project"))
+    except Exception:
+        logger.warning(f"Failed to persist public event counter for {event.event}")
     return AnalyticsTrackSuccess(message="Event tracked.").model_dump()
 
 
@@ -79,3 +84,9 @@ def view_presence(event: ViewPresence, request: Request, response: Response):
         return JSONResponse(status_code=429, content={"detail": "Too many presence requests"},
                             headers={"Cache-Control": "no-store", "Retry-After": "60"})
     return _view_stats(lambda: view_counter.heartbeat(str(event.view_id), str(event.session_id)))
+
+
+@router.get('/analytics/dashboard', response_model=PublicDashboard)
+def public_dashboard(response: Response):
+    response.headers["Cache-Control"] = "no-store"
+    return _view_stats(view_counter.dashboard)
