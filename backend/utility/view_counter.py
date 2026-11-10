@@ -119,14 +119,17 @@ class FirestoreViewCounter:
         self.client.collection("portfolio_stats").document("public").set(fields, merge=True)
 
     def dashboard(self):
-        from google.cloud import firestore
         result = self.stats()
         public = self.client.collection("portfolio_stats").document("public").get(retry=None, timeout=5)
         public_data = public.to_dict() or {}
-        daily_docs = (self.client.collection("portfolio_daily")
-                      .order_by("__name__", direction=firestore.Query.DESCENDING)
-                      .limit(DASHBOARD_DAYS).stream(retry=None, timeout=5))
-        daily_counts = {doc.id: (doc.to_dict() or {}).get("views", 0) for doc in daily_docs}
+        today = datetime.now(timezone.utc).date()
+        collection = self.client.collection("portfolio_daily")
+        daily_counts = {}
+        for offset in range(DASHBOARD_DAYS):
+            date = (today - timedelta(days=offset)).isoformat()
+            doc = collection.document(date).get(retry=None, timeout=5)
+            if doc.exists:
+                daily_counts[date] = (doc.to_dict() or {}).get("views", 0)
         return {**result,
                 "daily_views": _daily_entries(daily_counts),
                 "events": dict(sorted((public_data.get("events") or {}).items(),
