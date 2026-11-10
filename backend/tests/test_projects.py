@@ -19,6 +19,8 @@ def test_projects_endpoint_serves_mahakal(client, api_base):
     assert data[0]["highlights"]
     assert data[0]["image"] == "/mahakal-preview.png"
     assert data[0]["preview_enabled"] is True
+    assert data[0]["case_study"]["problem"]
+    assert data[0]["case_study"]["decisions"]
 
 
 def test_project_links_can_be_absent_and_order_is_preserved(client, api_base, tmp_path, monkeypatch):
@@ -38,6 +40,9 @@ def test_project_links_can_be_absent_and_order_is_preserved(client, api_base, tm
     {"image": "//untrusted.test/image.png"}, {"image": "data:image/svg+xml,test"},
     {"image": "/\\untrusted.test/image.png"}, {"status": "unknown"},
     {"id": "unsafe id"}, {"technologies": []},
+    {"case_study": {"problem": "x" * 1001, "approach": ["ok"]}},
+    {"case_study": {"problem": "ok", "approach": []}},
+    {"case_study": {"problem": "ok", "approach": ["a"], "unknown": 1}},
 ])
 def test_project_validation(changes):
     with pytest.raises(ValidationError):

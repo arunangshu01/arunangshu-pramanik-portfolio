@@ -12,6 +12,7 @@ import {
   trackOnce,
 } from "./api";
 import BootSequence from "./components/BootSequence";
+import CommandPalette from "./components/CommandPalette";
 import MusicToggle from "./components/MusicToggle";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -60,6 +61,10 @@ function App() {
       </div>
 
       <BootSequence />
+      <CommandPalette info={info.data} light={light} onToggleTheme={() => {
+          trackEvent("theme_toggle", { theme: light ? "dark" : "light", source: "palette" });
+          setLight((v) => !v);
+        }} />
       <MusicToggle />
       <Navbar name={info.data?.name} light={light} onToggleTheme={() => {
           trackEvent("theme_toggle", { theme: light ? "dark" : "light" });

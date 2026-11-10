@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { FiCode, FiExternalLink, FiGithub, FiPlay, FiX } from "react-icons/fi";
+import { FiBookOpen, FiCode, FiExternalLink, FiGithub, FiPlay, FiX } from "react-icons/fi";
 import Section from "./Section";
+import CaseStudy from "./CaseStudy";
 import { trackEvent } from "../api";
 
 function safeUrl(value) {
@@ -14,6 +15,7 @@ function safeUrl(value) {
 
 function ProjectCard({ project }) {
   const [showDemo, setShowDemo] = useState(false);
+  const [showStudy, setShowStudy] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const live = safeUrl(project.live_url);
   const github = safeUrl(project.github_url);
@@ -87,8 +89,13 @@ function ProjectCard({ project }) {
             }}>{showDemo ? <FiX aria-hidden="true" /> : <FiPlay aria-hidden="true" />}
             {showDemo ? "Close live preview" : "Load live preview"}
           </button>}
+          {project.case_study && <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-edge px-5 py-3 transition-colors hover:border-accent hover:text-accent"
+            onClick={() => { trackEvent("project_case_study", { project: project.id }); setShowStudy(true); }}>
+            <FiBookOpen aria-hidden="true" /> Read case study</button>}
         </div>
       </div>
+      {showStudy && project.case_study &&
+        <CaseStudy project={project} live={live} github={github} onClose={() => setShowStudy(false)} />}
     </article>
   );
 }

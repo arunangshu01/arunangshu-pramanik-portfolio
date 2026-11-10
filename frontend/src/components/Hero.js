@@ -16,6 +16,8 @@ const SOCIAL_LABELS = {
   leetcode: "LeetCode",
 };
 
+const NOW_STATUS = "building doppel - a mock data API generator · open to senior & lead data roles";
+
 const fadeUp = (delay) => ({
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
@@ -92,6 +94,14 @@ export default function Hero({ info, summary }) {
             {info.location.city}, {info.location.state} · {info.location.country}
           </motion.div>
         )}
+
+        <motion.p
+          {...fadeUp(0.2)}
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-4 py-1.5 font-mono text-xs text-slate-400"
+        >
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" />
+          now // {NOW_STATUS}
+        </motion.p>
 
         <motion.div
           {...fadeUp(0.55)}

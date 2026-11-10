@@ -16,7 +16,27 @@
     "status": "live",
     "featured": true,
     "image": "/mahakal-preview.png",
-    "preview_enabled": true
+    "preview_enabled": true,
+    "case_study": {
+      "problem": "Personal AI assistants usually live behind closed products. I wanted a JARVIS-style assistant I fully controlled: voice-first, with persistent memory, tool calling, and a provider setup that would not fall over when a free-tier LLM hit its rate limit.",
+      "approach": [
+        "FastAPI backend orchestrating LLM calls, speech-to-text, text-to-speech, and tool execution behind a single streaming endpoint.",
+        "React + Vite frontend with a sci-fi HUD, live diagnostics, streaming replies, and a music player.",
+        "Firestore for conversation history and long-term memory, keyed by Google sign-in or a guest identity.",
+        "Keyless GitHub Actions pipeline deploying to Cloud Run and Firebase Hosting in a dedicated GCP project."
+      ],
+      "decisions": [
+        {"title": "Groq primary with Gemini fallback", "detail": "Groq gives near-instant inference on GPT-OSS 120B and hosted Whisper, but free-tier limits are real. Every LLM call wraps the primary provider and falls back to Gemini on failure or rate limiting, so the assistant keeps answering instead of erroring."},
+        {"title": "Guest sessions that migrate on sign-in", "detail": "Letting people try the assistant before signing in improves the demo. Guests get a message budget; when they authenticate with Google, their Firestore conversation history is migrated to the permanent identity rather than discarded."},
+        {"title": "Firestore over a relational store", "detail": "Conversation and memory documents are write-simple and read-heavy with no joins, so a document database keeps the data layer at zero operational cost on the free tier."}
+      ],
+      "challenges": [
+        "Streaming voice replies while keeping Whisper transcription latency low required careful chunking of STT, LLM, and TTS stages.",
+        "Merging guest history into an authenticated account without duplicating or reordering messages.",
+        "Keeping a fully themed HUD responsive on mobile while the diagnostics panels animate."
+      ],
+      "outcome": "A live, publicly accessible assistant at mahakal-ai.web.app that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
+    }
   },
   {
     "id": "doppel",
@@ -35,6 +55,26 @@
     "status": "live",
     "featured": true,
     "image": "/doppel-preview.png",
-    "preview_enabled": true
+    "preview_enabled": true,
+    "case_study": {
+      "problem": "Frontend and QA work routinely stalls waiting for a real backend. Existing fake-API tools return placeholder gibberish, lack relationships between resources, and cannot reproduce the same dataset twice.",
+      "approach": [
+        "A schema language in plain JSON: resources, field types, row counts, constraints, and ref() links between resources.",
+        "A deterministic generator built on Faker so the same seed always produces the same dataset, across five locales.",
+        "Dynamic FastAPI routes per dataset with pagination, exact-match filtering, sorting, and auto-generated OpenAPI docs.",
+        "A React playground with a schema editor, Table/JSON response explorer, cURL copying, and starter templates."
+      ],
+      "decisions": [
+        {"title": "Seeded generation over random-on-request", "detail": "Deterministic output means two developers, or a developer and a CI run, see identical data. The seed lives in the schema itself, so sharing a schema reproduces an exact API."},
+        {"title": "Isolated playgrounds, no accounts", "detail": "Generating an API creates an isolated per-user playground instead of requiring sign-up, keeping the demo zero-friction. A read-only public demo gives visitors instant access while bounding abuse."},
+        {"title": "Bounded request simulation", "detail": "Optional delay, HTTP error, and empty-list simulation let developers test loading and failure states against the mock before pointing the same code at production."}
+      ],
+      "challenges": [
+        "Resolving ref() relationships so foreign keys always point at rows that actually exist, regardless of generation order.",
+        "Validating user schemas safely in a public app without executing arbitrary input.",
+        "Keeping the workbench drafts (imports, template and locale changes) from clobbering a working API until generation succeeds."
+      ],
+      "outcome": "A public tool at doppel-app.web.app that turns a JSON schema into a realistic, relational, reproducible REST API in seconds, deployed keylessly to Cloud Run and Firebase Hosting in its own GCP project."
+    }
   }
 ]

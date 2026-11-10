@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiMenu, FiX } from "react-icons/fi";
+import { FiCommand, FiMenu, FiX } from "react-icons/fi";
 import { RESUME_VIEW_URL } from "../api";
 
 const LINKS = [
@@ -63,6 +63,15 @@ export default function Navbar({ name, light, onToggleTheme }) {
               </a>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("open-palette"))}
+            aria-label="Open command palette"
+            title="Command palette (Ctrl/⌘+K)"
+            className="ml-1 hidden items-center gap-1.5 rounded-lg border border-edge px-2.5 py-1.5 font-mono text-xs text-slate-400 transition-colors hover:border-accent/60 hover:text-accent sm:flex"
+          >
+            <FiCommand aria-hidden="true" /> K
+          </button>
           <button
             type="button"
             onClick={onToggleTheme}

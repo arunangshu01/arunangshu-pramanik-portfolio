@@ -2,6 +2,21 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, RootModel, field_validator
 
 
+class CaseStudyDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str = Field(min_length=1, max_length=120)
+    detail: str = Field(min_length=1, max_length=800)
+
+
+class CaseStudy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    problem: str = Field(min_length=1, max_length=1000)
+    approach: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(min_length=1, max_length=8)
+    decisions: list[CaseStudyDecision] = Field(default_factory=list, max_length=8)
+    challenges: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(default_factory=list, max_length=6)
+    outcome: str | None = Field(default=None, max_length=800)
+
+
 class Project(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str = Field(min_length=1, max_length=80, pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
@@ -15,6 +30,7 @@ class Project(BaseModel):
     featured: bool = False
     image: str | None = Field(default=None, max_length=500)
     preview_enabled: bool = False
+    case_study: CaseStudy | None = None
 
     @field_validator('image')
     @classmethod
