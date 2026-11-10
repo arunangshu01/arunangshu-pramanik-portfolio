@@ -16,5 +16,5 @@ class ProjectsGenerator:
             logger.warning('Project information could not be loaded or validated')
             detail = ErrorResponseModel(error_message='Project information is currently unavailable.',
                                         error_type='ProjectDataError')
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                                 detail=detail.model_dump())
