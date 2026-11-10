@@ -93,4 +93,4 @@ class PersonalInformationGenerator:
                 error_message=error_message,
                 error_type=type(e).__name__
             )
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=error_detail.model_dump())
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=error_detail.model_dump())
