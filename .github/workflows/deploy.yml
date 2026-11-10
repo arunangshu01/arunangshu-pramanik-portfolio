@@ -32,7 +32,9 @@ jobs:
        github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: production
+    environment:
+      name: production
+      url: https://arunangshu-pramanik-portfolio.web.app
     permissions:
       contents: read
       id-token: write
