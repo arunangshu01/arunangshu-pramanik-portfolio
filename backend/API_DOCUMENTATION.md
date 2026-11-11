@@ -263,7 +263,7 @@ Identical file, but served with `Content-Disposition: attachment` - the browser 
 
 **Errors (both resume endpoints)**
 
-- `404` - `{ "detail": { "error_message": "...", "error_type": "FileNotFoundError" } }` when the PDF isn't on the server. For `fetch()`-based callers, check `res.headers.get("content-type")` before reading the body as `blob()` vs `json()`.
+- `404` - `{ "detail": { "error_message": "...", "error_type": "ResumeUnavailable" } }` when the PDF isn't on the server. For `fetch()`-based callers, check `res.headers.get("content-type")` before reading the body as `blob()` vs `json()`.
 
 ---
 
@@ -271,15 +271,15 @@ Identical file, but served with `Content-Disposition: attachment` - the browser 
 
 Sends a contact-form email through the Brevo transactional email API. The request waits for Brevo to accept the email, so a `201` means it was handed off successfully and a `500` means it was not.
 
-**Rate limit:** 3 requests/hour per client IP (configured via `EMAIL_RATE_LIMIT_MAX_REQUESTS` / `EMAIL_RATE_LIMIT_WINDOW_SECONDS` env vars). The check happens *before* the email is sent, so a rejected request consumes no Brevo quota. Note the limiter is in-memory - it resets on app restart/redeploy and is not shared across multiple instances.
+**Rate limit:** 3 requests/hour per client IP and 20/hour across all clients (configured via `EMAIL_RATE_LIMIT_MAX_REQUESTS` / `EMAIL_RATE_LIMIT_WINDOW_SECONDS` / `EMAIL_RATE_LIMIT_GLOBAL_MAX_REQUESTS` env vars). The client IP comes from the `X-Forwarded-For` entry selected by `CLIENT_IP_PROXY_HOPS`, never the client-written leftmost entry. The check happens *before* the email is sent, so a rejected request consumes no Brevo quota. Note the limiter is in-memory - it resets on app restart/redeploy and is not shared across multiple instances.
 
 **Request** - `multipart/form-data` or `application/x-www-form-urlencoded` (NOT JSON)
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `name` | string | yes | Sender's name |
-| `email` | string | yes | Must be a valid email; becomes the reply-to |
-| `message` | string | yes | Message body |
+| `name` | string | yes | Sender's name; 1-100 chars after trimming, single line |
+| `email` | string | yes | Must be a valid email (≤254 chars); becomes the reply-to |
+| `message` | string | yes | Message body; 1-5000 chars after trimming |
 
 **Response `201`** - `SendMessageSuccess`
 
@@ -293,7 +293,7 @@ Sends a contact-form email through the Brevo transactional email API. The reques
 
 - `422` - missing/invalid form fields (FastAPI validation shape, see below)
 - `429` - `{ "detail": { "error_message": "...", "error_type": "RateLimitExceeded" } }` when the client IP has exceeded the rate limit. The frontend should surface "please try again later" and **not** retry immediately.
-- `500` - `{ "detail": { "error_message": "...", "error_type": "..." } }` when the email could not be sent (e.g. Brevo rejected the request)
+- `500` - `{ "detail": { "error_message": "...", "error_type": "EmailDeliveryFailed" } }` when the email could not be sent (e.g. Brevo rejected the request); the underlying error is logged, not returned
 
 Successful submissions are counted in analytics under the `contact_submit` event automatically - the frontend does not need to track this itself.
 
@@ -301,7 +301,7 @@ Successful submissions are counted in analytics under the `contact_submit` event
 
 ### `GET /projects`
 
-Returns an array of projects in the order maintained in `backend/information/projects.json`. Fields: `id`, `name`, `description`, `technologies`, nullable `live_url`/`github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, nullable `image`, and `preview_enabled` (default `false`). IDs must be unique slugs; links must be HTTP(S), and images must be root-relative public asset paths. An empty array is valid; malformed project data returns a safe `422` response.
+Returns an array of projects in the order maintained in `backend/information/projects.json`. Fields: `id`, `name`, nullable `duration` (≤60 chars), `description`, nullable `case_study`, `technologies`, nullable `live_url`/`github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, nullable `image`, and `preview_enabled` (default `false`). IDs must be unique slugs; links must be HTTP(S), and images must be root-relative public asset paths. An empty array is valid; malformed project data returns a safe `422` response.
 
 The frontend shows a static screenshot by default. For trusted external HTTPS projects with `preview_enabled: true`, visitors may explicitly load a sandboxed iframe. No URL scraping or screenshot generation occurs on API requests. Voice input and sign-in may require opening the full project. New iframe requests contact the project host only after visitors choose to load it.
 
@@ -313,9 +313,11 @@ Records a frontend event (page view, button click, section visit, etc.) in the i
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `event` | string (1-64 chars) | yes | e.g. `"page_view"`, `"section_view"`, `"project_click"` |
+| `event` | string | yes | One of `page_view`, `section_view`, `cta_click`, `social_click`, `theme_toggle`, `palette_open`, `palette_command`, `music_play`, `project_click`, `project_preview`, `project_case_study` |
 | `page` | string (≤256 chars) | no | Frontend route/path the event came from |
-| `metadata` | object | no | Free-form extra data (keep it small) |
+| `metadata` | object | no | ≤8 keys matching `[a-z_]{1,32}`; values are scalars (strings ≤256 chars). `project` must be a published project ID to count toward public project engagement |
+
+Unknown fields are rejected.
 
 **Response `201`**
 
@@ -325,10 +327,14 @@ Records a frontend event (page view, button click, section visit, etc.) in the i
 
 **Errors**
 
-- `422` - missing/invalid fields
-- `429` - rate limited (default **30 requests/minute** per IP; `ANALYTICS_RATE_LIMIT_*` env vars)
+- `422` - missing/invalid fields, unknown event names, or oversized metadata
+- `429` - rate limited (default **30 requests/minute** per IP and 600/minute across all clients; `ANALYTICS_RATE_LIMIT_*` env vars)
 
-**Server-side events** are tracked automatically with no frontend call needed: `resume_view`, `resume_download`, `contact_submit`.
+**Server-side events** are tracked automatically with no frontend call needed: `resume_view`, `resume_download`, `contact_submit`. They count toward the public dashboard and are rejected if sent to this endpoint.
+
+### `GET /analytics/dashboard`
+
+Public aggregates for the Stats section: `total_views`, `viewing_now`, `daily_views` (last 14 days), `events` (allowlisted names only) and `projects` (published IDs only, with `clicks`, `previews`, `case_studies`). The Firestore snapshot is cached for 30 seconds. Errors: `429` above 30 requests/minute per IP or 600/minute overall (`Retry-After: 60`), `503` when storage is unavailable.
 
 ---
 
@@ -392,11 +398,13 @@ Errors: `422` for invalid IDs/extra fields, `429` for more than 10 presence POST
 ```json
 {
   "detail": {
-    "error_message": "Error: ...",
-    "error_type": "EmptyDataError"
+    "error_message": "Skills information is currently unavailable.",
+    "error_type": "DataUnavailable"
   }
 }
 ```
+
+The message is generic by design; the underlying exception (file paths, validation details) is written to server logs only.
 
 **Request validation errors on POST /send_email** (`422`): standard FastAPI/Pydantic array:
 

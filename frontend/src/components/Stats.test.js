@@ -27,6 +27,11 @@ test("renders aggregate counters, daily bars, events and project engagement", ()
   expect(screen.getByText(/5 clicks · 2 previews · 2 case studies/)).toBeInTheDocument();
 });
 
+test("labels projects with their published names", () => {
+  render(<Stats state={{ data, loading: false }} projectNames={{ doppel: "doppel - Mock API playground" }} />);
+  expect(screen.getByText("doppel - Mock API playground")).toBeInTheDocument();
+});
+
 test("handles sparse data without rendering empty blocks", () => {
   render(<Stats state={{ data: { total_views: 0, viewing_now: 0, daily_views: [], events: {}, projects: {} }, loading: false }} />);
   expect(screen.queryByRole("img", { name: /Daily views/ })).not.toBeInTheDocument();

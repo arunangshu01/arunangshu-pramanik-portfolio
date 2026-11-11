@@ -21,6 +21,7 @@ def test_projects_endpoint_serves_mahakal(client, api_base):
     assert data[0]["preview_enabled"] is True
     assert data[0]["case_study"]["problem"]
     assert data[0]["case_study"]["decisions"]
+    assert all(entry["duration"] for entry in data)
 
 
 def test_project_links_can_be_absent_and_order_is_preserved(client, api_base, tmp_path, monkeypatch):
@@ -39,7 +40,7 @@ def test_project_links_can_be_absent_and_order_is_preserved(client, api_base, tm
     {"live_url": "javascript:alert(1)"}, {"github_url": "file:///etc/passwd"},
     {"image": "//untrusted.test/image.png"}, {"image": "data:image/svg+xml,test"},
     {"image": "/\\untrusted.test/image.png"}, {"status": "unknown"},
-    {"id": "unsafe id"}, {"technologies": []},
+    {"id": "unsafe id"}, {"technologies": []}, {"duration": ""}, {"duration": "x" * 61},
     {"case_study": {"problem": "x" * 1001, "approach": ["ok"]}},
     {"case_study": {"problem": "ok", "approach": []}},
     {"case_study": {"problem": "ok", "approach": ["a"], "unknown": 1}},

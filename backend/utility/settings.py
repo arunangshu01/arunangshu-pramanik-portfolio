@@ -18,9 +18,19 @@ RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
 CORS_ORIGINS = [o.strip() for o in os.getenv(
     'CORS_ORIGINS', 'http://localhost:3000').split(',') if o.strip()]
 
-# Rate limit for the contact-email endpoint (per client IP).
+# Client IP resolution. Unset: not behind a proxy, so X-Forwarded-For is ignored.
+# N: use the entry N positions left of the rightmost one (0 = direct Cloud Run,
+# 1 = behind the Firebase Hosting rewrite). Entries further left are client-controlled.
+_proxy_hops = os.getenv('CLIENT_IP_PROXY_HOPS', '').strip()
+CLIENT_IP_PROXY_HOPS = int(_proxy_hops) if _proxy_hops else None
+if CLIENT_IP_PROXY_HOPS is not None and CLIENT_IP_PROXY_HOPS < 0:
+    raise ValueError('CLIENT_IP_PROXY_HOPS must be a non-negative integer')
+
+# Rate limit for the contact-email endpoint: per client IP, plus a global cap
+# that bounds abuse even if a client manages to vary its apparent IP.
 EMAIL_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('EMAIL_RATE_LIMIT_MAX_REQUESTS', '3'))
 EMAIL_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('EMAIL_RATE_LIMIT_WINDOW_SECONDS', '3600'))
+EMAIL_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('EMAIL_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '20'))
 
 # Analytics: admin token for GET /analytics/summary and rate limit for POST /analytics/track.
 VIEW_COUNTER_BACKEND = os.getenv('VIEW_COUNTER_BACKEND', 'memory')
@@ -31,6 +41,7 @@ if VIEW_COUNTER_BACKEND not in ('memory', 'firestore'):
 ANALYTICS_ADMIN_TOKEN = os.getenv('ANALYTICS_ADMIN_TOKEN')
 ANALYTICS_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_MAX_REQUESTS', '30'))
 ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW_SECONDS', '60'))
+ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '600'))
 
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')

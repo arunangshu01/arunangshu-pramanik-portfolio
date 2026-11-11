@@ -18,3 +18,12 @@ class ProjectsGenerator:
                                         error_type='ProjectDataError')
             raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                                 detail=detail.model_dump())
+
+
+def known_project_ids() -> frozenset[str]:
+    """IDs of the projects currently published; empty if the data can't be loaded."""
+    try:
+        return frozenset(project.id for project in ProjectList.model_validate(get_json_data(projects_file)).root)
+    except (OSError, ValueError):
+        logger.warning('Project IDs could not be loaded for analytics validation')
+        return frozenset()

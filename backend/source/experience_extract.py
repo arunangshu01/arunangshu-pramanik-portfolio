@@ -1,11 +1,7 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
-from json import JSONDecodeError
-from fastapi import status
-from pydantic import ValidationError
-from fastapi import HTTPException
 from model.base_models_experience import Experience, ExperienceList
-from model.base_models_errors import ErrorResponseModel
+from model.base_models_errors import data_unavailable
 from utility.settings import experience_file
 from utility.json_cache import get_json_data
 from utility.logger import Logger
@@ -50,39 +46,6 @@ class ExperienceGenerator:
             self._experience_data = get_json_data(experience_file)
             experience_list = self._format_and_validate_experience_data()
             return experience_list.model_dump()
-        except ValidationError as vde:
-            error_message = f"Error: {vde}"
-            logger.error(error_message)
-            error_detail = ErrorResponseModel(
-                error_message=error_message,
-                error_type=type(vde).__name__
-            )
-        except EmptyDataError as ede:
-            error_message = f"Error: {ede}"
-            logger.error(error_message)
-            error_detail = ErrorResponseModel(
-                error_message=error_message,
-                error_type=type(ede).__name__
-            )
-        except FileNotFoundError as fnfe:
-            error_message = f"Error: {fnfe}"
-            logger.error(error_message)
-            error_detail = ErrorResponseModel(
-                error_message=error_message,
-                error_type=type(fnfe).__name__
-            )
-        except JSONDecodeError as jde:
-            error_message = f"Error: {jde}"
-            logger.error(error_message)
-            error_detail = ErrorResponseModel(
-                error_message=error_message,
-                error_type=type(jde).__name__
-            )
-        except Exception as e:
-            error_message = f"Error: {e}"
-            logger.error(error_message)
-            error_detail = ErrorResponseModel(
-                error_message=error_message,
-                error_type=type(e).__name__
-            )
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=error_detail.model_dump())
+        except Exception as error:
+            logger.error(f"Experience data could not be loaded ({type(error).__name__}: {error})")
+            raise data_unavailable("Experience") from None

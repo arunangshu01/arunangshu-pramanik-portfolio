@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useRef } from "react";
+import { createPortal } from "react-dom";
 import { FiExternalLink, FiGithub, FiX } from "react-icons/fi";
+import { useModal } from "../useModal";
 
 function Section({ title, children }) {
   return (
@@ -24,29 +26,26 @@ function BulletList({ items }) {
 
 export default function CaseStudy({ project, live, github, onClose }) {
   const study = project.case_study;
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+  useModal(dialogRef, onClose, { initialFocusRef: closeRef });
 
-  useEffect(() => {
-    const onKey = (event) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/90 backdrop-blur-sm"
+  // Portal to <body>: the card's backdrop-filter would otherwise become the
+  // containing block for `fixed`, confining the overlay to the card.
+  return createPortal(
+    <div ref={dialogRef} className="fixed inset-0 z-[55] overflow-y-auto bg-ink/90 backdrop-blur-sm"
       role="dialog" aria-modal="true" aria-label={`Case study: ${project.name}`}
       onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6"
+        onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
         <div className="glass-card relative p-6 sm:p-10">
-          <button type="button" onClick={onClose} aria-label="Close case study"
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close case study"
             className="absolute right-4 top-4 rounded-full border border-edge p-2 text-slate-400 transition-colors hover:border-accent hover:text-accent">
             <FiX aria-hidden="true" />
           </button>
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-slate-500">Case study</p>
-          <h3 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">{project.name}</h3>
+          <h3 className="mt-2 pr-10 font-display text-2xl font-bold text-white sm:text-3xl">{project.name}</h3>
+          {project.duration && <p className="mt-2 font-mono text-xs uppercase tracking-widest text-slate-500">{project.duration}</p>}
 
           <Section title="The problem">
             <p className="text-sm leading-relaxed text-slate-300">{study.problem}</p>
@@ -87,6 +86,7 @@ export default function CaseStudy({ project, live, github, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useApi } from "./useApi";
 import {
   getPersonalInfo,
@@ -38,13 +38,17 @@ function App() {
   const awards = useApi(getAwards);
   const projects = useApi(getProjects);
   const dashboard = useApi(getDashboard);
+  const projectNames = useMemo(
+    () => Object.fromEntries((projects.data ?? []).map((project) => [project.id, project.name])),
+    [projects.data]
+  );
   const [light, setLight] = useState(
     () => localStorage.getItem("theme") === "light"
   );
 
   useEffect(() => {
     trackOnce("page_view", "home", {
-      referrer: document.referrer || "direct",
+      referrer: (document.referrer || "direct").slice(0, 256),
       viewport: window.innerWidth < 768 ? "mobile" : window.innerWidth < 1024 ? "tablet" : "desktop",
     });
   }, []);
@@ -90,7 +94,7 @@ function App() {
         <Education state={education} />
         <Awards state={awards} />
         <Contact />
-        <Stats state={dashboard} />
+        <Stats state={dashboard} projectNames={projectNames} />
       </main>
       <Footer info={info.data} />
     </div>

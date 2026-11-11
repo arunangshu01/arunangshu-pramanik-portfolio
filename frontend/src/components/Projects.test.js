@@ -46,6 +46,25 @@ test("opens and closes the case study overlay", () => {
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
 
+test("case study manages focus, scroll lock and Escape", () => {
+  renderProject({ duration: "October 2026 - Present", case_study: { problem: "P.", approach: ["A."] } });
+  expect(screen.getByText("October 2026 - Present")).toBeInTheDocument();
+  const trigger = screen.getByRole("button", { name: /Read case study/ });
+  trigger.focus();
+  fireEvent.click(trigger);
+  const close = screen.getByRole("button", { name: "Close case study" });
+  expect(close).toHaveFocus();
+  expect(document.body.style.overflow).toBe("hidden");
+  const links = screen.getByRole("dialog").querySelectorAll("a[href], button");
+  links[links.length - 1].focus();
+  fireEvent.keyDown(document, { key: "Tab" });
+  expect(close).toHaveFocus();
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(document.body.style.overflow).toBe("");
+  expect(trigger).toHaveFocus();
+});
+
 test("hides the case study action when no study exists", () => {
   renderProject();
   expect(screen.queryByRole("button", { name: /Read case study/ })).not.toBeInTheDocument();
