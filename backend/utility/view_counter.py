@@ -1,17 +1,22 @@
 import re
 import time
 from collections import Counter, defaultdict
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from functools import cached_property
 from threading import Lock
+from model.base_models_analytics import PUBLIC_EVENTS
+from utility.logger import Logger
 from utility.settings import VIEW_COUNTER_BACKEND, GOOGLE_CLOUD_PROJECT
+
+logger = Logger(__name__)
 
 ACTIVE_SECONDS = 90
 RETENTION_SECONDS = 86400
 DAILY_RETENTION_DAYS = 90
 DASHBOARD_DAYS = 14
-EVENT_KEY_PATTERN = re.compile(r"[a-z0-9_]{1,64}")
-PROJECT_KEY_PATTERN = re.compile(r"[a-z0-9-]{1,80}")
+DASHBOARD_CACHE_SECONDS = 30
+PROJECT_KEY_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 PROJECT_EVENT_FIELDS = {
     "project_click": "clicks",
     "project_preview": "previews",
@@ -58,12 +63,12 @@ class MemoryViewCounter:
             return self._stats(time.time() if now is None else now)
 
     def record_event(self, event, project=None):
-        if not EVENT_KEY_PATTERN.fullmatch(event):
+        if event not in PUBLIC_EVENTS:
             return
         with self._lock:
             self._events[event] += 1
             field = PROJECT_EVENT_FIELDS.get(event)
-            if field and project and PROJECT_KEY_PATTERN.fullmatch(project):
+            if field and project and len(project) <= 80 and PROJECT_KEY_PATTERN.fullmatch(project):
                 self._projects[project][field] += 1
 
     def dashboard(self):
@@ -79,6 +84,9 @@ class FirestoreViewCounter:
         self._snapshot = None
         self._snapshot_until = 0
         self._lock = Lock()
+        self._dashboard = None
+        self._dashboard_until = 0
+        self._dashboard_lock = Lock()
 
     @cached_property
     def client(self):
@@ -110,31 +118,36 @@ class FirestoreViewCounter:
 
     def record_event(self, event, project=None):
         from google.cloud import firestore
-        if not EVENT_KEY_PATTERN.fullmatch(event):
+        if event not in PUBLIC_EVENTS:
             return
         fields = {"events": {event: firestore.Increment(1)}}
         field = PROJECT_EVENT_FIELDS.get(event)
-        if field and project and PROJECT_KEY_PATTERN.fullmatch(project):
+        if field and project and len(project) <= 80 and PROJECT_KEY_PATTERN.fullmatch(project):
             fields["projects"] = {project: {field: firestore.Increment(1)}}
         self.client.collection("portfolio_stats").document("public").set(fields, merge=True)
 
     def dashboard(self):
-        result = self.stats()
-        public = self.client.collection("portfolio_stats").document("public").get(retry=None, timeout=5)
-        public_data = public.to_dict() or {}
-        today = datetime.now(timezone.utc).date()
-        collection = self.client.collection("portfolio_daily")
-        daily_counts = {}
-        for offset in range(DASHBOARD_DAYS):
-            date = (today - timedelta(days=offset)).isoformat()
-            doc = collection.document(date).get(retry=None, timeout=5)
-            if doc.exists:
-                daily_counts[date] = (doc.to_dict() or {}).get("views", 0)
-        return {**result,
-                "daily_views": _daily_entries(daily_counts),
-                "events": dict(sorted((public_data.get("events") or {}).items(),
-                                      key=lambda item: item[1], reverse=True)),
-                "projects": public_data.get("projects") or {}}
+        # Public and polled by every visitor: serve a short-lived snapshot so reads
+        # stay bounded no matter how often the endpoint is hit.
+        with self._dashboard_lock:
+            if self._dashboard is not None and time.monotonic() < self._dashboard_until:
+                return deepcopy(self._dashboard)
+            result = self.stats()
+            public = self.client.collection("portfolio_stats").document("public").get(retry=None, timeout=5)
+            public_data = public.to_dict() or {}
+            today = datetime.now(timezone.utc).date()
+            collection = self.client.collection("portfolio_daily")
+            refs = [collection.document((today - timedelta(days=offset)).isoformat())
+                    for offset in range(DASHBOARD_DAYS)]
+            daily_counts = {doc.id: (doc.to_dict() or {}).get("views", 0)
+                            for doc in self.client.get_all(refs, retry=None, timeout=5) if doc.exists}
+            self._dashboard = {**result,
+                               "daily_views": _daily_entries(daily_counts),
+                               "events": dict(sorted((public_data.get("events") or {}).items(),
+                                                     key=lambda item: item[1], reverse=True)),
+                               "projects": public_data.get("projects") or {}}
+            self._dashboard_until = time.monotonic() + DASHBOARD_CACHE_SECONDS
+            return deepcopy(self._dashboard)
 
     def stats(self):
         from google.cloud.firestore_v1.base_query import FieldFilter
@@ -151,3 +164,11 @@ class FirestoreViewCounter:
 
 
 view_counter = FirestoreViewCounter() if VIEW_COUNTER_BACKEND == "firestore" else MemoryViewCounter()
+
+
+def record_public_event(event, project=None):
+    """Best-effort public counter update; analytics must never break the request."""
+    try:
+        view_counter.record_event(event, project)
+    except Exception:
+        logger.warning(f"Failed to persist public event counter for {event}")

@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
     awards_recognitions, send_email, resume, analytics, projects
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE, CORS_ORIGINS
@@ -75,13 +74,9 @@ app.include_router(projects.router, prefix=API_COMMON_PREFIX)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["*"]
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-Admin-Token"],
 )
 
 if __name__ == '__main__':

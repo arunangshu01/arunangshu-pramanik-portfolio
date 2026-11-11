@@ -46,9 +46,12 @@ export default function Contact() {
         onSubmit={onSubmit}
         className="glass-card grid w-full gap-4 p-5 sm:grid-cols-2 sm:p-8"
       >
-        <input name="name" placeholder="Your name" value={form.name} onChange={onChange} required className={field} />
-        <input name="email" type="email" placeholder="Your email" value={form.email} onChange={onChange} required className={field} />
-        <textarea name="message" placeholder="Your message" rows="6" value={form.message} onChange={onChange} required className={`${field} sm:col-span-2`} />
+        <input name="name" placeholder="Your name" aria-label="Your name" autoComplete="name" value={form.name} onChange={onChange}
+          required maxLength={100} className={field} />
+        <input name="email" type="email" placeholder="Your email" aria-label="Your email" autoComplete="email" value={form.email}
+          onChange={onChange} required maxLength={254} className={field} />
+        <textarea name="message" placeholder="Your message" aria-label="Your message" rows="6" value={form.message} onChange={onChange}
+          required maxLength={5000} className={`${field} sm:col-span-2`} />
         <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
           <button type="submit" disabled={status.sending} className="btn-primary">
             {status.sending ? "Sending…" : "Send message"}

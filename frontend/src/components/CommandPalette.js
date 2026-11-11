@@ -5,6 +5,7 @@ import {
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import { RESUME_DOWNLOAD_URL, RESUME_VIEW_URL, trackEvent } from "../api";
+import { useModal } from "../useModal";
 
 const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Contact", "Stats"];
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
@@ -16,17 +17,18 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
   const [index, setIndex] = useState(0);
   const inputRef = useRef(null);
   const listRef = useRef(null);
+  const dialogRef = useRef(null);
+  useModal(dialogRef, () => setOpen(false), { active: open, initialFocusRef: inputRef });
 
   useEffect(() => {
     const onKey = (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen((value) => !value);
-      } else if (event.key === "/" && !/^(INPUT|TEXTAREA)$/.test(event.target.tagName)) {
+      } else if (event.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName) &&
+                 !event.target.isContentEditable) {
         event.preventDefault();
         setOpen(true);
-      } else if (event.key === "Escape") {
-        setOpen(false);
       }
     };
     const onOpen = () => setOpen(true);
@@ -43,12 +45,7 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
       setQuery("");
       setIndex(0);
       trackEvent("palette_open");
-      inputRef.current?.focus();
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
   const actions = useMemo(() => {
@@ -104,9 +101,9 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-ink/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Command palette"
+    <div ref={dialogRef} className="fixed inset-0 z-[60] bg-ink/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Command palette"
       onClick={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
-      <div className="mx-auto mt-24 max-w-xl px-4">
+      <div className="mx-auto mt-16 max-w-xl px-4 sm:mt-24">
         <div className="glass-card overflow-hidden">
           <div className="flex items-center gap-3 border-b border-edge/60 px-4 py-3">
             <FiSearch className="shrink-0 text-slate-500" aria-hidden="true" />
@@ -119,9 +116,10 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               aria-label="Command palette search"
               className="w-full bg-transparent font-mono text-sm text-white outline-none placeholder:text-slate-600"
             />
-            <kbd className="shrink-0 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-slate-500">esc</kbd>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close command palette"
+              className="shrink-0 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-slate-500 transition-colors hover:border-accent/60 hover:text-accent">esc</button>
           </div>
-          <ul ref={listRef} role="listbox" aria-label="Commands" className="max-h-80 overflow-y-auto py-2">
+          <ul ref={listRef} role="listbox" aria-label="Commands" className="max-h-[min(20rem,calc(100dvh-12rem))] overflow-y-auto py-2">
             {filtered.length === 0 && (
               <li className="px-4 py-6 text-center font-mono text-xs text-slate-500">No matching commands</li>
             )}
@@ -145,7 +143,7 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               );
             })}
           </ul>
-          <div className="border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600">
+          <div className="hidden border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600 sm:block">
             ↑↓ navigate · ↵ run · esc close
           </div>
         </div>

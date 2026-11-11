@@ -64,13 +64,16 @@ Open `http://localhost:3000`. The development proxy forwards `/arunangshu_praman
 | `BREVO_API_KEY` | Server-side Brevo API key for contact email |
 | `MAIL_FROM` | Sender address verified in Brevo |
 | `RECEIVER_EMAIL` | Contact-form destination inbox |
+| `CLIENT_IP_PROXY_HOPS` | Which `X-Forwarded-For` entry identifies the client: unset ignores the header (local), `0` = rightmost (direct Cloud Run), `1` = production behind the Firebase Hosting rewrite |
 | `EMAIL_RATE_LIMIT_MAX_REQUESTS` | Contact requests per IP per window, `3` |
 | `EMAIL_RATE_LIMIT_WINDOW_SECONDS` | Contact rate-limit window, `3600` |
+| `EMAIL_RATE_LIMIT_GLOBAL_MAX_REQUESTS` | Contact requests across all clients per window, `20` |
 | `VIEW_COUNTER_BACKEND` | Public counters: `memory` locally (default), `firestore` on Cloud Run |
 | `GOOGLE_CLOUD_PROJECT` | Firestore project ID; production uses `ap-portfolio-241026` |
 | `ANALYTICS_ADMIN_TOKEN` | Secret required in `X-Admin-Token` for analytics summary; unset returns `503` |
 | `ANALYTICS_RATE_LIMIT_MAX_REQUESTS` | Analytics requests per IP per window, `30` |
 | `ANALYTICS_RATE_LIMIT_WINDOW_SECONDS` | Analytics rate-limit window, `60` |
+| `ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS` | Analytics requests across all clients per window, `600` |
 
 ### Frontend environment
 
@@ -98,17 +101,18 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/awards_recognitions` | Awards |
 | GET | `/resume/view` | Inline resume PDF |
 | GET | `/resume/download` | Resume PDF attachment |
-| POST | `/send_email` | Multipart contact form; rate-limited, Brevo delivery in background |
-| POST | `/analytics/track` | JSON analytics event; rate-limited |
+| POST | `/send_email` | Multipart contact form (name ≤100, message ≤5000 chars); rate-limited, waits for Brevo to accept |
+| POST | `/analytics/track` | JSON analytics event from a fixed allowlist; rate-limited |
+| GET | `/analytics/dashboard` | Public Stats section: aggregate views, daily views, event and project counts; cached 30s, rate-limited |
 | GET | `/analytics/summary` | Private in-memory event counts; requires `X-Admin-Token` |
 | GET | `/analytics/views` | Public aggregate total views and estimated active sessions; does not increment |
 | POST | `/analytics/views` | Register a page load or refresh presence with anonymous UUIDs; rate-limited |
 
-Frontend events include page/section views, CTA/social clicks, theme toggles, and music playback. Resume and contact events are recorded server-side.
+Frontend events include page/section views, CTA/social clicks, theme toggles, command palette use, project clicks/previews/case studies, and music playback. `/analytics/track` rejects any other event name, and project counters only accept IDs published in `projects.json`, so visitors cannot add arbitrary entries to the public Stats section. Resume and contact events are recorded server-side only. Data-loading errors return a generic `DataUnavailable` message; details stay in server logs.
 
 ### Projects and previews
 
-Edit `backend/information/projects.json` to add projects; its array order is the display order. Required fields are `id` (unique slug), `name`, `description`, and a non-empty `technologies` array. Optional fields: `live_url`, `github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, `image`, and `preview_enabled`. Use `null` for unavailable URLs/images. Keep screenshots in `frontend/public/` and reference them with a root-relative path such as `/mahakal-preview.png`.
+Edit `backend/information/projects.json` to add projects; its array order is the display order. Required fields are `id` (unique slug), `name`, `description`, and a non-empty `technologies` array. Optional fields: `duration` (e.g. `October 2026 - Present`), `live_url`, `github_url`, `highlights`, `case_study`, `status` (`live`, `in_progress`, `archived`), `featured`, `image`, and `preview_enabled`. Use `null` for unavailable URLs/images. Keep screenshots in `frontend/public/` and reference them with a root-relative path such as `/mahakal-preview.png`.
 
 The Projects section uses a clickable screenshot card, not a live screenshot service or server-side URL scraper. Mahakal's thumbnail was captured from its public, signed-out page; it does not automatically refresh. The optional live demo is an explicitly loaded iframe for trusted external HTTPS sites only. It is sandboxed, sends no referrer, and cannot access the microphone, camera, or geolocation. Sign-in, browser cookie restrictions, and frame-blocking headers may limit embedded features; the full-app link remains available. Set `preview_enabled: false` for projects that should not be embedded. Only enable embeds for sites you trust. A failed/missing screenshot falls back to a branded card.
 
@@ -182,7 +186,9 @@ Setup status on 24 October 2026: required APIs, the `portfolio` Artifact Registr
 
 Automatic deploys require successful CI on a push to `main`. Manual deploys are also restricted to `main` and rerun backend/frontend checks before authentication. Stale main commits are rejected. The `production` environment can add an approval gate. No production secrets or service-account JSON keys belong in GitHub.
 
-Cloud Run uses one Uvicorn worker, scales to zero, and is capped at one instance to limit costs. Public view totals are durable in Firestore. **The private event tracker and rate limits remain process-local and reset on restarts; rolling revisions can overlap.** Do not rely on these limits for strong abuse protection. Durable private event analytics/distributed rate limiting would require a separate storage design. The Cloud Run service is publicly invokable for Firebase Hosting compatibility; CORS does not make the direct API private. Proxy headers are trusted in this managed deployment; do not reuse this container on an untrusted proxy network without revisiting that setting.
+Cloud Run uses one Uvicorn worker, scales to zero, and is capped at one instance to limit costs. Public view totals are durable in Firestore. **The private event tracker and rate limits remain process-local and reset on restarts; rolling revisions can overlap.** Do not rely on these limits for strong abuse protection. Durable private event analytics/distributed rate limiting would require a separate storage design. The Cloud Run service is publicly invokable for Firebase Hosting compatibility; CORS does not make the direct API private.
+
+Uvicorn runs with `--no-proxy-headers`; the app picks the client IP itself from `X-Forwarded-For` using `CLIENT_IP_PROXY_HOPS`. Proxies append to that header, so only the rightmost entries are written by Google's infrastructure and the leftmost ones can be forged. Production uses `1` for the Hosting rewrite (`<forged...>, <client>, <Hosting egress>`). Callers that bypass Hosting and hit the `run.app` URL directly can still choose their per-IP key, so every limiter also has a global cap across all clients, and idle keys are pruned to keep memory bounded. After a deploy, confirm the header shape once: `/analytics/summary` shows the `client` recorded per event, which should be your own public IP.
 
 ### Firestore setup reference
 

@@ -21,6 +21,7 @@ class Project(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str = Field(min_length=1, max_length=80, pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
     name: str = Field(min_length=1, max_length=120)
+    duration: str | None = Field(default=None, min_length=1, max_length=60)
     description: str = Field(min_length=1, max_length=1000)
     technologies: list[Annotated[str, Field(min_length=1, max_length=64)]] = Field(min_length=1, max_length=24)
     live_url: HttpUrl | None = None

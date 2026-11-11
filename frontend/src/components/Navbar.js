@@ -69,9 +69,9 @@ export default function Navbar({ name, light, onToggleTheme }) {
             onClick={() => window.dispatchEvent(new Event("open-palette"))}
             aria-label="Open command palette"
             title="Command palette (Ctrl/⌘+K)"
-            className="ml-1 hidden items-center gap-1.5 rounded-lg border border-edge px-2.5 py-1.5 font-mono text-xs text-slate-400 transition-colors hover:border-accent/60 hover:text-accent sm:flex"
+            className="ml-1 flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-lg border border-edge px-2.5 font-mono text-xs text-slate-400 transition-colors hover:border-accent/60 hover:text-accent"
           >
-            <FiCommand aria-hidden="true" /> K
+            <FiCommand aria-hidden="true" /> <span className="hidden sm:inline">K</span>
           </button>
           <button
             type="button"

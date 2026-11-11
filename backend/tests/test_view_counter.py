@@ -12,7 +12,9 @@ SESSION = "51cbd573-a477-4147-ac38-96e01f877080"
 def counter(monkeypatch):
     store = MemoryViewCounter()
     monkeypatch.setattr(analytics_router, "view_counter", store)
-    analytics_router.view_rate_limiter._hits.clear()
+    analytics_router.view_rate_limiter.clear()
+    analytics_router.dashboard_rate_limiter.clear()
+    analytics_router.rate_limiter.clear()
     return store
 
 
@@ -113,6 +115,7 @@ def test_memory_counter_dashboard_and_events():
     counter.record_event("project_click", "doppel")
     counter.record_event("project_case_study", "doppel")
     counter.record_event("bad event!")
+    counter.record_event("hire_someone_else")
     counter.record_event("project_click", "bad project!")
     board = counter.dashboard()
     assert board["total_views"] == 1
@@ -134,6 +137,62 @@ def test_dashboard_endpoint_returns_aggregates(client, api_base, counter):
     assert body["projects"]["mahakal"]["clicks"] == 1
     assert len(body["daily_views"]) == 14
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_unknown_projects_are_not_counted(client, api_base, counter):
+    client.post(f"{api_base}/analytics/track",
+                json={"event": "project_click", "metadata": {"project": "not-a-real-project"}})
+    body = client.get(f"{api_base}/analytics/dashboard").json()
+    assert body["events"] == {"project_click": 1}
+    assert body["projects"] == {}
+
+
+def test_dashboard_hides_entries_stored_before_the_allowlist(client, api_base, counter):
+    counter._events.update({"hire_someone_else": 9, "page_view": 2})
+    counter._projects["fake-project"]["clicks"] = 4
+    counter._projects["doppel"]["clicks"] = 1
+    body = client.get(f"{api_base}/analytics/dashboard").json()
+    assert body["events"] == {"page_view": 2}
+    assert set(body["projects"]) == {"doppel"}
+
+
+def test_server_side_events_reach_public_counters_but_not_from_clients(client, api_base, counter, monkeypatch):
+    monkeypatch.setattr("utility.view_counter.view_counter", counter)
+    assert client.get(f"{api_base}/resume/download").status_code == 200
+    assert client.post(f"{api_base}/analytics/track", json={"event": "resume_download"}).status_code == 422
+    assert client.get(f"{api_base}/analytics/dashboard").json()["events"] == {"resume_download": 1}
+
+
+def test_dashboard_rate_limit(client, api_base, counter):
+    for _ in range(analytics_router.dashboard_rate_limiter._max_requests):
+        assert client.get(f"{api_base}/analytics/dashboard").status_code == 200
+    response = client.get(f"{api_base}/analytics/dashboard")
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "60"
+
+
+def test_firestore_dashboard_is_cached_and_batches_daily_reads(monkeypatch):
+    from types import SimpleNamespace
+    store = FirestoreViewCounter()
+    store.client = MagicMock()
+    monkeypatch.setattr(store, "stats", lambda: {"total_views": 5, "viewing_now": 1})
+    public = store.client.collection.return_value.document.return_value.get.return_value
+    public.to_dict.return_value = {"events": {"page_view": 3, "section_view": 7}, "projects": {}}
+    today = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).date().isoformat()
+    store.client.get_all.return_value = [SimpleNamespace(id=today, exists=True, to_dict=lambda: {"views": 4}),
+                                         SimpleNamespace(id="2000-01-01", exists=False, to_dict=lambda: None)]
+    clock = [100]
+    monkeypatch.setattr("utility.view_counter.time.monotonic", lambda: clock[0])
+    board = store.dashboard()
+    assert board["daily_views"][-1] == {"date": today, "views": 4}
+    assert list(board["events"]) == ["section_view", "page_view"]
+    board["events"].clear()
+    assert store.dashboard()["events"], "cached snapshot must not be mutable by callers"
+    assert store.client.get_all.call_count == 1
+    assert len(store.client.get_all.call_args.args[0]) == 14
+    clock[0] = 131
+    store.dashboard()
+    assert store.client.get_all.call_count == 2
 
 
 def test_firestore_aggregate_reads_are_cached(monkeypatch):

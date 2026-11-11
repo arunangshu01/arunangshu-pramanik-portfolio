@@ -12,9 +12,9 @@ def mock_brevo(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def reset_limiter():
-    send_email_router.rate_limiter._hits.clear()
+    send_email_router.rate_limiter.clear()
     yield
-    send_email_router.rate_limiter._hits.clear()
+    send_email_router.rate_limiter.clear()
 
 
 def _form():
@@ -59,4 +59,25 @@ def test_send_email_brevo_failure_returns_500(client, api_base, monkeypatch):
     monkeypatch.setattr(SendContactEmail, "send_email", failing_send)
     res = client.post(f"{api_base}/send_email", data=_form())
     assert res.status_code == 500
-    assert res.json()["detail"]["error_type"] == "RuntimeError"
+    assert res.json()["detail"]["error_type"] == "EmailDeliveryFailed"
+    assert "brevo down" not in res.text
+
+
+@pytest.mark.parametrize("changes", [
+    {"name": "x" * 101}, {"message": "x" * 5001}, {"name": "Eve\r\nBcc: spam@example.com"},
+    {"message": "   "}, {"name": ""}, {"email": f"{'a' * 250}@example.com"},
+])
+def test_send_email_rejects_oversized_or_malformed_input(client, api_base, changes):
+    res = client.post(f"{api_base}/send_email", data={**_form(), **changes})
+    assert res.status_code == 422
+
+
+def test_send_email_strips_whitespace(client, api_base, monkeypatch):
+    captured = {}
+
+    def capture(self, sender_name, sender_email, sender_content):
+        captured.update(name=sender_name, message=sender_content)
+    monkeypatch.setattr(SendContactEmail, "__init__", capture)
+    res = client.post(f"{api_base}/send_email", data={**_form(), "name": "  Test User ", "message": " Hi \n"})
+    assert res.status_code == 201
+    assert captured == {"name": "Test User", "message": "Hi"}

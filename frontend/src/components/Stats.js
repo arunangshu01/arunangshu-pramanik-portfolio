@@ -14,9 +14,8 @@ const EVENT_LABELS = {
   palette_open: "Palette opened",
   palette_command: "Palette commands",
   theme_toggle: "Theme toggles",
+  music_play: "Music plays",
 };
-
-const PROJECT_NAMES = { mahakal: "M.A.H.A.K.A.L.", doppel: "doppel" };
 
 const eventLabel = (event) =>
   EVENT_LABELS[event] ?? event.replaceAll("_", " ");
@@ -33,7 +32,7 @@ function StatCard({ label, value, live }) {
   );
 }
 
-export default function Stats({ state }) {
+export default function Stats({ state, projectNames = {} }) {
   return (
     <Section id="stats" num="08" eyebrow="transparency" title="Stats" state={state}>
       {(data) => {
@@ -92,7 +91,7 @@ export default function Stats({ state }) {
                   <ul className="mt-3 space-y-4">
                     {projects.map(([id, engagement]) => (
                       <li key={id}>
-                        <p className="font-display text-sm font-semibold text-white">{PROJECT_NAMES[id] ?? id}</p>
+                        <p className="font-display text-sm font-semibold text-white">{projectNames[id] ?? id}</p>
                         <p className="mt-1 font-mono text-xs text-slate-400">
                           {engagement.clicks ?? 0} clicks · {engagement.previews ?? 0} previews · {engagement.case_studies ?? 0} case studies
                         </p>

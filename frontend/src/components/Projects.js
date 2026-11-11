@@ -66,6 +66,7 @@ function ProjectCard({ project }) {
           <h3 className="font-display text-xl font-bold text-white sm:text-2xl">{project.name}</h3>
           {project.featured && <span className="chip">Featured</span>}
         </div>
+        {project.duration && <p className="mt-2 font-mono text-xs uppercase tracking-widest text-slate-500">{project.duration}</p>}
         <p className="mt-4 text-sm leading-relaxed text-slate-300">{project.description}</p>
         <ul className="mt-4 flex flex-wrap gap-2" aria-label={`${project.name} technologies`}>
           {project.technologies.map((technology) => <li key={technology} className="chip">{technology}</li>)}

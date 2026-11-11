@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import CommandPalette from "./CommandPalette";
+import CaseStudy from "./CaseStudy";
 
 const info = {
   name: "Arunangshu Pramanik",
@@ -39,6 +40,28 @@ test("theme action delegates to the provided handler", () => {
   openPalette();
   fireEvent.click(screen.getByRole("option", { name: /Switch to light mode/ }).querySelector("button"));
   expect(onToggleTheme).toHaveBeenCalled();
+});
+
+test("Escape closes only the topmost dialog and scroll stays locked underneath", () => {
+  const project = { id: "demo", name: "Demo", case_study: { problem: "P.", approach: ["A."] } };
+  const onClose = jest.fn();
+  render(<><CaseStudy project={project} onClose={onClose} /><CommandPalette info={info} light={false} onToggleTheme={jest.fn()} /></>);
+  openPalette();
+  expect(screen.getAllByRole("dialog")).toHaveLength(2);
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(screen.queryByLabelText("Command palette search")).not.toBeInTheDocument();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(document.body.style.overflow).toBe("hidden");
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test("close button works without a keyboard", () => {
+  renderPalette();
+  openPalette();
+  fireEvent.click(screen.getByRole("button", { name: "Close command palette" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(document.body.style.overflow).toBe("");
 });
 
 test("shows empty state for unmatched queries", () => {
