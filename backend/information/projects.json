@@ -40,7 +40,7 @@
   },
   {
     "id": "doppel",
-    "name": "doppel",
+    "name": "doppel - Mock API playground",
     "description": "doppel: your backend stand-in. A schema-driven mock REST API generator that turns a JSON schema into a working API with realistic seeded data, resource relationships, and an interactive playground. Built with FastAPI, React, and Faker.",
     "technologies": ["Python", "FastAPI", "Faker", "React", "Vite", "Cloud Run", "Firebase Hosting", "Docker", "GitHub Actions"],
     "live_url": "https://doppel-app.web.app/",
