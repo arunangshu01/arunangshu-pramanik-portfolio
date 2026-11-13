@@ -16,7 +16,7 @@ const SOCIAL_LABELS = {
   leetcode: "LeetCode",
 };
 
-const NOW_STATUS = "building doppel - a mock data API generator · open to senior & lead data roles";
+const NOW_STATUS = "building Flowbench - a data pipeline playground · open to senior & lead data roles";
 
 const fadeUp = (delay) => ({
   initial: { opacity: 0, y: 30 },
