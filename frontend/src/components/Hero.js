@@ -104,10 +104,13 @@ export default function Hero({ info, summary, projects }) {
         {current && (
           <motion.p
             {...fadeUp(0.2)}
-            className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-4 py-1.5 font-mono text-xs text-slate-400"
+            className="mt-5 flex max-w-xl items-baseline gap-2.5 font-mono text-xs leading-relaxed text-slate-500"
           >
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" />
-            now // building {current.name} {NOW_SUFFIX}
+            <span className="h-1.5 w-1.5 shrink-0 translate-y-px animate-pulse rounded-full bg-accent" aria-hidden="true" />
+            <span>
+              <span className="text-accent/70">now</span>{" // building "}{" "}
+              <span className="text-slate-300">{current.name}</span> {NOW_SUFFIX}
+            </span>
           </motion.p>
         )}
 

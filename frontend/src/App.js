@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { useApi } from "./useApi";
 import {
   getPersonalInfo,
@@ -61,6 +62,7 @@ function App() {
   }, [light]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="relative min-h-screen overflow-x-clip">
       {/* ambient background glows */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -102,6 +104,7 @@ function App() {
       </main>
       <Footer info={info.data} />
     </div>
+    </MotionConfig>
   );
 }
 
