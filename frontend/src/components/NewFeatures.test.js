@@ -30,7 +30,8 @@ test("hero shows the current project's now-status", () => {
     { id: "flowbench", name: "Flowbench - data pipeline playground", current: true },
   ];
   render(<Hero info={INFO} summary="s" projects={projects} />);
-  expect(screen.getByText(/building Flowbench - data pipeline playground/)).toBeInTheDocument();
+  expect(screen.getByText("Flowbench - data pipeline playground")).toBeInTheDocument();
+  expect(screen.getByText(/now/)).toBeInTheDocument();
 });
 
 test("hero hides the now-strip when no project is current", () => {

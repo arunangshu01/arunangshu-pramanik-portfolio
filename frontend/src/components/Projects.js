@@ -24,8 +24,8 @@ function ProjectCard({ project }) {
   const preview = (
     <div className="flex aspect-[16/10] items-center justify-center bg-ink/80">
       {hasImage ? (
-        <img src={project.image} alt={`Screenshot of ${project.name}`} width="1440" height="900"
-          className="h-full w-full object-contain" loading="lazy" onError={() => setImageFailed(true)} />
+        <img src={project.image} alt={`Screenshot of ${project.name}`} width="1440" height="900" loading="lazy" decoding="async"
+          className="h-full w-full object-contain" onError={() => setImageFailed(true)} />
       ) : (
         <div className="text-center text-slate-400">
           <FiCode className="mx-auto mb-3 text-4xl text-accent" aria-hidden="true" />
@@ -46,7 +46,7 @@ function ProjectCard({ project }) {
         </div>
         {showDemo && canEmbed ? (
           <div>
-            <iframe src={live.href} title={`Live preview of ${project.name}`}
+            <iframe src={live.href} title={`Live preview of ${project.name}`} loading="lazy"
               className="h-[32rem] w-full bg-ink" sandbox="allow-scripts allow-same-origin allow-forms"
               allow="microphone 'none'; camera 'none'; geolocation 'none'" referrerPolicy="no-referrer" />
             <p className="px-4 py-3 text-xs leading-relaxed text-slate-400">

@@ -15,6 +15,8 @@ const LINKS = [
   ["Resume", RESUME_VIEW_URL, true],
 ];
 
+const DESKTOP_LINKS = LINKS;
+
 const linkProps = (external) =>
   external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
@@ -36,27 +38,27 @@ export default function Navbar({ name, light, onToggleTheme }) {
       transition={{ duration: 0.5 }}
       className="sticky top-0 z-50 border-b border-edge/60 bg-ink/70 backdrop-blur-xl"
     >
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
         <a
           href="#top"
           aria-label={`${name ?? "Portfolio"} - back to top`}
-          className="flex min-w-0 items-center gap-3"
+          className="flex min-w-0 shrink-0 items-center gap-2.5"
         >
           <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-[0_0_16px_rgba(245,184,61,0.55)] ring-2 ring-accent/50">
             <img src="/reactor.svg" alt="" className="h-8 w-8" />
           </span>
-          <span className="hidden truncate font-display text-sm font-bold uppercase tracking-widest sm:inline">
+          <span className="hidden whitespace-nowrap font-display text-xs font-bold uppercase tracking-wider lg:inline xl:text-sm xl:tracking-widest">
             {name ?? "Portfolio"}
           </span>
         </a>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <div className="hidden items-center gap-1 lg:flex">
-            {LINKS.map(([label, href, external]) => (
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="hidden items-center lg:flex">
+            {DESKTOP_LINKS.map(([label, href, external]) => (
               <a
                 key={label}
                 href={href}
                 {...linkProps(external)}
-                className={`rounded-lg px-2.5 py-1.5 font-mono text-xs uppercase tracking-widest transition-colors hover:bg-white/5 ${
+                className={`rounded-lg px-2 py-1.5 font-mono text-[11px] uppercase tracking-wide transition-colors hover:bg-white/5 xl:px-2.5 xl:text-xs xl:tracking-widest ${
                   external ? "text-accent hover:text-accent" : "text-slate-400 hover:text-white"
                 }`}
               >
