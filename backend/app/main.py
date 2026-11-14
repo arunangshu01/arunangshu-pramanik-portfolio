@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
-    awards_recognitions, send_email, resume, analytics, projects
+    awards_recognitions, send_email, resume, analytics, projects, ask, coding_activity, share
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE, CORS_ORIGINS
 
 tags_metadata = [
@@ -45,6 +45,18 @@ tags_metadata = [
     {
         "name": "Analytics",
         "description": "Track and summarize site events"
+    },
+    {
+        "name": "Ask",
+        "description": "Ask questions about me"
+    },
+    {
+        "name": "Coding Activity",
+        "description": "Public GitHub and LeetCode activity"
+    },
+    {
+        "name": "Share",
+        "description": "Per-project share links with Open Graph tags"
     }
 ]
 
@@ -70,6 +82,9 @@ app.include_router(send_email.router, prefix=API_COMMON_PREFIX)
 app.include_router(resume.router, prefix=API_COMMON_PREFIX)
 app.include_router(analytics.router, prefix=API_COMMON_PREFIX)
 app.include_router(projects.router, prefix=API_COMMON_PREFIX)
+app.include_router(ask.router, prefix=API_COMMON_PREFIX)
+app.include_router(coding_activity.router, prefix=API_COMMON_PREFIX)
+app.include_router(share.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
     CORSMiddleware,

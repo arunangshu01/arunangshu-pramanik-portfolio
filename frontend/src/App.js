@@ -15,9 +15,11 @@ import {
 import BootSequence from "./components/BootSequence";
 import CommandPalette from "./components/CommandPalette";
 import MusicToggle from "./components/MusicToggle";
+import AskBot from "./components/AskBot";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
+import CodingActivity from "./components/CodingActivity";
 import Experience from "./components/Experience";
 import Education from "./components/Education";
 import Awards from "./components/Awards";
@@ -77,7 +79,8 @@ function App() {
           trackEvent("theme_toggle", { theme: light ? "dark" : "light" });
           setLight((v) => !v);
         }} />
-      <Hero info={info.data} summary={summary.data?.summary} />
+      <AskBot />
+      <Hero info={info.data} summary={summary.data?.summary} projects={projects.data} />
       <main className="mx-auto max-w-5xl px-4 sm:px-6">
         <About
           info={info.data}
@@ -86,6 +89,7 @@ function App() {
           skills={skills.data}
           education={education.data}
         />
+        <CodingActivity />
         <Suspense fallback={<section id="skills" className="min-h-[60vh]" />}>
           <Skills state={skills} />
         </Suspense>

@@ -26,6 +26,33 @@ export const getSkills = () => get("/skills");
 export const getExperience = () => get("/experience");
 export const getAwards = () => get("/awards_recognitions");
 export const getProjects = () => get("/projects");
+export const getGithubActivity = () => get("/github_activity");
+export const getLeetcodeStats = () => get("/leetcode_stats");
+export const getAskStatus = () => get("/ask/status");
+
+// Share links carry per-project OG tags server-side; use the same-origin API path.
+export const projectShareUrl = (projectId) =>
+  `${window.location.origin}${API_BASE}/share/${projectId}`;
+
+export async function askQuestion(question) {
+  const res = await fetch(`${API_BASE}/ask`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    const error = new Error(
+      detail?.detail?.error_message ??
+        (res.status === 429
+          ? "Too many questions. Please try again later."
+          : "The assistant is temporarily unavailable.")
+    );
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
 
 async function viewRequest(options) {
   const res = await fetch(`${API_BASE}/analytics/views`, { cache: "no-store", ...options });
@@ -49,6 +76,7 @@ export const updateViewPresence = (viewId, sessionId, signal) => viewRequest({
 // Resume endpoints return application/pdf and are used as plain links.
 export const RESUME_VIEW_URL = `${API_BASE}/resume/view`;
 export const RESUME_DOWNLOAD_URL = `${API_BASE}/resume/download`;
+export const RESUME_PRINT_URL = `${API_BASE}/resume/print`;
 
 // POST /send_email consumes multipart/form-data, not JSON.
 export async function sendContactEmail({ name, email, message }) {

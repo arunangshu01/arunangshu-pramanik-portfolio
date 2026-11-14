@@ -265,6 +265,42 @@ Identical file, but served with `Content-Disposition: attachment` - the browser 
 
 - `404` - `{ "detail": { "error_message": "...", "error_type": "ResumeUnavailable" } }` when the PDF isn't on the server. For `fetch()`-based callers, check `res.headers.get("content-type")` before reading the body as `blob()` vs `json()`.
 
+### `GET /resume/print`
+
+Print-friendly HTML resume rendered from the same `information/*.json` data as the site - no separate copy to maintain. Includes a Print/Save-as-PDF button that hides in `@media print`. Counted server-side as `resume_print`.
+
+**Response `200`** - `text/html`. **Errors:** `404` with `ResumeUnavailable` when personal info can't be loaded.
+
+---
+
+### `GET /github_activity` and `GET /leetcode_stats`
+
+Public coding-activity cards. Both proxy upstream APIs (`api.github.com`, `leetcode.com/graphql`), cache responses for `SOCIAL_CACHE_SECONDS` (default 600), and return `Cache-Control: public, max-age=300`. Usernames come from `GITHUB_USERNAME` / `LEETCODE_USERNAME`.
+
+`github_activity` returns `username`, `public_repos`, `followers`, `recent_events`, `recent_pushes`, `latest_activity`, `profile_url`. `leetcode_stats` returns `username`, `solved`, `easy`, `medium`, `hard`, `ranking`, `profile_url`.
+
+**Errors:** `503` with `ActivityUnavailable` when the upstream call fails - the frontend hides the cards rather than showing stale or zeroed data.
+
+---
+
+### `GET /share/{project_id}`
+
+Per-project share page. Social crawlers read Open Graph/Twitter tags - `og:title`, `og:description`, and the project's own screenshot as `og:image` - while humans get a meta-refresh + JS redirect to `{SITE_URL}/#projects`. Unknown IDs return `404`.
+
+**Response `200`** - `text/html` with OG/Twitter meta tags.
+
+---
+
+### `GET /ask/status` and `POST /ask`
+
+The ask-my-resume assistant. `GET /ask/status` returns `{ "enabled": bool }` - `true` only when `GROQ_API_KEY` or `GEMINI_API_KEY` is set, so the frontend can hide the widget on deployments without a key.
+
+`POST /ask` takes `{ "question": "..." }` (3-500 chars) and returns `{ "answer": "..." }`. The system prompt grounds answers in the portfolio's `information/*.json` files, caps replies at ~120 words, and refuses unrelated questions. Groq is tried first, Gemini is the fallback; identical questions are cached for an hour.
+
+**Rate limit:** 5 questions/hour per client IP and 60/hour globally (`ASK_RATE_LIMIT_*` env vars). Successful answers count as `ask_question` events.
+
+**Errors:** `503` `NotConfigured` when no provider key is set, `429` `RateLimitExceeded`, `503` `AssistantUnavailable` when both providers fail.
+
 ---
 
 ### `POST /send_email`
@@ -301,7 +337,7 @@ Successful submissions are counted in analytics under the `contact_submit` event
 
 ### `GET /projects`
 
-Returns an array of projects in the order maintained in `backend/information/projects.json`. Fields: `id`, `name`, nullable `duration` (≤60 chars), `description`, nullable `case_study`, `technologies`, nullable `live_url`/`github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, nullable `image`, and `preview_enabled` (default `false`). IDs must be unique slugs; links must be HTTP(S), and images must be root-relative public asset paths. An empty array is valid; malformed project data returns a safe `422` response.
+Returns an array of projects in the order maintained in `backend/information/projects.json`. Fields: `id`, `name`, nullable `duration` (≤60 chars), `description`, nullable `case_study`, `technologies`, nullable `live_url`/`github_url`, `highlights`, `status` (`live`, `in_progress`, `archived`), `featured`, `current` (drives the hero "now" strip; at most one project should set it), nullable `image`, and `preview_enabled` (default `false`). IDs must be unique slugs; links must be HTTP(S), and images must be root-relative public asset paths. An empty array is valid; malformed project data returns a safe `422` response.
 
 The frontend shows a static screenshot by default. For trusted external HTTPS projects with `preview_enabled: true`, visitors may explicitly load a sandboxed iframe. No URL scraping or screenshot generation occurs on API requests. Voice input and sign-in may require opening the full project. New iframe requests contact the project host only after visitors choose to load it.
 
@@ -313,7 +349,7 @@ Records a frontend event (page view, button click, section visit, etc.) in the i
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `event` | string | yes | One of `page_view`, `section_view`, `cta_click`, `social_click`, `theme_toggle`, `palette_open`, `palette_command`, `music_play`, `project_click`, `project_preview`, `project_case_study` |
+| `event` | string | yes | One of `page_view`, `section_view`, `cta_click`, `social_click`, `theme_toggle`, `palette_open`, `palette_command`, `music_play`, `project_click`, `project_preview`, `project_case_study`, `github_click`, `linkedin_click`, `leetcode_click`, `email_click`, `share_click`, `ask_open` |
 | `page` | string (≤256 chars) | no | Frontend route/path the event came from |
 | `metadata` | object | no | ≤8 keys matching `[a-z_]{1,32}`; values are scalars (strings ≤256 chars). `project` must be a published project ID to count toward public project engagement |
 

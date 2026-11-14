@@ -97,6 +97,7 @@
     ],
     "status": "live",
     "featured": true,
+    "current": true,
     "image": "/flowbench-preview.png",
     "preview_enabled": true,
     "case_study": {

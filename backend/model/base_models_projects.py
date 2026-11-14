@@ -29,6 +29,7 @@ class Project(BaseModel):
     highlights: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(default_factory=list, max_length=8)
     status: Literal['live', 'in_progress', 'archived'] = 'in_progress'
     featured: bool = False
+    current: bool = False
     image: str | None = Field(default=None, max_length=500)
     preview_enabled: bool = False
     case_study: CaseStudy | None = None

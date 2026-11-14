@@ -16,7 +16,12 @@ const SOCIAL_LABELS = {
   leetcode: "LeetCode",
 };
 
-const NOW_STATUS = "building Flowbench - a data pipeline playground · open to senior & lead data roles";
+const NOW_SUFFIX = "· open to senior & lead data roles";
+const TRACKED_PLATFORMS = new Set(["github", "linkedin", "leetcode"]);
+
+const socialClick = (label) =>
+  trackEvent(TRACKED_PLATFORMS.has(label) ? `${label}_click` : "social_click",
+             TRACKED_PLATFORMS.has(label) ? undefined : { platform: label });
 
 const fadeUp = (delay) => ({
   initial: { opacity: 0, y: 30 },
@@ -24,8 +29,9 @@ const fadeUp = (delay) => ({
   transition: { duration: 0.7, delay, ease: "easeOut" },
 });
 
-export default function Hero({ info, summary }) {
+export default function Hero({ info, summary, projects }) {
   const socials = info?.social_media_profiles;
+  const current = projects?.find((project) => project.current);
 
   return (
     <header
@@ -95,13 +101,15 @@ export default function Hero({ info, summary }) {
           </motion.div>
         )}
 
-        <motion.p
-          {...fadeUp(0.2)}
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-4 py-1.5 font-mono text-xs text-slate-400"
-        >
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" />
-          now // {NOW_STATUS}
-        </motion.p>
+        {current && (
+          <motion.p
+            {...fadeUp(0.2)}
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-4 py-1.5 font-mono text-xs text-slate-400"
+          >
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" />
+            now // building {current.name} {NOW_SUFFIX}
+          </motion.p>
+        )}
 
         <motion.div
           {...fadeUp(0.55)}
@@ -148,7 +156,7 @@ export default function Hero({ info, summary }) {
                 <a
                   key={label}
                   href={url}
-                  onClick={() => trackEvent("social_click", { platform: label })}
+                  onClick={() => socialClick(label)}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center justify-center gap-2 rounded-xl border border-edge px-5 py-3 font-medium text-slate-300 transition-colors hover:border-accent/50 hover:text-accent sm:px-6"
