@@ -11,8 +11,15 @@ const SUGGESTIONS = [
 // Models ignore the "no markdown" instruction often enough that rendering a
 // small subset is safer than showing raw asterisks.
 function renderInline(text) {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\n]+\*)/g).filter(Boolean);
+  const parts = text.split(/(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s]+|\*\*[^*]+\*\*|`[^`]+`|\*[^*\n]+\*)/g).filter(Boolean);
   return parts.map((part, i) => {
+    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (link || /^https?:\/\//.test(part)) {
+      const href = link ? link[2] : part.replace(/[.,;!?)]+$/, "");
+      const suffix = link ? "" : part.slice(href.length);
+      const label = link ? link[1] : /^https?:\/\/github\.com(?:\/|$)/i.test(href) ? "GitHub repository" : "Visit website";
+      return <span key={i}><a href={href} target="_blank" rel="noopener noreferrer" className="break-words text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent">{label}</a>{suffix}</span>;
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
     }
@@ -108,7 +115,7 @@ export default function AskBot() {
         <div
           role="dialog"
           aria-label="Ask about Arunangshu"
-          className="fixed bottom-16 left-4 z-50 flex w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-edge bg-ink/95 shadow-2xl backdrop-blur sm:bottom-20 sm:left-6"
+          className="fixed bottom-16 left-4 z-50 flex max-h-[calc(100dvh-6rem)] w-[min(30rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-edge bg-ink/95 shadow-2xl backdrop-blur sm:bottom-20 sm:left-6"
         >
           <div className="border-b border-edge/60 px-4 py-3">
             <p className="font-display text-sm font-semibold text-white">Ask J.A.R.V.I.S.</p>
@@ -116,7 +123,7 @@ export default function AskBot() {
               answers grounded in this portfolio
             </p>
           </div>
-          <div ref={listRef} className="max-h-72 min-h-24 overflow-y-auto px-4 py-3">
+          <div ref={listRef} className="min-h-0 max-h-[min(32rem,55dvh)] overflow-y-auto overscroll-contain px-4 py-4">
             {messages.length === 0 && (
               <div className="space-y-2">
                 {SUGGESTIONS.map((suggestion) => (
@@ -134,10 +141,10 @@ export default function AskBot() {
             {messages.map((message, i) => (
               <div
                 key={i}
-                className={`mb-2 max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
+                className={`mb-4 min-w-0 break-words rounded-xl px-4 py-3 text-sm leading-7 ${
                   message.role === "user"
-                    ? "ml-auto bg-accent/15 text-white"
-                    : "bg-slate-800/60 text-slate-200"
+                    ? "ml-auto max-w-[85%] bg-accent/15 text-white"
+                    : "w-full bg-slate-800/60 text-slate-200"
                 }`}
               >
                 <MessageText text={message.text} />
