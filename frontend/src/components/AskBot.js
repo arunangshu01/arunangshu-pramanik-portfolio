@@ -91,6 +91,7 @@ export default function AskBot() {
     } catch (err) {
       setMessages((prev) => [...prev, {
         role: "assistant",
+        error: true,
         text: err.status === 429
           ? "That's a lot of questions - give me a breather and try again shortly."
           : "I'm offline at the moment. The contact form below still reaches him.",
@@ -99,6 +100,17 @@ export default function AskBot() {
       setBusy(false);
     }
   };
+
+  const latest = messages[messages.length - 1];
+  const followUps = latest?.role === "assistant" && !latest.error
+    ? [
+        ...["Flowbench", "doppel", "M.A.H.A.K.A.L."].filter((name) =>
+          latest.text.toLowerCase().includes(name.toLowerCase())
+        ).map((name) => `Tell me more about ${name}`),
+        "What is his experience at Impact Analytics?",
+        "Which data engineering skills does he have?",
+      ].filter((question) => !messages.some((message) => message.role === "user" && message.text === question)).slice(0, 2)
+    : [];
 
   return (
     <>
@@ -117,7 +129,7 @@ export default function AskBot() {
           aria-label="Ask about Arunangshu"
           className="fixed bottom-16 left-4 z-50 flex max-h-[calc(100dvh-6rem)] w-[min(30rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-edge bg-ink/95 shadow-2xl backdrop-blur sm:bottom-20 sm:left-6"
         >
-          <div className="border-b border-edge/60 px-4 py-3">
+          <div className="shrink-0 border-b border-edge/60 px-4 py-3">
             <p className="font-display text-sm font-semibold text-white">Ask J.A.R.V.I.S.</p>
             <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
               answers grounded in this portfolio
@@ -131,7 +143,7 @@ export default function AskBot() {
                     key={suggestion}
                     type="button"
                     onClick={() => send(suggestion)}
-                    className="block w-full rounded-lg border border-edge/60 px-3 py-2 text-left text-xs text-slate-300 transition-colors hover:border-accent/50 hover:text-accent"
+                    className="block min-h-11 w-full rounded-lg border border-edge/60 px-3 py-2 text-left text-sm text-slate-300 transition-colors hover:border-accent/50 hover:text-accent"
                   >
                     {suggestion}
                   </button>
@@ -150,6 +162,16 @@ export default function AskBot() {
                 <MessageText text={message.text} />
               </div>
             ))}
+            {!busy && followUps.length > 0 && (
+              <div aria-label="Suggested follow-up questions" className="flex flex-wrap gap-2 pb-2">
+                {followUps.map((question) => (
+                  <button key={question} type="button" onClick={() => send(question)}
+                    className="min-h-11 rounded-xl border border-edge px-3 py-2 text-left text-xs leading-relaxed text-slate-300 hover:border-accent/50 hover:text-accent">
+                    {question}
+                  </button>
+                ))}
+              </div>
+            )}
             {busy && (
               <div className="mb-2 inline-flex items-center gap-1 rounded-xl bg-slate-800/60 px-3 py-2 text-slate-400" aria-label="Assistant is thinking">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
@@ -159,7 +181,7 @@ export default function AskBot() {
             )}
           </div>
           <form
-            className="flex items-center gap-2 border-t border-edge/60 px-3 py-2"
+            className="flex shrink-0 items-center gap-2 border-t border-edge/60 px-3 py-2"
             onSubmit={(event) => { event.preventDefault(); send(input); }}
           >
             <input
@@ -169,13 +191,13 @@ export default function AskBot() {
               maxLength={500}
               placeholder="Ask about his work…"
               aria-label="Question"
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
+              className="min-h-11 min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-slate-500 sm:text-sm"
             />
             <button
               type="submit"
               disabled={busy || !input.trim()}
               aria-label="Send question"
-              className="shrink-0 rounded-lg border border-accent/50 p-2 text-accent transition-colors hover:bg-accent/15 disabled:opacity-40"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-accent/50 text-accent transition-colors hover:bg-accent/15 disabled:opacity-40"
             >
               <FiSend aria-hidden="true" />
             </button>

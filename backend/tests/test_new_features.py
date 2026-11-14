@@ -1,4 +1,41 @@
+import asyncio
+from collections import OrderedDict
 from unittest.mock import AsyncMock, MagicMock, patch
+
+
+def test_provider_truncation_falls_back_without_caching_partial_answer():
+    from source import ask_assistant as assistant
+
+    response = MagicMock()
+    response.json.return_value = {
+        'choices': [{'finish_reason': 'length', 'message': {'content': 'Cut off'}}]}
+    client = AsyncMock()
+    client.post.return_value = response
+    with patch.object(assistant, 'GROQ_API_KEY', 'test'), \
+            patch.object(assistant, '_answers', OrderedDict()), \
+            patch.object(assistant.httpx, 'AsyncClient') as factory, \
+            patch.object(assistant, '_ask_gemini', new=AsyncMock(return_value='Complete answer.')):
+        factory.return_value.__aenter__.return_value = client
+        assert asyncio.run(assistant.ask('test truncation')) == 'Complete answer.'
+        assert assistant._answers['test truncation'][1] == 'Complete answer.'
+
+
+def test_gemini_rejects_truncated_output_and_joins_visible_parts():
+    from source import ask_assistant as assistant
+
+    response = MagicMock()
+    client = AsyncMock()
+    client.post.return_value = response
+    with patch.object(assistant, 'GEMINI_API_KEY', 'test'), \
+            patch.object(assistant.httpx, 'AsyncClient') as factory:
+        factory.return_value.__aenter__.return_value = client
+        response.json.return_value = {'candidates': [{'finishReason': 'MAX_TOKENS'}]}
+        assert asyncio.run(assistant._ask_gemini('system', 'question')) is None
+        response.json.return_value = {'candidates': [{
+            'finishReason': 'STOP', 'content': {'parts': [
+                {'text': 'private', 'thought': True},
+                {'text': 'Complete '}, {'text': 'answer.'}]}}]}
+        assert asyncio.run(assistant._ask_gemini('system', 'question')) == 'Complete answer.'
 
 
 def test_share_page_has_og_tags_and_redirect(client, api_base):

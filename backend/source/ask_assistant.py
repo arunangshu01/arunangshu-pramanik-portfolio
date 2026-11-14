@@ -20,8 +20,12 @@ SYSTEM_PROMPT = """You are the assistant on Arunangshu Pramanik's portfolio webs
 Answer questions about Arunangshu using ONLY the portfolio data below. Stay
 grounded: if the data does not cover the question, say so plainly and suggest
 reaching out via the site's contact form or arunangshu01@gmail.com. Keep
-answers under 120 words, plain text, no markdown. Speak about Arunangshu in
-third person. Never invent employers, dates, skills, metrics or contact
+answers under 100 words. Use short paragraphs or simple bullet lists; optional
+bold names and Markdown links are supported. For project overviews, use one
+short bullet per project describing its purpose, not its entire technology stack.
+Only include implementation details or links when asked. Answer direct questions
+in one or two sentences. Finish every sentence and never append follow-up questions.
+Speak about Arunangshu in third person. Never invent employers, dates, skills, metrics or contact
 details. Decline questions unrelated to Arunangshu or his work politely.
 
 PORTFOLIO DATA:
@@ -102,7 +106,10 @@ async def _ask_groq(system: str, question: str) -> str | None:
             json=payload,
         )
         response.raise_for_status()
-        return response.json()['choices'][0]['message']['content'].strip()
+        choice = response.json()['choices'][0]
+        if choice.get('finish_reason') == 'length':
+            return None
+        return (choice['message'].get('content') or '').strip()
 
 
 async def _ask_gemini(system: str, question: str) -> str | None:
@@ -121,7 +128,11 @@ async def _ask_gemini(system: str, question: str) -> str | None:
         )
         response.raise_for_status()
         data = response.json()
-        return data['candidates'][0]['content']['parts'][0]['text'].strip()
+        candidate = data['candidates'][0]
+        if candidate.get('finishReason') != 'STOP':
+            return None
+        return ''.join(part.get('text', '') for part in candidate['content']['parts']
+                       if not part.get('thought')).strip()
 
 
 async def ask(question: str) -> str | None:
