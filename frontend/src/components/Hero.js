@@ -108,7 +108,7 @@ export default function Hero({ info, summary, projects }) {
           >
             <span className="h-1.5 w-1.5 shrink-0 translate-y-px animate-pulse rounded-full bg-accent" aria-hidden="true" />
             <span>
-              <span className="text-accent/70">now</span> // building{" "}
+              <span className="text-accent/70">now</span>{" // building "}{" "}
               <span className="text-slate-300">{current.name}</span> {NOW_SUFFIX}
             </span>
           </motion.p>
