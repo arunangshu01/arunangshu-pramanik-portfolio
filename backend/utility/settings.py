@@ -43,6 +43,23 @@ ANALYTICS_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_MAX_REQU
 ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW_SECONDS', '60'))
 ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '600'))
 
+# Public origin of the site; used for per-project share links and OG images.
+SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app').rstrip('/')
+
+# Public profiles surfaced by the coding-activity endpoints.
+GITHUB_USERNAME = os.getenv('GITHUB_USERNAME', 'arunangshu01')
+LEETCODE_USERNAME = os.getenv('LEETCODE_USERNAME', 'arunangshu01')
+SOCIAL_CACHE_SECONDS = int(os.getenv('SOCIAL_CACHE_SECONDS', '600'))
+
+# Ask-my-resume assistant. Disabled when no provider key is configured.
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-flash-lite-latest')
+ASK_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ASK_RATE_LIMIT_MAX_REQUESTS', '5'))
+ASK_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ASK_RATE_LIMIT_WINDOW_SECONDS', '3600'))
+ASK_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('ASK_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '60'))
+
 
 personal_info_file = os.path.join(f'{BASE_DIR.parent}/information', 'personal_info.json')
 experience_file = os.path.join(f'{BASE_DIR.parent}/information', 'experience.json')

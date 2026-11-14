@@ -74,6 +74,12 @@ Open `http://localhost:3000`. The development proxy forwards `/arunangshu_praman
 | `ANALYTICS_RATE_LIMIT_MAX_REQUESTS` | Analytics requests per IP per window, `30` |
 | `ANALYTICS_RATE_LIMIT_WINDOW_SECONDS` | Analytics rate-limit window, `60` |
 | `ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS` | Analytics requests across all clients per window, `600` |
+| `SITE_URL` | Public site origin used for share links and OG images |
+| `GITHUB_USERNAME`, `LEETCODE_USERNAME` | Public profiles behind the coding-activity cards |
+| `SOCIAL_CACHE_SECONDS` | Server cache for GitHub/LeetCode responses, `600` |
+| `GROQ_API_KEY`, `GROQ_MODEL` | Optional: primary ask-assistant provider (`openai/gpt-oss-120b`) |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Optional: ask-assistant fallback (`gemini-flash-latest`) |
+| `ASK_RATE_LIMIT_*` | Assistant question limits: `5`/hour/IP and `60`/hour globally |
 
 ### Frontend environment
 
@@ -101,6 +107,12 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/awards_recognitions` | Awards |
 | GET | `/resume/view` | Inline resume PDF |
 | GET | `/resume/download` | Resume PDF attachment |
+| GET | `/resume/print` | Print-friendly HTML resume rendered from the site's data files |
+| GET | `/github_activity` | Cached public GitHub profile stats and recent-event counts |
+| GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
+| GET | `/share/{project_id}` | Per-project Open Graph page; humans are redirected to `/#projects` |
+| GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
+| POST | `/ask` | Ask a question grounded in the portfolio data; rate-limited, `503` when no LLM key is configured |
 | POST | `/send_email` | Multipart contact form (name ≤100, message ≤5000 chars); rate-limited, waits for Brevo to accept |
 | POST | `/analytics/track` | JSON analytics event from a fixed allowlist; rate-limited |
 | GET | `/analytics/dashboard` | Public Stats section: aggregate views, daily views, event and project counts; cached 30s, rate-limited |
@@ -112,7 +124,7 @@ Frontend events include page/section views, CTA/social clicks, theme toggles, co
 
 ### Projects and previews
 
-Edit `backend/information/projects.json` to add projects; its array order is the display order. Required fields are `id` (unique slug), `name`, `description`, and a non-empty `technologies` array. Optional fields: `duration` (e.g. `October 2026 - Present`), `live_url`, `github_url`, `highlights`, `case_study`, `status` (`live`, `in_progress`, `archived`), `featured`, `image`, and `preview_enabled`. Use `null` for unavailable URLs/images. Keep screenshots in `frontend/public/` and reference them with a root-relative path such as `/mahakal-preview.png`.
+Edit `backend/information/projects.json` to add projects; its array order is the display order. Required fields are `id` (unique slug), `name`, `description`, and a non-empty `technologies` array. Optional fields: `duration` (e.g. `October 2026 - Present`), `live_url`, `github_url`, `highlights`, `case_study`, `status` (`live`, `in_progress`, `archived`), `featured`, `current`, `image`, and `preview_enabled`. Exactly one project should set `current: true`; it drives the "now //" strip in the hero, which hides itself when no project is flagged. Use `null` for unavailable URLs/images. Keep screenshots in `frontend/public/` and reference them with a root-relative path such as `/mahakal-preview.png`.
 
 The Projects section uses a clickable screenshot card, not a live screenshot service or server-side URL scraper. Mahakal's thumbnail was captured from its public, signed-out page; it does not automatically refresh. The optional live demo is an explicitly loaded iframe for trusted external HTTPS sites only. It is sandboxed, sends no referrer, and cannot access the microphone, camera, or geolocation. Sign-in, browser cookie restrictions, and frame-blocking headers may limit embedded features; the full-app link remains available. Set `preview_enabled: false` for projects that should not be embedded. Only enable embeds for sites you trust. A failed/missing screenshot falls back to a branded card.
 
@@ -138,6 +150,13 @@ The footer displays **total views** and **viewing now (approx.)**. It refreshes 
 - Totals start fresh when this feature is deployed; previous in-memory event history cannot be recovered. Development uses an isolated, bounded memory store. `REACT_APP_ENABLE_ANALYTICS=false` fetches public stats without registering views or heartbeats; use `true` in `.env.development.local` to exercise local tracking.
 - Heartbeats are limited to 10 requests/minute per IP using the existing process-local limiter design. This is best-effort protection, not a distributed abuse control; shared networks and multiple tabs can hit the limit.
 - Each heartbeat writes the session and view expiry records; a new page load also updates the total. Firestore reads/writes, TTL deletion, and Cloud Run requests can incur charges. Review billing if traffic grows; no zero-cost guarantee is made.
+
+### Ask-my-resume assistant, share links, and activity cards
+
+- The floating assistant widget (bottom-left) answers questions grounded only in `backend/information/*.json`. It is disabled until `GROQ_API_KEY` or `GEMINI_API_KEY` is configured; `GET /ask/status` reports availability and the widget hides itself when off. Questions are limited to 5/hour/IP and 60/hour globally, answers are capped at ~320 tokens, and identical questions are cached for an hour. To enable it in production, create a `portfolio-groq-api-key` secret, grant `portfolio-run` access, and add `GROQ_API_KEY=portfolio-groq-api-key:latest` to the deploy workflow's `--set-secrets` list.
+- `GET /share/{project_id}` returns a page carrying that project's Open Graph/Twitter tags (its own screenshot as `og:image`) and redirects human visitors to `/#projects`. The case-study overlay's link button copies it; sharing that URL on social platforms shows the project card.
+- `GET /resume/print` renders a print-friendly HTML resume from the same JSON data as the site, so it stays in sync with content edits. Reachable via the command palette's "Print resume" action.
+- The coding-activity cards under About call cached `GET /github_activity` (public profile + recent event counts) and `GET /leetcode_stats` (solved counts + ranking via LeetCode's public GraphQL). Each is cached server-side for `SOCIAL_CACHE_SECONDS` and hides entirely on failure - no false zeros.
 
 ## Verification and contribution workflow
 

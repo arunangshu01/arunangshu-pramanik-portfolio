@@ -1,6 +1,7 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FiExternalLink, FiGithub, FiX } from "react-icons/fi";
+import { FiExternalLink, FiGithub, FiLink, FiX } from "react-icons/fi";
+import { projectShareUrl, trackEvent } from "../api";
 import { useModal } from "../useModal";
 
 function Section({ title, children }) {
@@ -28,7 +29,15 @@ export default function CaseStudy({ project, live, github, onClose }) {
   const study = project.case_study;
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
+  const [copied, setCopied] = useState(false);
   useModal(dialogRef, onClose, { initialFocusRef: closeRef });
+
+  const copyShareLink = () => {
+    navigator.clipboard?.writeText(projectShareUrl(project.id));
+    trackEvent("share_click", { project: project.id });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Portal to <body>: the card's backdrop-filter would otherwise become the
   // containing block for `fixed`, confining the overlay to the card.
@@ -43,6 +52,13 @@ export default function CaseStudy({ project, live, github, onClose }) {
             className="absolute right-4 top-4 rounded-full border border-edge p-2 text-slate-400 transition-colors hover:border-accent hover:text-accent">
             <FiX aria-hidden="true" />
           </button>
+          <button type="button" onClick={copyShareLink} aria-label="Copy share link"
+            className="absolute right-14 top-4 rounded-full border border-edge p-2 text-slate-400 transition-colors hover:border-accent hover:text-accent">
+            <FiLink aria-hidden="true" />
+          </button>
+          {copied && (
+            <span role="status" className="absolute right-4 top-14 font-mono text-[10px] text-accent">link copied</span>
+          )}
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-slate-500">Case study</p>
           <h3 className="mt-2 pr-10 font-display text-2xl font-bold text-white sm:text-3xl">{project.name}</h3>
           {project.duration && <p className="mt-2 font-mono text-xs uppercase tracking-widest text-slate-500">{project.duration}</p>}

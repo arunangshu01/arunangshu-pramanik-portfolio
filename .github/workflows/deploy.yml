@@ -121,7 +121,7 @@ jobs:
             --max-instances 1 \
             --timeout 60 \
             --env-vars-file deploy/cloud-run.env.yaml \
-            --set-secrets 'BREVO_API_KEY=portfolio-brevo-api-key:latest,MAIL_FROM=portfolio-mail-from:latest,RECEIVER_EMAIL=portfolio-receiver-email:latest,ANALYTICS_ADMIN_TOKEN=portfolio-analytics-admin-token:latest' \
+            --set-secrets 'BREVO_API_KEY=portfolio-brevo-api-key:latest,MAIL_FROM=portfolio-mail-from:latest,RECEIVER_EMAIL=portfolio-receiver-email:latest,ANALYTICS_ADMIN_TOKEN=portfolio-analytics-admin-token:latest,GROQ_API_KEY=portfolio-groq-api-key:latest,GEMINI_API_KEY=portfolio-gemini-api-key:latest' \
             --quiet
       - name: Check API health
         run: |

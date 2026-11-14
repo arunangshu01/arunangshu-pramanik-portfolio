@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  FiDownload, FiExternalLink, FiFileText, FiMail, FiMoon, FiSearch, FiSun,
+  FiDownload, FiExternalLink, FiFileText, FiMail, FiMoon, FiPrinter, FiSearch, FiSun,
 } from "react-icons/fi";
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
-import { RESUME_DOWNLOAD_URL, RESUME_VIEW_URL, trackEvent } from "../api";
+import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 import { useModal } from "../useModal";
 
 const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Contact", "Stats"];
@@ -59,6 +59,8 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
         keywords: "resume view cv", run: () => window.open(RESUME_VIEW_URL, "_blank", "noopener") },
       { id: "resume-download", group: "Actions", label: "Download resume", icon: FiDownload,
         keywords: "resume download cv pdf", run: () => { window.location.href = RESUME_DOWNLOAD_URL; } },
+      { id: "resume-print", group: "Actions", label: "Print resume", icon: FiPrinter,
+        keywords: "resume print cv pdf", run: () => window.open(RESUME_PRINT_URL, "_blank", "noopener") },
       ...(info?.email ? [{ id: "copy-email", group: "Actions", label: "Copy email address", icon: FiMail,
         keywords: "email copy contact", run: () => navigator.clipboard?.writeText(info.email) }] : []),
       { id: "toggle-theme", group: "Actions", label: light ? "Switch to dark mode" : "Switch to light mode",
