@@ -89,6 +89,25 @@ test("ask bot stays hidden when the assistant is disabled", async () => {
   expect(screen.queryByRole("button", { name: /ask me anything/i })).not.toBeInTheDocument();
 });
 
+test("ask bot renders safe readable links and sends project follow-ups", async () => {
+  api.getAskStatus.mockResolvedValue({ enabled: true });
+  api.askQuestion.mockResolvedValue({ answer: "**Flowbench** uses *SQL* and `DuckDB`.\n1. [Demo](https://flowbench-app.web.app)\n2. https://github.com/arunangshu01/flowbench.\n" + "longword".repeat(50) });
+  render(<AskBot />);
+  fireEvent.click(await screen.findByRole("button", { name: /ask me anything/i }));
+  fireEvent.change(screen.getByLabelText("Question"), { target: { value: "projects?" } });
+  fireEvent.click(screen.getByRole("button", { name: /send question/i }));
+  expect(await screen.findByRole("link", { name: "Demo" })).toHaveAttribute("href", "https://flowbench-app.web.app");
+  const github = screen.getByRole("link", { name: "GitHub repository" });
+  expect(github).toHaveAttribute("href", "https://github.com/arunangshu01/flowbench");
+  expect(github).toHaveAttribute("rel", "noopener noreferrer");
+  expect(screen.getByText("SQL").tagName).toBe("EM");
+  expect(screen.getByText("DuckDB").tagName).toBe("CODE");
+  expect(screen.getByText("longword".repeat(50)).closest(".break-words")).not.toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Tell me more about Flowbench" }));
+  expect(api.askQuestion).toHaveBeenLastCalledWith("Tell me more about Flowbench");
+  await waitFor(() => expect(screen.queryByLabelText("Assistant is thinking")).not.toBeInTheDocument());
+});
+
 test("ask bot renders markdown-bold instead of raw asterisks", async () => {
   api.getAskStatus.mockResolvedValue({ enabled: true });
   api.askQuestion.mockResolvedValue({ answer: "He built **flowbench**.\n- pipelines\n- validation" });
