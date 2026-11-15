@@ -12,7 +12,14 @@ export default function WarehouseTrends() {
 
   if (!data || data.total_events === 0) return null;
 
-  const daily = Object.entries(data.daily ?? {});
+  // Pad the window so a few days of data render as small bars, not one block.
+  const counts = data.daily ?? {};
+  const days = data.days ?? 14;
+  const daily = Array.from({ length: days }, (_, i) => {
+    const key = new Date(Date.now() - (days - 1 - i) * 86400000)
+      .toISOString().slice(0, 10);
+    return [key, counts[key] ?? 0];
+  });
   const events = Object.entries(data.top_events ?? {});
   const max = Math.max(1, ...daily.map(([, count]) => count));
 
