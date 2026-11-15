@@ -1,6 +1,6 @@
 {
   "kind": "building",
-  "label": "Adding a BigQuery analytics pipeline to this site",
-  "url": "https://github.com/arunangshu01/arunangshu-pramanik-portfolio",
+  "label": "Flowbench - data pipeline playground",
+  "url": "https://github.com/arunangshu01/flowbench",
   "updated_at": "2026-11-15"
 }
