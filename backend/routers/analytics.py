@@ -101,6 +101,22 @@ async def analytics_warehouse(request: Request, days: int = 14,
     return summary
 
 
+@router.get('/analytics/trends', status_code=status.HTTP_200_OK)
+async def analytics_trends(request: Request, response: Response, days: int = 14):
+    response.headers["Cache-Control"] = "public, max-age=300"
+    if not dashboard_rate_limiter.allow(client_ip(request)):
+        return _too_many("Too many trends requests")
+    if not analytics_sink.enabled:
+        return JSONResponse(status_code=503, content={"detail": "Trends unavailable"},
+                            headers={"Cache-Control": "no-store"})
+    try:
+        return await asyncio.to_thread(analytics_sink.public_trends, max(1, min(days, 90)))
+    except Exception:
+        logger.warning("Analytics trends query failed")
+        return JSONResponse(status_code=503, content={"detail": "Trends unavailable"},
+                            headers={"Cache-Control": "no-store"})
+
+
 def _view_stats(operation):
     try:
         return operation()

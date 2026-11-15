@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
-import { FiDownload, FiFileText } from "react-icons/fi";
-import { RESUME_DOWNLOAD_URL, RESUME_VIEW_URL, trackEvent } from "../api";
+import { FiDownload, FiFileText, FiPrinter } from "react-icons/fi";
+import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 
 const SOCIAL_ICONS = {
   linkedin: FaLinkedin,
@@ -151,6 +151,17 @@ export default function Hero({ info, summary, projects }) {
           >
             <FiDownload className="text-lg" />
             <span className="sm:hidden">Download</span>
+          </a>
+          <a
+            href={RESUME_PRINT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Print-friendly resume"
+            title="Print resume"
+            className="flex items-center justify-center gap-2 rounded-xl border border-accent/50 px-4 py-3 text-accent transition-colors hover:bg-accent/10"
+          >
+            <FiPrinter className="text-lg" />
+            <span className="sm:hidden">Print</span>
           </a>
           {socials &&
             Object.entries(socials).map(([label, url]) => {

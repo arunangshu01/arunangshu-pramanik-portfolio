@@ -52,9 +52,15 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/resume/print` | Print-friendly HTML resume rendered from the site's data |
 | GET | `/github_activity` | Cached GitHub profile stats and recent-event counts |
 | GET | `/github_feed` | Cached changelog feed of recent public GitHub events |
+| GET | `/github_wrapped` | 90-day GitHub aggregates: active days, streak, top repos |
+| GET | `/repo_health` | Stars, issues, language, last push per showcased repo |
 | GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
 | GET | `/status` | "Now playing" badge content from `information/now_status.json` |
 | PUT | `/status` | Update the now-status JSON (admin token required) |
+| GET | `/notes` | Note cards from `information/notes/*.md` (title, date, excerpt) |
+| GET | `/notes/{note_id}` | Full markdown body of one note |
+| GET | `/guestbook` | Recent guestbook entries (cached 60s) |
+| POST | `/guestbook` | Sign the guestbook (rate-limited) |
 | GET | `/share/{project_id}` | Per-project Open Graph page; redirects humans to `/#projects` |
 | GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
 | POST | `/ask` | Ask a question grounded in the portfolio data (rate-limited) |
@@ -63,6 +69,7 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/analytics/dashboard` | Public Stats aggregates: views, daily views, event/project counts |
 | GET | `/analytics/summary` | In-memory event counts (admin token required) |
 | GET | `/analytics/warehouse` | BigQuery event aggregates (admin token required) |
+| GET | `/analytics/trends` | Public-safe BigQuery aggregates (cached 5 min) |
 | GET | `/analytics/views` | Public aggregate total and estimated active sessions |
 | POST | `/analytics/views` | Register a view or heartbeat with anonymous UUIDs |
 
@@ -327,6 +334,28 @@ Recent public GitHub events rendered as a changelog feed ("Recently updated" car
 | `events[].created_at` | string | ISO 8601 timestamp from GitHub |
 
 **Errors:** `503` with `ActivityUnavailable` when the upstream call fails - the card hides entirely on failure or an empty feed.
+
+### `GET /github_wrapped`
+
+Aggregates over the ~90 days of public events GitHub exposes: `total_events`, `active_days` (distinct UTC dates), `current_streak` (consecutive active days ending today/yesterday), `top_repos` (top 5 by event count), `event_types` (per-type counts). Cached `SOCIAL_CACHE_SECONDS`, `max-age=300`. `503` `ActivityUnavailable` on upstream failure.
+
+### `GET /repo_health`
+
+For each `github_url` in `projects.json` (max 8), returns `{repo, repo_url, stars, open_issues, language, pushed_at}` from `api.github.com/repos`. Cached `SOCIAL_CACHE_SECONDS`, `max-age=300`. `503` when no repo data is fetchable; the frontend hides the chips row.
+
+### `GET /notes` and `GET /notes/{note_id}`
+
+Markdown notes in `backend/information/notes/`, named `YYYY-MM-DD-slug.md`. The first `# ` heading is the title; the first non-heading line is the excerpt. `GET /notes` returns `{notes: [{id, title, date, excerpt}]}` newest-first (`max-age=60`); `GET /notes/{id}` adds the raw `markdown` body (`max-age=300`). IDs must match `[a-z0-9-]+`; unknown or malformed IDs return `404` `NoteNotFound`. The frontend renders markdown with its own minimal renderer (headings, lists, code, links) after HTML-escaping.
+
+### `GET /guestbook` and `POST /guestbook`
+
+`GET /guestbook?limit=N` (≤ `GUESTBOOK_MAX_ENTRIES`, default 50) returns `{entries: [{name, message, created_at}]}` newest-first, `max-age=60`.
+
+`POST /guestbook` takes JSON `{name (1-60), message (1-280)}` and returns `201`. Rate-limited to 3 posts/hour/IP and 20/hour globally (`GUESTBOOK_RATE_LIMIT_*`), `429` with `Retry-After: 60` beyond that. Storage is Firestore when `GUESTBOOK_BACKEND=firestore` (collection `guestbook`), otherwise a bounded in-memory deque. Entries render as escaped text; no HTML, markdown, or links are interpreted.
+
+### `GET /analytics/trends`
+
+Public-safe aggregates from the BigQuery sink: `{days, daily, top_events, total_events}` - daily event counts and top event names only, no client IPs or metadata. Cached 5 minutes server-side and `max-age=300`. `503` when `ANALYTICS_SINK` isn't `bigquery`; rate-limited like `/analytics/dashboard`. Queries still honor `maximum_bytes_billed`.
 
 ---
 

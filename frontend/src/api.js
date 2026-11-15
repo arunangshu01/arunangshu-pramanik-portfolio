@@ -29,6 +29,31 @@ export const getProjects = () => get("/projects");
 export const getGithubActivity = () => get("/github_activity");
 export const getGithubFeed = () => get("/github_feed");
 export const getNowStatus = () => get("/status");
+export const getGithubWrapped = () => get("/github_wrapped");
+export const getRepoHealth = () => get("/repo_health");
+export const getAnalyticsTrends = () => get("/analytics/trends");
+export const getNotes = () => get("/notes");
+export const getNote = (id) => get(`/notes/${id}`);
+export const getGuestbook = () => get("/guestbook");
+
+export async function signGuestbook(name, message) {
+  const res = await fetch(`${API_BASE}/guestbook`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, message }),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    const error = new Error(
+      res.status === 429
+        ? "Too many entries. Please try again later."
+        : detail?.detail?.error_message ?? "Could not sign the guestbook."
+    );
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
 export const getLeetcodeStats = () => get("/leetcode_stats");
 export const getAskStatus = () => get("/ask/status");
 

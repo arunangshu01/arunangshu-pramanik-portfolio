@@ -7,7 +7,7 @@ import { FaLinkedin } from "react-icons/fa";
 import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 import { useModal } from "../useModal";
 
-const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Contact", "Stats"];
+const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Notes", "Contact", "Stats", "Guestbook"];
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
 const SOCIAL_LABELS = { github: "GitHub", linkedin: "LinkedIn", leetcode: "LeetCode" };
 
