@@ -1,4 +1,6 @@
+import asyncio
 import secrets
+import time
 from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from model.base_models_analytics import AnalyticsEvent, AnalyticsTrackSuccess, ViewPresence, \
@@ -7,6 +9,7 @@ from source.projects_extract import known_project_ids
 from utility.view_counter import view_counter
 from model.base_models_errors import ErrorResponseModel
 from utility.analytics import tracker
+from utility.analytics_sink import analytics_sink
 from utility.client_ip import client_ip
 from utility.logger import Logger
 from utility.rate_limit import InMemoryRateLimiter
@@ -48,6 +51,13 @@ async def track_event(event: AnalyticsEvent, request: Request):
         client=client,
         metadata=event.metadata
     )
+    if analytics_sink.enabled:
+        record = {
+            "event": event.event, "page": event.page, "client": client,
+            "metadata": event.metadata, "timestamp": time.time(),
+        }
+        # The sink may flush (a network load job), so never run it inline.
+        asyncio.get_running_loop().run_in_executor(None, analytics_sink.record, record)
     project = (event.metadata or {}).get("project")
     try:
         view_counter.record_event(event.event, project if project in known_project_ids() else None)
@@ -67,6 +77,28 @@ async def analytics_summary(request: Request, recent: int = 20,
         _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
                "Error: Invalid or missing admin token.")
     return tracker.summary(recent=max(1, min(recent, 500)))
+
+
+@router.get('/analytics/warehouse', status_code=status.HTTP_200_OK)
+async def analytics_warehouse(request: Request, days: int = 14,
+                              x_admin_token: str = Header(default="")):
+    if not ANALYTICS_ADMIN_TOKEN:
+        _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
+               "Error: Analytics warehouse is not enabled on this server.")
+    if not secrets.compare_digest(x_admin_token, ANALYTICS_ADMIN_TOKEN):
+        logger.warning(f"Unauthorized analytics warehouse request from {client_ip(request)}")
+        _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
+               "Error: Invalid or missing admin token.")
+    if not analytics_sink.enabled:
+        _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
+               "Error: Analytics warehouse is not enabled on this server.")
+    try:
+        summary = await asyncio.to_thread(analytics_sink.summary, max(1, min(days, 90)))
+    except Exception:
+        logger.warning("Analytics warehouse summary failed")
+        _error(status.HTTP_503_SERVICE_UNAVAILABLE, "WarehouseUnavailable",
+               "Error: Analytics warehouse is temporarily unavailable.")
+    return summary
 
 
 def _view_stats(operation):

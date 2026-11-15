@@ -55,6 +55,65 @@ async def github_activity() -> dict | None:
     })
 
 
+_EVENT_LABELS = {
+    'PushEvent': 'pushed to',
+    'CreateEvent': 'created',
+    'PullRequestEvent': 'opened a pull request in',
+    'PullRequestReviewEvent': 'reviewed a pull request in',
+    'IssuesEvent': 'opened an issue in',
+    'IssueCommentEvent': 'commented on an issue in',
+    'ReleaseEvent': 'released',
+    'ForkEvent': 'forked',
+    'WatchEvent': 'starred',
+    'DeleteEvent': 'deleted a ref in',
+}
+
+
+async def github_feed(limit: int = 12) -> dict | None:
+    """Recent public GitHub events rendered as a changelog feed. None on failure."""
+    cached = _cached('github_feed')
+    if cached is not None:
+        return cached
+    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
+            events_resp = await client.get(
+                f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
+                params={'per_page': 100},
+            )
+            events_resp.raise_for_status()
+        events = events_resp.json()
+    except Exception:
+        logger.warning('GitHub feed fetch failed')
+        return None
+    feed = []
+    for event in events:
+        event_type = event.get('type')
+        if event_type not in _EVENT_LABELS:
+            continue
+        repo = (event.get('repo') or {}).get('name', '')
+        item = {
+            'type': event_type,
+            'action': _EVENT_LABELS[event_type],
+            'repo': repo,
+            'repo_url': f'https://github.com/{repo}',
+            'created_at': event.get('created_at'),
+        }
+        if event_type == 'PushEvent':
+            payload = event.get('payload') or {}
+            commits = payload.get('commits') or []
+            item['detail'] = f"{payload.get('size', len(commits))} commit(s) to " \
+                             f"{(payload.get('ref') or '').rsplit('/', 1)[-1] or 'main'}"
+        elif event_type == 'CreateEvent':
+            item['detail'] = (event.get('payload') or {}).get('ref_type')
+        elif event_type == 'ReleaseEvent':
+            item['detail'] = ((event.get('payload') or {}).get('release') or {}).get('tag_name')
+        feed.append(item)
+        if len(feed) >= limit:
+            break
+    return _store('github_feed', {'username': GITHUB_USERNAME, 'events': feed})
+
+
 LEETCODE_QUERY = """
 query userStats($username: String!) {
   matchedUser(username: $username) {

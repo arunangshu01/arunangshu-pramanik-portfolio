@@ -43,6 +43,18 @@ ANALYTICS_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_MAX_REQU
 ANALYTICS_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('ANALYTICS_RATE_LIMIT_WINDOW_SECONDS', '60'))
 ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '600'))
 
+# Optional BigQuery analytics warehouse. Writes go through batch load jobs
+# (free) and admin queries set maximum_bytes_billed, keeping the whole feature
+# inside the free tier. Disabled unless ANALYTICS_SINK=bigquery.
+ANALYTICS_SINK = os.getenv('ANALYTICS_SINK', 'none')
+if ANALYTICS_SINK not in ('none', 'bigquery'):
+    raise ValueError('ANALYTICS_SINK must be none or bigquery')
+BQ_ANALYTICS_DATASET = os.getenv('BQ_ANALYTICS_DATASET', 'portfolio_analytics')
+BQ_ANALYTICS_TABLE = os.getenv('BQ_ANALYTICS_TABLE', 'events')
+BQ_FLUSH_SECONDS = int(os.getenv('BQ_FLUSH_SECONDS', '300'))
+BQ_FLUSH_BATCH = int(os.getenv('BQ_FLUSH_BATCH', '50'))
+BQ_MAX_BYTES_BILLED = int(os.getenv('BQ_MAX_BYTES_BILLED', '104857600'))
+
 # Public origin of the site; used for per-project share links and OG images.
 SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app').rstrip('/')
 
@@ -68,6 +80,7 @@ skills_file = os.path.join(f'{BASE_DIR.parent}/information', 'skills.json')
 education_details_file = os.path.join(f'{BASE_DIR.parent}/information', 'education_details.json')
 profile_summary_file = os.path.join(f'{BASE_DIR.parent}/information', 'profile_summary.json')
 awards_recognitions_file = os.path.join(f'{BASE_DIR.parent}/information', 'awards_recognitions.json')
+now_status_file = os.path.join(f'{BASE_DIR.parent}/information', 'now_status.json')
 resume_file = os.path.join(f'{BASE_DIR.parent}/assets', 'Arunangshu_Pramanik_CV.pdf')
 
 # JSON payloads are served through utility.json_cache.get_json_data(), which

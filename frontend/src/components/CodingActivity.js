@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { getGithubActivity, getLeetcodeStats, trackEvent } from "../api";
+import GitHubFeed from "./GitHubFeed";
 
 function Card({ icon: Icon, title, url, event, children }) {
   return (
@@ -32,7 +33,8 @@ export default function CodingActivity() {
   if (!github && !leetcode) return null;
 
   return (
-    <div className="mt-8 flex flex-col gap-3 sm:flex-row" aria-label="Coding activity">
+    <div className="mt-8" aria-label="Coding activity">
+      <div className="flex flex-col gap-3 sm:flex-row">
       {github && (
         <Card icon={SiGithub} title="On GitHub" url={github.profile_url} event="github_click">
           <p className="text-sm text-slate-200">
@@ -54,6 +56,8 @@ export default function CodingActivity() {
           </p>
         </Card>
       )}
+      </div>
+      <GitHubFeed />
     </div>
   );
 }
