@@ -119,7 +119,7 @@ def _print_resume_html() -> str:
             f'<p>{_esc(education.get("institution", ""))} · DGPA {_esc(education.get("dgpa", ""))}</p>')
     if awards:
         items = ''.join(
-            f'<li>{_esc(award.get("award", ""))} — {_esc(award.get("organization", ""))}'
+            f'<li>{_esc(award.get("award", ""))} - {_esc(award.get("organization", ""))}'
             f' <span class="muted">({award_periods(award)})</span></li>'
             for award in awards)
         sections.append(f'<h2>Awards &amp; Recognitions</h2><ul>{items}</ul>')

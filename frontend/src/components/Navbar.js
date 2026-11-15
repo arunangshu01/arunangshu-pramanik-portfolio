@@ -14,10 +14,14 @@ const LINKS = [
   ["Contact", "#contact"],
   ["Stats", "#stats"],
   ["Guestbook", "#guestbook"],
+  ["API", "#api"],
   ["Resume", RESUME_VIEW_URL, true],
 ];
 
-const DESKTOP_LINKS = LINKS;
+// The inline desktop row only has room for these; every section stays reachable
+// from the menu button (shown at all sizes) and the command palette.
+const SECONDARY = new Set(["Notes", "Guestbook", "API"]);
+const DESKTOP_LINKS = LINKS.filter(([label]) => !SECONDARY.has(label));
 
 const linkProps = (external) =>
   external ? { target: "_blank", rel: "noopener noreferrer" } : {};
@@ -25,13 +29,12 @@ const linkProps = (external) =>
 export default function Navbar({ name, light, onToggleTheme }) {
   const [open, setOpen] = useState(false);
 
-  // Close the mobile menu when the viewport grows to desktop width.
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const close = (e) => e.matches && setOpen(false);
-    mq.addEventListener("change", close);
-    return () => mq.removeEventListener("change", close);
-  }, []);
+    if (!open) return undefined;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <motion.nav
@@ -93,27 +96,31 @@ export default function Navbar({ name, light, onToggleTheme }) {
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle navigation menu"
             aria-expanded={open}
-            className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg border border-edge text-slate-300 transition-colors hover:border-accent/60 hover:text-accent lg:hidden"
+            aria-controls="site-menu"
+            title="All sections"
+            className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg border border-edge text-slate-300 transition-colors hover:border-accent/60 hover:text-accent"
           >
             {open ? <FiX /> : <FiMenu />}
           </button>
         </div>
       </div>
       {open && (
-        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-edge/60 bg-ink/95 px-4 py-3 backdrop-blur-xl sm:px-6 lg:hidden">
-          {LINKS.map(([label, href, external]) => (
-            <a
-              key={label}
-              href={href}
-              {...linkProps(external)}
-              onClick={() => setOpen(false)}
-              className={`block rounded-lg px-3 py-3 font-mono text-sm uppercase tracking-widest transition-colors hover:bg-white/5 hover:text-accent ${
-                external ? "text-accent" : "text-slate-300"
-              }`}
-            >
-              {label}
-            </a>
-          ))}
+        <div id="site-menu" className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-edge/60 bg-ink/95 px-4 py-3 backdrop-blur-xl sm:px-6">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {LINKS.map(([label, href, external]) => (
+              <a
+                key={label}
+                href={href}
+                {...linkProps(external)}
+                onClick={() => setOpen(false)}
+                className={`block rounded-lg px-3 py-3 font-mono text-sm uppercase tracking-widest transition-colors hover:bg-white/5 hover:text-accent ${
+                  external ? "text-accent" : "text-slate-300"
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </motion.nav>

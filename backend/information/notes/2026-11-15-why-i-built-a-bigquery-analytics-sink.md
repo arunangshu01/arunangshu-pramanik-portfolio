@@ -1,6 +1,6 @@
 # Why I built a BigQuery analytics sink for this site
 
-This portfolio now ships every tracked event to BigQuery — and it costs nothing.
+This portfolio now ships every tracked event to BigQuery - and it costs nothing.
 
 The trick is avoiding *streaming inserts*, which are billed per byte. Instead, the
 FastAPI backend buffers events in memory and flushes them through **batch load

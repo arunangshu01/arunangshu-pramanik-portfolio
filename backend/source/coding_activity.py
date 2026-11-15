@@ -1,58 +1,111 @@
+import asyncio
 import time
+from collections import Counter
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
+from utility.json_cache import get_json_data
 from utility.logger import Logger
-from utility.settings import GITHUB_USERNAME, LEETCODE_USERNAME, SOCIAL_CACHE_SECONDS
+from utility.settings import GITHUB_TOKEN, GITHUB_USERNAME, LEETCODE_USERNAME, \
+    SOCIAL_CACHE_SECONDS, projects_file
 
 logger = Logger(__name__)
 
-_cache: dict[str, tuple[float, dict]] = {}
+# After a failed upstream call, wait this long before trying again; the last
+# good value (if any) keeps being served in the meantime.
+FAILURE_BACKOFF_SECONDS = 60
+MAX_REPOS = 8
+
+# key -> (fetched_at, value); value may be None for a cached failure.
+_cache: dict[str, tuple[float, object]] = {}
+_last_good: dict[str, object] = {}
+_locks: dict[str, asyncio.Lock] = {}
 
 
-def _cached(key: str) -> dict | None:
+def _github_headers() -> dict:
+    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity',
+               'X-GitHub-Api-Version': '2022-11-28'}
+    if GITHUB_TOKEN:
+        headers['Authorization'] = f'Bearer {GITHUB_TOKEN}'
+    return headers
+
+
+async def _cached_fetch(key: str, loader):
+    """Fresh value, else the last good value during a backoff, else None.
+
+    A per-key lock collapses concurrent cold-cache requests into one upstream
+    call, and failures are cached briefly so an outage doesn't hammer the API.
+    """
     entry = _cache.get(key)
-    if entry and time.monotonic() - entry[0] < SOCIAL_CACHE_SECONDS:
-        return entry[1]
-    return None
+    if entry:
+        fetched_at, value = entry
+        ttl = SOCIAL_CACHE_SECONDS if value is not None else FAILURE_BACKOFF_SECONDS
+        if time.monotonic() - fetched_at < ttl:
+            return value if value is not None else _last_good.get(key)
+    lock = _locks.setdefault(key, asyncio.Lock())
+    async with lock:
+        entry = _cache.get(key)
+        if entry and time.monotonic() - entry[0] < (
+                SOCIAL_CACHE_SECONDS if entry[1] is not None else FAILURE_BACKOFF_SECONDS):
+            return entry[1] if entry[1] is not None else _last_good.get(key)
+        try:
+            value = await loader()
+        except Exception as error:
+            logger.warning(f'{key} fetch failed ({type(error).__name__})')
+            value = None
+        _cache[key] = (time.monotonic(), value)
+        if value is not None:
+            _last_good[key] = value
+            return value
+        return _last_good.get(key)
 
 
-def _store(key: str, value: dict) -> dict:
-    _cache[key] = (time.monotonic(), value)
-    return value
+def clear_cache() -> None:
+    _cache.clear()
+    _last_good.clear()
+
+
+async def _load_github_events() -> list:
+    async with httpx.AsyncClient(timeout=15, headers=_github_headers()) as client:
+        resp = await client.get(
+            f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
+            params={'per_page': 100})
+        resp.raise_for_status()
+    events = resp.json()
+    if not isinstance(events, list):
+        raise ValueError('unexpected GitHub events payload')
+    return events
+
+
+async def _github_events() -> list | None:
+    """Shared by activity, feed and wrapped: one upstream call per cache window."""
+    return await _cached_fetch('github_events', _load_github_events)
+
+
+async def _load_github_profile() -> dict:
+    async with httpx.AsyncClient(timeout=15, headers=_github_headers()) as client:
+        resp = await client.get(f'https://api.github.com/users/{GITHUB_USERNAME}')
+        resp.raise_for_status()
+    return resp.json()
 
 
 async def github_activity() -> dict | None:
     """Public profile stats plus a count of recent public events. None on failure."""
-    cached = _cached('github')
-    if cached is not None:
-        return cached
-    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-            profile_resp = await client.get(f'https://api.github.com/users/{GITHUB_USERNAME}')
-            profile_resp.raise_for_status()
-            events_resp = await client.get(
-                f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
-                params={'per_page': 100},
-            )
-            events_resp.raise_for_status()
-        profile = profile_resp.json()
-        events = events_resp.json()
-    except Exception:
-        logger.warning('GitHub activity fetch failed')
+    profile, events = await asyncio.gather(
+        _cached_fetch('github_profile', _load_github_profile), _github_events())
+    if profile is None or events is None:
         return None
     pushes = [event for event in events if event.get('type') == 'PushEvent']
-    latest = events[0].get('created_at') if events else None
-    return _store('github', {
+    return {
         'username': GITHUB_USERNAME,
         'public_repos': profile.get('public_repos', 0),
         'followers': profile.get('followers', 0),
         'recent_events': len(events),
         'recent_pushes': len(pushes),
-        'latest_activity': latest,
+        'latest_activity': max((e.get('created_at') or '' for e in events), default='') or None,
         'profile_url': f'https://github.com/{GITHUB_USERNAME}',
-    })
+    }
 
 
 _EVENT_LABELS = {
@@ -69,26 +122,13 @@ _EVENT_LABELS = {
 }
 
 
-async def github_feed(limit: int = 12) -> dict | None:
-    """Recent public GitHub events rendered as a changelog feed. None on failure."""
-    cached = _cached('github_feed')
-    if cached is not None:
-        return cached
-    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-            events_resp = await client.get(
-                f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
-                params={'per_page': 100},
-            )
-            events_resp.raise_for_status()
-        events = events_resp.json()
-    except Exception:
-        logger.warning('GitHub feed fetch failed')
-        return None
+def build_feed(events: list, limit: int = 12) -> list[dict]:
     feed = []
     seen: set[tuple] = set()
-    for event in events:
+    # GitHub doesn't strictly order events by time; sort newest-first so the
+    # dedupe keeps the most recent row and the feed reads chronologically.
+    ordered = sorted(events, key=lambda e: e.get('created_at') or '', reverse=True)
+    for event in ordered:
         event_type = event.get('type')
         if event_type not in _EVENT_LABELS:
             continue
@@ -117,35 +157,19 @@ async def github_feed(limit: int = 12) -> dict | None:
         feed.append(item)
         if len(feed) >= limit:
             break
-    return _store('github_feed', {'username': GITHUB_USERNAME, 'events': feed})
+    return feed
 
 
-async def _github_events() -> list | None:
-    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-            resp = await client.get(
-                f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
-                params={'per_page': 100},
-            )
-            resp.raise_for_status()
-        return resp.json()
-    except Exception:
-        logger.warning('GitHub events fetch failed')
-        return None
-
-
-async def github_wrapped() -> dict | None:
-    """Aggregate stats over the ~90 days of public events GitHub exposes."""
-    cached = _cached('github_wrapped')
-    if cached is not None:
-        return cached
+async def github_feed(limit: int = 12) -> dict | None:
+    """Recent public GitHub events rendered as a changelog feed. None on failure."""
     events = await _github_events()
     if events is None:
         return None
-    from collections import Counter
-    from datetime import datetime, timezone
-    days = set()
+    return {'username': GITHUB_USERNAME, 'events': build_feed(events, limit)}
+
+
+def build_wrapped(events: list, today=None) -> dict:
+    days: set[str] = set()
     types: Counter = Counter()
     repos: Counter = Counter()
     for event in events:
@@ -156,15 +180,14 @@ async def github_wrapped() -> dict | None:
         repo = (event.get('repo') or {}).get('name', '').split('/')[-1]
         if repo:
             repos[repo] += 1
-    # Streak: consecutive active days ending today or yesterday.
-    today = datetime.now(timezone.utc).date()
-    start = today if today.isoformat() in days else today.fromordinal(today.toordinal() - 1)
+    # Streak: consecutive active days ending today, or yesterday if today is quiet.
+    today = today or datetime.now(timezone.utc).date()
+    day = today if today.isoformat() in days else today - timedelta(days=1)
     streak = 0
-    day = start
     while day.isoformat() in days:
         streak += 1
-        day = day.fromordinal(day.toordinal() - 1)
-    return _store('github_wrapped', {
+        day -= timedelta(days=1)
+    return {
         'username': GITHUB_USERNAME,
         'window_days': 90,
         'total_events': len(events),
@@ -172,53 +195,59 @@ async def github_wrapped() -> dict | None:
         'current_streak': streak,
         'top_repos': [{'repo': name, 'events': count} for name, count in repos.most_common(5)],
         'event_types': dict(types.most_common()),
-    })
+    }
 
 
-_REPO_CACHE_KEY = 'repo_health'
+async def github_wrapped() -> dict | None:
+    """Aggregate stats over the ~90 days of public events GitHub exposes."""
+    events = await _github_events()
+    return None if events is None else build_wrapped(events)
+
+
+def showcased_repos() -> list[str]:
+    try:
+        projects = get_json_data(projects_file)
+    except Exception:
+        return []
+    repos = []
+    for project in projects if isinstance(projects, list) else []:
+        url = (project.get('github_url') or '').rstrip('/')
+        if url.startswith('https://github.com/'):
+            name = url.removeprefix('https://github.com/')
+            if name.count('/') == 1 and name not in repos:
+                repos.append(name)
+    return repos[:MAX_REPOS]
+
+
+async def _load_repo_health() -> dict | None:
+    repos = showcased_repos()
+    if not repos:
+        return None
+    async with httpx.AsyncClient(timeout=15, headers=_github_headers()) as client:
+        responses = await asyncio.gather(
+            *(client.get(f'https://api.github.com/repos/{name}') for name in repos),
+            return_exceptions=True)
+    results = []
+    for resp in responses:
+        if isinstance(resp, Exception) or resp.status_code != 200:
+            continue
+        data = resp.json()
+        results.append({
+            'repo': data.get('name'),
+            'repo_url': data.get('html_url'),
+            'stars': data.get('stargazers_count', 0),
+            'open_issues': data.get('open_issues_count', 0),
+            'language': data.get('language'),
+            'pushed_at': data.get('pushed_at'),
+        })
+    if not results:
+        raise ValueError('no repository data available')
+    return {'repos': results}
 
 
 async def repo_health() -> dict | None:
     """Per-repo stats for showcased projects: stars, issues, last push, language."""
-    cached = _cached(_REPO_CACHE_KEY)
-    if cached is not None:
-        return cached
-    from utility.json_cache import get_json_data
-    from utility.settings import projects_file
-    try:
-        projects = get_json_data(projects_file)
-    except Exception:
-        projects = []
-    repos = []
-    for project in projects or []:
-        url = project.get('github_url') or ''
-        if 'github.com/' in url:
-            repos.append(url.rstrip('/').split('github.com/', 1)[-1])
-    if not repos:
-        return None
-    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
-    results = {}
-    try:
-        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
-            for full_name in repos[:8]:
-                resp = await client.get(f'https://api.github.com/repos/{full_name}')
-                if resp.status_code != 200:
-                    continue
-                data = resp.json()
-                results[full_name] = {
-                    'repo': data.get('name'),
-                    'repo_url': data.get('html_url'),
-                    'stars': data.get('stargazers_count', 0),
-                    'open_issues': data.get('open_issues_count', 0),
-                    'language': data.get('language'),
-                    'pushed_at': data.get('pushed_at'),
-                }
-    except Exception:
-        logger.warning('Repo health fetch failed')
-        return None
-    if not results:
-        return None
-    return _store(_REPO_CACHE_KEY, {'repos': list(results.values())})
+    return await _cached_fetch('repo_health', _load_repo_health)
 
 
 LEETCODE_QUERY = """
@@ -233,30 +262,22 @@ query userStats($username: String!) {
 """
 
 
-async def leetcode_stats() -> dict | None:
-    """Solved-problem counts from LeetCode's public GraphQL API. None on failure."""
-    cached = _cached('leetcode')
-    if cached is not None:
-        return cached
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            response = await client.post(
-                'https://leetcode.com/graphql',
-                headers={'Content-Type': 'application/json',
-                         'Referer': f'https://leetcode.com/u/{LEETCODE_USERNAME}/',
-                         'User-Agent': 'portfolio-activity'},
-                json={'query': LEETCODE_QUERY, 'variables': {'username': LEETCODE_USERNAME}},
-            )
-            response.raise_for_status()
-        user = (response.json().get('data') or {}).get('matchedUser')
-        if not user:
-            return None
-        counts = {row['difficulty']: row['count']
-                  for row in user['submitStatsGlobal']['acSubmissionNum']}
-    except Exception:
-        logger.warning('LeetCode stats fetch failed')
-        return None
-    return _store('leetcode', {
+async def _load_leetcode() -> dict:
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.post(
+            'https://leetcode.com/graphql',
+            headers={'Content-Type': 'application/json',
+                     'Referer': f'https://leetcode.com/u/{LEETCODE_USERNAME}/',
+                     'User-Agent': 'portfolio-activity'},
+            json={'query': LEETCODE_QUERY, 'variables': {'username': LEETCODE_USERNAME}},
+        )
+        response.raise_for_status()
+    user = (response.json().get('data') or {}).get('matchedUser')
+    if not user:
+        raise ValueError('LeetCode user not found')
+    counts = {row['difficulty']: row['count']
+              for row in user['submitStatsGlobal']['acSubmissionNum']}
+    return {
         'username': LEETCODE_USERNAME,
         'solved': counts.get('All', 0),
         'easy': counts.get('Easy', 0),
@@ -264,4 +285,9 @@ async def leetcode_stats() -> dict | None:
         'hard': counts.get('Hard', 0),
         'ranking': (user.get('profile') or {}).get('ranking'),
         'profile_url': f'https://leetcode.com/u/{LEETCODE_USERNAME}/',
-    })
+    }
+
+
+async def leetcode_stats() -> dict | None:
+    """Solved-problem counts from LeetCode's public GraphQL API. None on failure."""
+    return await _cached_fetch('leetcode', _load_leetcode)

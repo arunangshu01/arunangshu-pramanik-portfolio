@@ -10,7 +10,7 @@ ClientEvent = Literal[
     "palette_open", "palette_command", "music_play",
     "project_click", "project_preview", "project_case_study",
     "github_click", "linkedin_click", "leetcode_click", "email_click",
-    "share_click", "ask_open",
+    "share_click", "ask_open", "api_try",
 ]
 CLIENT_EVENTS = frozenset(get_args(ClientEvent))
 # Recorded by the API itself (never accepted from /analytics/track).

@@ -24,6 +24,7 @@ const EVENT_LABELS = {
   palette_command: "Palette commands",
   theme_toggle: "Theme toggles",
   music_play: "Music plays",
+  api_try: "API requests tried",
 };
 
 const eventLabel = (event) =>
@@ -31,12 +32,12 @@ const eventLabel = (event) =>
 
 function StatCard({ label, value, live }) {
   return (
-    <div className="glass-card p-5 text-center">
-      <p className="font-display text-3xl font-bold text-white">
-        {live && <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-accent align-middle" aria-hidden="true" />}
+    <div className="glass-card min-w-0 p-3 text-center sm:p-5">
+      <p className="font-display text-xl font-bold text-white sm:text-3xl">
+        {live && <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-accent align-middle sm:mr-2" aria-hidden="true" />}
         {value.toLocaleString()}
       </p>
-      <p className="mt-1 font-mono text-xs uppercase tracking-widest text-slate-500">{label}</p>
+      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500 sm:text-xs sm:tracking-widest">{label}</p>
     </div>
   );
 }
@@ -51,7 +52,7 @@ export default function Stats({ state, projectNames = {} }) {
         const projects = Object.entries(data.projects ?? {});
         return (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <StatCard label="Total views" value={data.total_views} />
               <StatCard label="Viewing now" value={data.viewing_now} live />
               <StatCard label="Views · 14 days" value={daily.reduce((sum, day) => sum + day.views, 0)} />

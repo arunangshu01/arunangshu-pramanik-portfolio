@@ -8,6 +8,9 @@ import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } fr
 import { useModal } from "../useModal";
 
 const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Notes", "Contact", "Stats", "Guestbook"];
+const EXTRA_SECTIONS = [
+  { label: "API Playground", hash: "#api", keywords: "api playground console endpoints try request json" },
+];
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
 const SOCIAL_LABELS = { github: "GitHub", linkedin: "LinkedIn", leetcode: "LeetCode" };
 
@@ -54,6 +57,10 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
       ...SECTIONS.map((label) => ({
         id: `section-${label.toLowerCase()}`, group: "Navigate", label: `Go to ${label}`,
         keywords: label.toLowerCase(), run: go(`#${label.toLowerCase()}`),
+      })),
+      ...EXTRA_SECTIONS.map(({ label, hash, keywords }) => ({
+        id: `section-${hash.slice(1)}`, group: "Navigate", label: `Go to ${label}`,
+        keywords, run: go(hash),
       })),
       { id: "resume-view", group: "Actions", label: "View resume", icon: FiFileText,
         keywords: "resume view cv", run: () => window.open(RESUME_VIEW_URL, "_blank", "noopener") },
@@ -116,7 +123,7 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               onKeyDown={onInputKey}
               placeholder="Type a command or search…"
               aria-label="Command palette search"
-              className="w-full bg-transparent font-mono text-sm text-white outline-none placeholder:text-slate-600"
+              className="w-full bg-transparent font-mono text-base text-white sm:text-sm outline-none placeholder:text-slate-600"
             />
             <button type="button" onClick={() => setOpen(false)} aria-label="Close command palette"
               className="shrink-0 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-slate-500 transition-colors hover:border-accent/60 hover:text-accent">esc</button>

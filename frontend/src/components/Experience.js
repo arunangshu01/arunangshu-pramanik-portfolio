@@ -45,7 +45,7 @@ function Job({ job, index }) {
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-accent transition-colors hover:text-accent2"
+            className="-ml-2 mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-2 font-mono text-xs text-accent transition-colors hover:text-accent2"
           >
             <FiChevronDown
               aria-hidden="true"

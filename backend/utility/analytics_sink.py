@@ -3,7 +3,7 @@
 Cost model: events are buffered in memory and flushed as newline-delimited JSON
 through BigQuery *load jobs*, which are free (streaming inserts are billed, so
 they are deliberately not used). Admin reads set ``maximum_bytes_billed`` so a
-query can never scan more than the configured cap — keeping the feature inside
+query can never scan more than the configured cap - keeping the feature inside
 the free tier (1 TB/month of queries, 10 GB storage). Disabled unless
 ANALYTICS_SINK=bigquery.
 """
@@ -28,6 +28,10 @@ from utility.settings import (
 )
 
 logger = Logger(__name__)
+
+TRENDS_CACHE_SECONDS = 300
+# Public trends only accept these windows, bounding distinct cached queries.
+TRENDS_WINDOWS = (7, 14, 30)
 
 SCHEMA = [
     ("event", "STRING"),
@@ -114,7 +118,7 @@ class BigQueryAnalyticsSink:
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-            autodetect=True,
+            schema=[bigquery.SchemaField(name, kind) for name, kind in SCHEMA],
         )
         try:
             job = self.client.load_table_from_file(
@@ -159,9 +163,10 @@ class BigQueryAnalyticsSink:
         }
 
     def public_trends(self, days: int = 14) -> dict:
-        """Public-safe aggregates: no client IPs, no metadata, short cache."""
-        cached = getattr(self, "_trends", None)
-        if cached and time.monotonic() - cached[0] < 300:
+        """Public-safe aggregates: no client IPs, no metadata, cached per window."""
+        cache = self.__dict__.setdefault("_trends", {})
+        cached = cache.get(days)
+        if cached and time.monotonic() - cached[0] < TRENDS_CACHE_SECONDS:
             return cached[1]
         summary = self.summary(days)
         result = {
@@ -170,7 +175,7 @@ class BigQueryAnalyticsSink:
             "top_events": dict(list(summary["totals"].items())[:8]),
             "total_events": summary["total_events"],
         }
-        self._trends = (time.monotonic(), result)
+        cache[days] = (time.monotonic(), result)
         return result
 
 

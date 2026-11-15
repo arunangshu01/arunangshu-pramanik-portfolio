@@ -19,12 +19,13 @@ export default function NowPlaying() {
   if (!status?.label) return null;
 
   const content = (
-    <span className="flex items-center gap-2 text-sm text-slate-300">
+    <span className="flex items-center gap-2 text-left text-sm text-slate-300">
       <span className="relative flex h-2 w-2 shrink-0">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:animate-none" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
       </span>
-      <span className="truncate">
+      {/* Wrap on narrow screens rather than truncating the label. */}
+      <span className="min-w-0 [overflow-wrap:anywhere] sm:truncate">
         <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">
           {KIND_LABEL[status.kind] ?? "Now"}
         </span>

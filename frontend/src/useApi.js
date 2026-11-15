@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// Render's free tier sleeps when idle; while it wakes, requests fail with
+// Cloud Run scales to zero when idle; during a cold start, requests can fail with
 // 502/503/504 (often surfacing as a network TypeError since the error page has
 // no CORS headers). Those are retried; real errors like 404/422 are not.
 const RETRYABLE_STATUS = new Set([502, 503, 504]);
