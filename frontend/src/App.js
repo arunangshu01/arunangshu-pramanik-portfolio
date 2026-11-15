@@ -28,6 +28,8 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Projects from "./components/Projects";
 import Stats from "./components/Stats";
+import Notes from "./components/Notes";
+import Guestbook from "./components/Guestbook";
 
 // Skills carries ~80 KB of brand icons; split it out of the critical bundle.
 const Skills = lazy(() => import("./components/Skills"));
@@ -99,8 +101,10 @@ function App() {
         <Experience state={experience} />
         <Education state={education} />
         <Awards state={awards} />
+        <Notes />
         <Contact />
         <Stats state={dashboard} projectNames={projectNames} />
+        <Guestbook />
       </main>
       <Footer info={info.data} />
     </div>

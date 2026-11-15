@@ -10,8 +10,10 @@ const LINKS = [
   ["Experience", "#experience"],
   ["Education", "#education"],
   ["Awards", "#awards"],
+  ["Notes", "#notes"],
   ["Contact", "#contact"],
   ["Stats", "#stats"],
+  ["Guestbook", "#guestbook"],
   ["Resume", RESUME_VIEW_URL, true],
 ];
 

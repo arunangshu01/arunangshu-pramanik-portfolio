@@ -47,6 +47,9 @@ class NullSink:
     def summary(self, days: int) -> dict | None:
         return None
 
+    def public_trends(self, days: int) -> dict | None:
+        return None
+
 
 class BigQueryAnalyticsSink:
     """Buffered event recorder; flushes via free batch load jobs."""
@@ -154,6 +157,21 @@ class BigQueryAnalyticsSink:
             "daily": dict(sorted(daily.items())),
             "total_events": sum(totals.values()),
         }
+
+    def public_trends(self, days: int = 14) -> dict:
+        """Public-safe aggregates: no client IPs, no metadata, short cache."""
+        cached = getattr(self, "_trends", None)
+        if cached and time.monotonic() - cached[0] < 300:
+            return cached[1]
+        summary = self.summary(days)
+        result = {
+            "days": days,
+            "daily": summary["daily"],
+            "top_events": dict(list(summary["totals"].items())[:8]),
+            "total_events": summary["total_events"],
+        }
+        self._trends = (time.monotonic(), result)
+        return result
 
 
 analytics_sink = BigQueryAnalyticsSink() if ANALYTICS_SINK == "bigquery" else NullSink()

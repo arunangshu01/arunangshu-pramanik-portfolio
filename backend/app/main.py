@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import health_check, personal_info, profile_summary, skills, education_details, experience, \
     awards_recognitions, send_email, resume, analytics, projects, ask, coding_activity, share, \
-    now_status
+    now_status, guestbook, notes
 from utility.settings import API_COMMON_PREFIX, HOST, PORT, DEBUG_MODE, CORS_ORIGINS
 
 tags_metadata = [
@@ -62,6 +62,14 @@ tags_metadata = [
     {
         "name": "Now Status",
         "description": "What Arunangshu is currently building or reading"
+    },
+    {
+        "name": "Guestbook",
+        "description": "Visitor guestbook"
+    },
+    {
+        "name": "Notes",
+        "description": "Short engineering notes rendered from markdown"
     }
 ]
 
@@ -91,6 +99,8 @@ app.include_router(ask.router, prefix=API_COMMON_PREFIX)
 app.include_router(coding_activity.router, prefix=API_COMMON_PREFIX)
 app.include_router(share.router, prefix=API_COMMON_PREFIX)
 app.include_router(now_status.router, prefix=API_COMMON_PREFIX)
+app.include_router(guestbook.router, prefix=API_COMMON_PREFIX)
+app.include_router(notes.router, prefix=API_COMMON_PREFIX)
 
 app.add_middleware(
     CORSMiddleware,

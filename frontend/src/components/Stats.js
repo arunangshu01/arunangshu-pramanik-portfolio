@@ -1,4 +1,5 @@
 import Section from "./Section";
+import WarehouseTrends from "./WarehouseTrends";
 
 const EVENT_LABELS = {
   page_view: "Page views",
@@ -109,6 +110,8 @@ export default function Stats({ state, projectNames = {} }) {
                 </div>
               )}
             </div>
+
+            <WarehouseTrends />
           </div>
         );
       }}

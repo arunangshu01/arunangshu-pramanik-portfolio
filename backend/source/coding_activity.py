@@ -120,6 +120,107 @@ async def github_feed(limit: int = 12) -> dict | None:
     return _store('github_feed', {'username': GITHUB_USERNAME, 'events': feed})
 
 
+async def _github_events() -> list | None:
+    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
+            resp = await client.get(
+                f'https://api.github.com/users/{GITHUB_USERNAME}/events/public',
+                params={'per_page': 100},
+            )
+            resp.raise_for_status()
+        return resp.json()
+    except Exception:
+        logger.warning('GitHub events fetch failed')
+        return None
+
+
+async def github_wrapped() -> dict | None:
+    """Aggregate stats over the ~90 days of public events GitHub exposes."""
+    cached = _cached('github_wrapped')
+    if cached is not None:
+        return cached
+    events = await _github_events()
+    if events is None:
+        return None
+    from collections import Counter
+    from datetime import datetime, timezone
+    days = set()
+    types: Counter = Counter()
+    repos: Counter = Counter()
+    for event in events:
+        created = event.get('created_at')
+        if created:
+            days.add(created[:10])
+        types[event.get('type') or 'Other'] += 1
+        repo = (event.get('repo') or {}).get('name', '').split('/')[-1]
+        if repo:
+            repos[repo] += 1
+    # Streak: consecutive active days ending today or yesterday.
+    today = datetime.now(timezone.utc).date()
+    start = today if today.isoformat() in days else today.fromordinal(today.toordinal() - 1)
+    streak = 0
+    day = start
+    while day.isoformat() in days:
+        streak += 1
+        day = day.fromordinal(day.toordinal() - 1)
+    return _store('github_wrapped', {
+        'username': GITHUB_USERNAME,
+        'window_days': 90,
+        'total_events': len(events),
+        'active_days': len(days),
+        'current_streak': streak,
+        'top_repos': [{'repo': name, 'events': count} for name, count in repos.most_common(5)],
+        'event_types': dict(types.most_common()),
+    })
+
+
+_REPO_CACHE_KEY = 'repo_health'
+
+
+async def repo_health() -> dict | None:
+    """Per-repo stats for showcased projects: stars, issues, last push, language."""
+    cached = _cached(_REPO_CACHE_KEY)
+    if cached is not None:
+        return cached
+    from utility.json_cache import get_json_data
+    from utility.settings import projects_file
+    try:
+        projects = get_json_data(projects_file)
+    except Exception:
+        projects = []
+    repos = []
+    for project in projects or []:
+        url = project.get('github_url') or ''
+        if 'github.com/' in url:
+            repos.append(url.rstrip('/').split('github.com/', 1)[-1])
+    if not repos:
+        return None
+    headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'portfolio-activity'}
+    results = {}
+    try:
+        async with httpx.AsyncClient(timeout=15, headers=headers) as client:
+            for full_name in repos[:8]:
+                resp = await client.get(f'https://api.github.com/repos/{full_name}')
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                results[full_name] = {
+                    'repo': data.get('name'),
+                    'repo_url': data.get('html_url'),
+                    'stars': data.get('stargazers_count', 0),
+                    'open_issues': data.get('open_issues_count', 0),
+                    'language': data.get('language'),
+                    'pushed_at': data.get('pushed_at'),
+                }
+    except Exception:
+        logger.warning('Repo health fetch failed')
+        return None
+    if not results:
+        return None
+    return _store(_REPO_CACHE_KEY, {'repos': list(results.values())})
+
+
 LEETCODE_QUERY = """
 query userStats($username: String!) {
   matchedUser(username: $username) {

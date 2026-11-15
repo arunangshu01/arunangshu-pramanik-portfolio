@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { SiGithub, SiLeetcode } from "react-icons/si";
 import { getGithubActivity, getLeetcodeStats, trackEvent } from "../api";
 import GitHubFeed from "./GitHubFeed";
+import GitHubWrapped from "./GitHubWrapped";
+import RepoHealth from "./RepoHealth";
 
 function Card({ icon: Icon, title, url, event, children }) {
   return (
@@ -57,6 +59,8 @@ export default function CodingActivity() {
         </Card>
       )}
       </div>
+      <GitHubWrapped />
+      <RepoHealth />
       <GitHubFeed />
     </div>
   );

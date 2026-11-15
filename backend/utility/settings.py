@@ -55,6 +55,16 @@ BQ_FLUSH_SECONDS = int(os.getenv('BQ_FLUSH_SECONDS', '300'))
 BQ_FLUSH_BATCH = int(os.getenv('BQ_FLUSH_BATCH', '50'))
 BQ_MAX_BYTES_BILLED = int(os.getenv('BQ_MAX_BYTES_BILLED', '104857600'))
 
+# Guestbook: Firestore in production, in-memory locally. Tight limits and a
+# short message cap keep it cheap and un-abusable.
+GUESTBOOK_BACKEND = os.getenv('GUESTBOOK_BACKEND', 'memory')
+if GUESTBOOK_BACKEND not in ('memory', 'firestore'):
+    raise ValueError('GUESTBOOK_BACKEND must be memory or firestore')
+GUESTBOOK_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('GUESTBOOK_RATE_LIMIT_MAX_REQUESTS', '3'))
+GUESTBOOK_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('GUESTBOOK_RATE_LIMIT_WINDOW_SECONDS', '3600'))
+GUESTBOOK_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('GUESTBOOK_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '20'))
+GUESTBOOK_MAX_ENTRIES = int(os.getenv('GUESTBOOK_MAX_ENTRIES', '50'))
+
 # Public origin of the site; used for per-project share links and OG images.
 SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app').rstrip('/')
 
@@ -81,6 +91,7 @@ education_details_file = os.path.join(f'{BASE_DIR.parent}/information', 'educati
 profile_summary_file = os.path.join(f'{BASE_DIR.parent}/information', 'profile_summary.json')
 awards_recognitions_file = os.path.join(f'{BASE_DIR.parent}/information', 'awards_recognitions.json')
 now_status_file = os.path.join(f'{BASE_DIR.parent}/information', 'now_status.json')
+notes_dir = os.path.join(f'{BASE_DIR.parent}/information', 'notes')
 resume_file = os.path.join(f'{BASE_DIR.parent}/assets', 'Arunangshu_Pramanik_CV.pdf')
 
 # JSON payloads are served through utility.json_cache.get_json_data(), which
