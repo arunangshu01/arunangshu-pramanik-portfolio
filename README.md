@@ -4,7 +4,6 @@ Personal portfolio with a J.A.R.V.I.S.-themed React frontend and a FastAPI backe
 
 - GCP target site (available after provisioning and deployment): https://arunangshu-pramanik-portfolio.web.app/
 - GCP API docs (same Hosting origin): https://arunangshu-pramanik-portfolio.web.app/arunangshu_pramanik/portfolio/v1/docs
-- Previous Render site: https://arunangshu-pramanik-portfolio-frontend.onrender.com/
 - Detailed API reference: [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION.md)
 
 ## Repository layout
@@ -74,6 +73,10 @@ Open `http://localhost:3000`. The development proxy forwards `/arunangshu_praman
 | `ANALYTICS_RATE_LIMIT_MAX_REQUESTS` | Analytics requests per IP per window, `30` |
 | `ANALYTICS_RATE_LIMIT_WINDOW_SECONDS` | Analytics rate-limit window, `60` |
 | `ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS` | Analytics requests across all clients per window, `600` |
+| `ANALYTICS_SINK` | `none` (default) or `bigquery`: buffers `/analytics/track` events and flushes them to BigQuery via free batch load jobs |
+| `BQ_ANALYTICS_DATASET`, `BQ_ANALYTICS_TABLE` | BigQuery destination, `portfolio_analytics.events`; created automatically on first flush |
+| `BQ_FLUSH_SECONDS`, `BQ_FLUSH_BATCH` | Flush triggers: every `300`s or at `50` buffered events, whichever comes first |
+| `BQ_MAX_BYTES_BILLED` | Per-query scan cap on `/analytics/warehouse`, `104857600` (100 MB) — keeps reads inside the free tier |
 | `SITE_URL` | Public site origin used for share links and OG images |
 | `GITHUB_USERNAME`, `LEETCODE_USERNAME` | Public profiles behind the coding-activity cards |
 | `SOCIAL_CACHE_SECONDS` | Server cache for GitHub/LeetCode responses, `600` |
@@ -109,7 +112,10 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/resume/download` | Resume PDF attachment |
 | GET | `/resume/print` | Print-friendly HTML resume rendered from the site's data files |
 | GET | `/github_activity` | Cached public GitHub profile stats and recent-event counts |
+| GET | `/github_feed` | Cached recent public GitHub events rendered as a changelog (deduplicated per action+repo) |
 | GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
+| GET | `/status` | "Now playing" status from `information/now_status.json`; cached 60s |
+| PUT | `/status` | Update the now-status JSON; requires `X-Admin-Token` |
 | GET | `/share/{project_id}` | Per-project Open Graph page; humans are redirected to `/#projects` |
 | GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
 | POST | `/ask` | Ask a question grounded in the portfolio data; rate-limited, `503` when no LLM key is configured |
@@ -117,6 +123,7 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | POST | `/analytics/track` | JSON analytics event from a fixed allowlist; rate-limited |
 | GET | `/analytics/dashboard` | Public Stats section: aggregate views, daily views, event and project counts; cached 30s, rate-limited |
 | GET | `/analytics/summary` | Private in-memory event counts; requires `X-Admin-Token` |
+| GET | `/analytics/warehouse` | Aggregated BigQuery event counts (`?days=`); requires `X-Admin-Token`, `503` when the sink is off |
 | GET | `/analytics/views` | Public aggregate total views and estimated active sessions; does not increment |
 | POST | `/analytics/views` | Register a page load or refresh presence with anonymous UUIDs; rate-limited |
 
@@ -157,6 +164,8 @@ The footer displays **total views** and **viewing now (approx.)**. It refreshes 
 - `GET /share/{project_id}` returns a page carrying that project's Open Graph/Twitter tags (its own screenshot as `og:image`) and redirects human visitors to `/#projects`. The case-study overlay's link button copies it; sharing that URL on social platforms shows the project card.
 - `GET /resume/print` renders a print-friendly HTML resume from the same JSON data as the site, so it stays in sync with content edits. Reachable via the command palette's "Print resume" action.
 - The coding-activity cards under About call cached `GET /github_activity` (public profile + recent event counts) and `GET /leetcode_stats` (solved counts + ranking via LeetCode's public GraphQL). Each is cached server-side for `SOCIAL_CACHE_SECONDS` and hides entirely on failure - no false zeros.
+- Below those cards, a "Recently updated" card lists `GET /github_feed` events (pushes, PRs, reviews, releases, deduplicated per action+repo), and the footer shows a pulsing "now" badge from `GET /status`. Update the badge without a deploy via `PUT /status` and the admin token, or edit `backend/information/now_status.json` (`kind`: `building`/`reading`/`learning`/`exploring`/`listening`, plus `label` and optional `url`). Both components self-hide on failure or empty data.
+- With `ANALYTICS_SINK=bigquery`, tracked events are buffered and flushed to `portfolio_analytics.events` via batch load jobs, which are free (streaming inserts are billed and deliberately unused). The runtime service account needs `roles/bigquery.dataEditor` + `roles/bigquery.jobUser`. `GET /analytics/warehouse?days=N` returns admin aggregates; every query sets `maximum_bytes_billed` so reads cannot exceed the free tier. Failed flushes re-buffer rows, and a final flush runs at shutdown.
 
 ## Verification and contribution workflow
 
@@ -375,7 +384,7 @@ Then:
 
 - In Cloud Monitoring, add an HTTPS uptime check for your Hosting domain at `/arunangshu_pramanik/portfolio/v1/health` and an email notification channel; configure availability and Cloud Run 5xx alerts. Review monitoring costs before enabling checks.
 - Use Cloud Run → Logs for startup and delivery failures. Never add credential values or contact message bodies to logs.
-- Keep the old Render services during validation. Update external profile links/Search Console to the new site only after successful smoke tests. Disable old Render auto-deploys after cutover; suspend/delete resources only when you decide they are no longer needed.
+- Update external profile links/Search Console to the new site after successful smoke tests. The legacy Render deployment has been decommissioned; only the Firebase Hosting + Cloud Run stack is live.
 - SEO canonical/Open Graph/sitemap URLs target the proposed Firebase site. If you later add a custom domain, verify its DNS/TLS in Firebase and update SEO URLs plus allowed origins in the same PR.
 - Backend and frontend updates are sequential, not atomic. Keep API changes backward-compatible. If Hosting deployment fails after API deployment, the previous frontend remains live against the new API.
 - For a normal rollback, revert the faulty change via a new PR, pass CI, and merge. For an emergency, a GCP administrator can route Cloud Run traffic to a known-good revision and restore a previous Firebase Hosting release in the consoles; coordinate both sides. A later Deploy will replace that manual rollback.

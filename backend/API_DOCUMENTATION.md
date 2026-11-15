@@ -7,7 +7,9 @@ REST API for the portfolio frontend. Built with FastAPI; serves resume/portfolio
 | Environment | Base URL |
 |---|---|
 | Local | `http://localhost:8080/arunangshu_pramanik/portfolio/v1` |
-| Production (Render) | `https://arunangshu-pramanik-portfolio.onrender.com/arunangshu_pramanik/portfolio/v1` |
+| Production | `https://arunangshu-pramanik-portfolio.web.app/arunangshu_pramanik/portfolio/v1` |
+
+Production serves the frontend on Firebase Hosting; a Hosting rewrite proxies `/arunangshu_pramanik/**` to the `portfolio-api` Cloud Run service (`asia-south1`), so the API is same-origin in the browser.
 
 All endpoints below are relative to the base URL.
 
@@ -19,17 +21,17 @@ All endpoints below are relative to the base URL.
 
 ## Conventions
 
-- **Auth:** none. All endpoints are public.
-- **GET endpoints** return `application/json` with no request body, no query params - **except** the two resume endpoints, which return `application/pdf`.
+- **Auth:** most endpoints are public. Admin endpoints (`/analytics/summary`, `/analytics/warehouse`, `PUT /status`) require the `X-Admin-Token` header matching the `ANALYTICS_ADMIN_TOKEN` env var; they return `503` when it isn't configured and `401` on a mismatch.
+- **GET endpoints** return `application/json` with no request body, no query params - **except** the resume endpoints, which return `application/pdf`, and `/resume/print` + `/share/{project_id}`, which return `text/html`.
 - **POST /send_email** consumes `multipart/form-data` (or `application/x-www-form-urlencoded`), **not** `application/json`. From the browser, use `FormData` - a JSON body returns `422`.
 - **POST /send_email** is rate-limited per client IP (default **3 requests/hour**); exceeding it returns `429`.
 - **Errors** are JSON (see [Error responses](#error-responses)).
 
 ### CORS - important for frontend setup
 
-`CORSMiddleware` is configured with `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]`, and `allow_origins` populated from the **`CORS_ORIGINS` env var** (comma-separated; defaults to `http://localhost:3000`).
+`CORSMiddleware` is configured with `allow_credentials=False`, `allow_methods=["GET", "POST"]`, `allow_headers=["Content-Type", "X-Admin-Token"]`, and `allow_origins` populated from the **`CORS_ORIGINS` env var** (comma-separated; defaults to `http://localhost:3000`).
 
-The frontend origin **must be listed in `CORS_ORIGINS`** or browser requests are blocked. For production on Render, set e.g. `CORS_ORIGINS=https://arunangshu-portfolio.vercel.app` (add the localhost origin too if needed for dev). Note `*` is not usable here because `allow_credentials=True` forbids it.
+The frontend origin **must be listed in `CORS_ORIGINS`** or browser requests are blocked. Production uses `CORS_ORIGINS=https://arunangshu-pramanik-portfolio.web.app,https://arunangshu-pramanik-portfolio.firebaseapp.com` (add the localhost origin too if needed for dev). Browser clients can't send `PUT`, so `PUT /status` is intended for server-side/curl use with the admin token.
 
 For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `package.json` (CRA) and calling same-origin paths.
 
@@ -44,11 +46,23 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/skills` | Categorized skill lists |
 | GET | `/experience` | List of roles with responsibilities |
 | GET | `/awards_recognitions` | List of awards |
+| GET | `/projects` | Project cards: technologies, highlights, preview settings |
 | GET | `/resume/view` | Resume PDF, opens inline in browser |
 | GET | `/resume/download` | Resume PDF, downloads as attachment |
+| GET | `/resume/print` | Print-friendly HTML resume rendered from the site's data |
+| GET | `/github_activity` | Cached GitHub profile stats and recent-event counts |
+| GET | `/github_feed` | Cached changelog feed of recent public GitHub events |
+| GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
+| GET | `/status` | "Now playing" badge content from `information/now_status.json` |
+| PUT | `/status` | Update the now-status JSON (admin token required) |
+| GET | `/share/{project_id}` | Per-project Open Graph page; redirects humans to `/#projects` |
+| GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
+| POST | `/ask` | Ask a question grounded in the portfolio data (rate-limited) |
 | POST | `/send_email` | Contact form → email (multipart form, rate-limited) |
 | POST | `/analytics/track` | Record a frontend event (JSON body, rate-limited) |
-| GET | `/analytics/summary` | Aggregated event counts (admin token required) |
+| GET | `/analytics/dashboard` | Public Stats aggregates: views, daily views, event/project counts |
+| GET | `/analytics/summary` | In-memory event counts (admin token required) |
+| GET | `/analytics/warehouse` | BigQuery event aggregates (admin token required) |
 | GET | `/analytics/views` | Public aggregate total and estimated active sessions |
 | POST | `/analytics/views` | Register a view or heartbeat with anonymous UUIDs |
 
@@ -283,6 +297,65 @@ Public coding-activity cards. Both proxy upstream APIs (`api.github.com`, `leetc
 
 ---
 
+### `GET /github_feed`
+
+Recent public GitHub events rendered as a changelog feed ("Recently updated" card on the site). Proxies `api.github.com/users/{GITHUB_USERNAME}/events/public`, cached for `SOCIAL_CACHE_SECONDS` (default 600), returns `Cache-Control: public, max-age=300`. Duplicate action+repo pairs are collapsed to the most recent occurrence, and unknown event types are filtered out.
+
+**Response `200`**
+
+```json
+{
+  "username": "arunangshu01",
+  "events": [
+    {
+      "type": "PushEvent",
+      "action": "pushed to",
+      "repo": "arunangshu01/flowbench",
+      "repo_url": "https://github.com/arunangshu01/flowbench",
+      "created_at": "2026-11-11T14:20:00Z",
+      "detail": "to split-requirements"
+    }
+  ]
+}
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `events[].type` | string | Raw GitHub event type (`PushEvent`, `PullRequestEvent`, `CreateEvent`, `ReleaseEvent`, ...) |
+| `events[].action` | string | Human-readable verb phrase |
+| `events[].detail` | string \| null | Optional context: branch + commit count for pushes, ref type for creates, tag for releases |
+| `events[].created_at` | string | ISO 8601 timestamp from GitHub |
+
+**Errors:** `503` with `ActivityUnavailable` when the upstream call fails - the card hides entirely on failure or an empty feed.
+
+---
+
+### `GET /status` and `PUT /status`
+
+The footer "now" badge. `GET /status` is public and returns `Cache-Control: public, max-age=60`; content comes from `backend/information/now_status.json` through the shared mtime-based JSON cache.
+
+**Response `200`** - `NowStatus`
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `kind` | string | yes | One of `building`, `reading`, `learning`, `exploring`, `listening` |
+| `label` | string | yes | 1-120 chars; shown after the kind label |
+| `url` | string \| null | no | ≤256 chars; badge becomes a link when set |
+| `updated_at` | string \| null | no | Set automatically by `PUT /status` |
+
+```json
+{
+  "kind": "building",
+  "label": "Flowbench - data pipeline playground",
+  "url": "https://github.com/arunangshu01/flowbench",
+  "updated_at": "2026-11-15"
+}
+```
+
+`PUT /status` accepts the same JSON shape (**without** `updated_at` - it is overwritten with the current UTC date) and rewrites `now_status.json`, so changes take effect without a redeploy. **Protected** - requires `X-Admin-Token`. Errors: `401` missing/wrong token, `503` when `ANALYTICS_ADMIN_TOKEN` isn't configured, `422` for invalid kinds/oversized fields. `PUT` is not in the CORS allowlist; call it from curl or a server, not the browser.
+
+---
+
 ### `GET /share/{project_id}`
 
 Per-project share page. Social crawlers read Open Graph/Twitter tags - `og:title`, `og:description`, and the project's own screenshot as `og:image` - while humans get a meta-refresh + JS redirect to `{SITE_URL}/#projects`. Unknown IDs return `404`.
@@ -401,6 +474,32 @@ Returns aggregated analytics. **Protected** - requires the `X-Admin-Token` heade
 - `503` - `ANALYTICS_ADMIN_TOKEN` not configured on the server (endpoint disabled)
 
 ⚠️ This private event summary is **in-memory only** and resets on every restart/redeploy. The public view counter below is separate and uses durable Firestore storage in production.
+
+### `GET /analytics/warehouse`
+
+Aggregated analytics from the BigQuery warehouse. **Protected** - requires `X-Admin-Token`. Only active when `ANALYTICS_SINK=bigquery`; otherwise `503` `NotConfigured`.
+
+Events are buffered in memory and flushed to `BQ_ANALYTICS_DATASET.BQ_ANALYTICS_TABLE` (default `portfolio_analytics.events`, auto-created on first flush) via **batch load jobs, which are free** - streaming inserts are billed and deliberately unused. Flushes trigger every `BQ_FLUSH_SECONDS` (default 300), at `BQ_FLUSH_BATCH` buffered rows (default 50), and at shutdown; failed flushes re-buffer the rows. Expect several minutes of lag before events appear here.
+
+| Query param | Type | Default | Notes |
+|---|---|---|---|
+| `days` | int | 14 | Aggregation window, 1-90 |
+
+**Response `200`**
+
+```json
+{
+  "table": "ap-portfolio-241026.portfolio_analytics.events",
+  "days": 14,
+  "totals": { "page_view": 120, "project_click": 9 },
+  "daily": { "2026-11-14": 45, "2026-11-15": 84 },
+  "total_events": 129
+}
+```
+
+Every query sets `maximum_bytes_billed` (`BQ_MAX_BYTES_BILLED`, default 100 MB) so reads cannot exceed the BigQuery free tier. Table schema: `event`, `page`, `client`, `metadata` (JSON string), `timestamp`.
+
+**Errors:** `401` missing/wrong token, `503` `NotConfigured` when the sink is disabled or no admin token exists, `503` `WarehouseUnavailable` when the query fails.
 
 ### `GET /analytics/views` and `POST /analytics/views`
 
@@ -525,6 +624,30 @@ interface SendMessageSuccess {
   message: string;
 }
 
+interface NowStatus {           // GET/PUT /status
+  kind: "building" | "reading" | "learning" | "exploring" | "listening";
+  label: string;                // 1-120 chars
+  url?: string | null;
+  updated_at?: string | null;   // set server-side on PUT
+}
+
+interface GitHubFeedEvent {     // GET /github_feed
+  type: string;
+  action: string;
+  repo: string;
+  repo_url: string;
+  created_at: string;
+  detail?: string | null;
+}
+
+interface WarehouseSummary {    // GET /analytics/warehouse
+  table: string;
+  days: number;
+  totals: Record<string, number>;
+  daily: Record<string, number>;
+  total_events: number;
+}
+
 interface ApiErrorDetail {          // GET endpoints, 422/500
   error_message: string;
   error_type: string;
@@ -578,6 +701,6 @@ const periods = (a: Award) => Array.isArray(a.timeline_period)
 ## Versioning & ops notes
 
 - The URL carries a `v1` segment; breaking changes would presumably ship under a new prefix.
-- Data is cached in memory via `utility/json_cache.py` and **auto-reloaded when a JSON file's mtime changes** - content edits go live on the next request without a restart (but on Render, filesystem changes still require a redeploy since the files ship with the repo).
+- Data is cached in memory via `utility/json_cache.py` and **auto-reloaded when a JSON file's mtime changes** - content edits go live on the next request without a restart (but on Cloud Run, filesystem changes still require a redeploy since the files ship with the image).
 - GET endpoints can return `422` (not `500`) when the underlying JSON data is missing or fails validation - the frontend should treat any non-2xx as "content unavailable" and render a fallback.
-- Health-check `/health` for uptime monitors and render.com cold-start warm-up.
+- Health-check `/health` for uptime monitors and Cloud Run cold-start warm-up.
