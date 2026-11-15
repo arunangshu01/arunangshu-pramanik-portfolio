@@ -87,6 +87,7 @@ async def github_feed(limit: int = 12) -> dict | None:
         logger.warning('GitHub feed fetch failed')
         return None
     feed = []
+    seen: set[tuple] = set()
     for event in events:
         event_type = event.get('type')
         if event_type not in _EVENT_LABELS:
@@ -99,15 +100,20 @@ async def github_feed(limit: int = 12) -> dict | None:
             'repo_url': f'https://github.com/{repo}',
             'created_at': event.get('created_at'),
         }
+        payload = event.get('payload') or {}
         if event_type == 'PushEvent':
-            payload = event.get('payload') or {}
-            commits = payload.get('commits') or []
-            item['detail'] = f"{payload.get('size', len(commits))} commit(s) to " \
-                             f"{(payload.get('ref') or '').rsplit('/', 1)[-1] or 'main'}"
+            branch = (payload.get('ref') or '').rsplit('/', 1)[-1] or 'main'
+            count = payload.get('size') or len(payload.get('commits') or [])
+            item['detail'] = f"{count} commit(s) to {branch}" if count else f"to {branch}"
         elif event_type == 'CreateEvent':
-            item['detail'] = (event.get('payload') or {}).get('ref_type')
+            item['detail'] = payload.get('ref_type')
         elif event_type == 'ReleaseEvent':
-            item['detail'] = ((event.get('payload') or {}).get('release') or {}).get('tag_name')
+            item['detail'] = (payload.get('release') or {}).get('tag_name')
+        # Collapse duplicate action+repo rows (e.g. a burst of PR events).
+        key = (item['action'], repo)
+        if key in seen:
+            continue
+        seen.add(key)
         feed.append(item)
         if len(feed) >= limit:
             break
