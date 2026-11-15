@@ -1,6 +1,7 @@
 import { FiGithub, FiLinkedin, FiMail } from "react-icons/fi";
 import { trackEvent } from "../api";
 import ViewCounter from "./ViewCounter";
+import NowPlaying from "./NowPlaying";
 
 export default function Footer({ info }) {
   const email = info?.email;
@@ -8,6 +9,9 @@ export default function Footer({ info }) {
   const linkedin = info?.social_media_profiles?.linkedin;
   return (
     <footer className="border-t border-edge/60 px-4 pb-24 pt-10 text-center sm:pb-10">
+      <div className="mx-auto flex max-w-md justify-center">
+        <NowPlaying />
+      </div>
       <ViewCounter />
       <img src="/mask.svg" alt="" className="mx-auto mt-3 h-8 w-8 opacity-70" />
       <div className="mt-2 flex items-center justify-center gap-3 font-mono text-xs text-slate-600">

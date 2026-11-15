@@ -27,6 +27,8 @@ export const getExperience = () => get("/experience");
 export const getAwards = () => get("/awards_recognitions");
 export const getProjects = () => get("/projects");
 export const getGithubActivity = () => get("/github_activity");
+export const getGithubFeed = () => get("/github_feed");
+export const getNowStatus = () => get("/status");
 export const getLeetcodeStats = () => get("/leetcode_stats");
 export const getAskStatus = () => get("/ask/status");
 

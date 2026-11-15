@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 
 from model.base_models_errors import ErrorResponseModel
-from source.coding_activity import github_activity, leetcode_stats
+from source.coding_activity import github_activity, github_feed, leetcode_stats
 
 router = APIRouter(tags=["Coding Activity"])
 
@@ -18,6 +18,15 @@ def _unavailable(kind: str):
 async def get_github_activity(response: Response):
     response.headers['Cache-Control'] = 'public, max-age=300'
     data = await github_activity()
+    if data is None:
+        _unavailable('GitHub')
+    return data
+
+
+@router.get('/github_feed', status_code=status.HTTP_200_OK)
+async def get_github_feed(response: Response):
+    response.headers['Cache-Control'] = 'public, max-age=300'
+    data = await github_feed()
     if data is None:
         _unavailable('GitHub')
     return data
