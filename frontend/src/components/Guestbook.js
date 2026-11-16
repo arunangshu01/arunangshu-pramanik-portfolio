@@ -39,7 +39,7 @@ export default function Guestbook() {
   if (entries === null) return null;
 
   return (
-    <Section id="guestbook" num="09" eyebrow="say hi" title="Guestbook">
+    <Section id="guestbook">
       {() => (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <form onSubmit={submit} className="glass-card relative space-y-3 overflow-hidden p-5">
@@ -82,7 +82,7 @@ export default function Guestbook() {
             <button
               type="submit"
               disabled={status === "sending"}
-              className="min-h-11 rounded-lg border border-accent/60 px-5 py-2 font-mono sm:min-h-0 text-xs uppercase tracking-widest text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
+              className="min-h-11 rounded-lg border border-accent/60 px-5 py-2 font-mono [@media(pointer:fine)]:min-h-0 text-xs uppercase tracking-widest text-accent transition-colors hover:bg-accent/10 disabled:opacity-50"
             >
               {status === "sending" ? "Signing…" : "Sign"}
             </button>

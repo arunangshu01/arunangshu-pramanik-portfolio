@@ -167,7 +167,7 @@ export default function ApiPlayground() {
   const isJson = response?.contentType.includes("json");
 
   return (
-    <Section id="api" num="10" eyebrow="try the backend" title="API Playground">
+    <Section id="api">
       {() => (
         <>
           <p className="mb-6 max-w-2xl text-sm text-slate-400">
@@ -175,22 +175,8 @@ export default function ApiPlayground() {
             same calls the page makes. Read-only, no auth needed.
           </p>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
-            <label className="lg:hidden">
-              <span className="sr-only">Endpoint</span>
-              <select
-                value={selected}
-                onChange={(e) => choose(e.target.value)}
-                className="w-full rounded-lg border border-edge bg-ink/80 px-3 py-2.5 font-mono text-base text-slate-200 focus:border-accent/60 sm:text-sm focus:outline-none"
-              >
-                {groups.map(({ group, items }) => (
-                  <optgroup key={group} label={group}>
-                    {items.map((e) => <option key={e.path} value={e.path}>GET {e.path}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-
-            <nav aria-label="API endpoints" className="glass-card hidden max-h-[34rem] overflow-y-auto p-2 lg:block">
+            {/* Same endpoint list on every device: a sidebar on wide screens, a scrollable panel above the request otherwise. */}
+            <nav aria-label="API endpoints" className="glass-card max-h-64 overflow-y-auto p-2 lg:max-h-[34rem]">
               {groups.map(({ group, items }) => (
                 <div key={group} className="mb-2">
                   <p className="px-2 pb-1 pt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-slate-600">{group}</p>
@@ -200,7 +186,7 @@ export default function ApiPlayground() {
                       type="button"
                       onClick={() => choose(e.path)}
                       aria-current={e.path === selected ? "true" : undefined}
-                      className={`block w-full truncate rounded-md px-2 py-1.5 text-left font-mono text-xs transition-colors ${
+                      className={`block w-full truncate rounded-md px-2 py-1.5 text-left font-mono text-xs transition-colors [@media(pointer:coarse)]:py-3 ${
                         e.path === selected ? "bg-accent/10 text-accent" : "text-slate-400 hover:bg-white/5 hover:text-white"
                       }`}
                     >
@@ -223,7 +209,7 @@ export default function ApiPlayground() {
                       type="button"
                       onClick={() => copy("curl", `curl -s ${apiUrl(path)}`)}
                       disabled={!paramValid}
-                      className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-edge px-3 py-2 font-mono text-xs sm:min-h-0 text-slate-300 transition-colors hover:border-accent/60 hover:text-accent disabled:opacity-40 sm:flex-none"
+                      className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-edge px-3 py-2 font-mono text-xs [@media(pointer:fine)]:min-h-0 text-slate-300 transition-colors hover:border-accent/60 hover:text-accent disabled:opacity-40 sm:flex-none"
                     >
                       {copied === "curl" ? <FiCheck aria-hidden="true" /> : <FiCopy aria-hidden="true" />} curl
                     </button>
@@ -231,7 +217,7 @@ export default function ApiPlayground() {
                       type="button"
                       onClick={send}
                       disabled={loading || !paramValid}
-                      className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-accent/60 bg-accent/10 px-4 py-2 font-mono sm:min-h-0 text-xs uppercase tracking-widest text-accent transition-colors hover:bg-accent/20 disabled:opacity-40 sm:flex-none"
+                      className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-accent/60 bg-accent/10 px-4 py-2 font-mono [@media(pointer:fine)]:min-h-0 text-xs uppercase tracking-widest text-accent transition-colors hover:bg-accent/20 disabled:opacity-40 sm:flex-none"
                     >
                       <FiPlay aria-hidden="true" /> {loading ? "Sending…" : "Send"}
                     </button>
@@ -267,7 +253,7 @@ export default function ApiPlayground() {
                       <button
                         type="button"
                         onClick={() => copy("body", body)}
-                        className="ml-auto flex items-center gap-1 text-slate-400 transition-colors hover:text-accent"
+                        className="-my-2 -mr-2 ml-auto flex min-h-11 items-center gap-1 rounded-lg px-2 text-slate-400 transition-colors hover:text-accent [@media(pointer:fine)]:min-h-0 [@media(pointer:fine)]:py-1"
                       >
                         {copied === "body" ? <FiCheck aria-hidden="true" /> : <FiCopy aria-hidden="true" />} copy
                       </button>

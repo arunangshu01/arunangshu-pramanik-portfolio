@@ -1,4 +1,5 @@
 import asyncio
+import time
 from datetime import date
 from unittest.mock import AsyncMock, patch
 
@@ -217,7 +218,9 @@ def test_failed_fetch_serves_last_good_value_and_backs_off():
         with patch.object(activity, "_load_github_events", good):
             assert await activity._github_events() == EVENTS
         # Expire the cache, then fail: the last good value keeps being served.
-        activity._cache["github_events"] = (0.0, EVENTS)
+        # Relative to "now": the monotonic clock starts near 0 on fresh CI runners.
+        expired = time.monotonic() - activity.SOCIAL_CACHE_SECONDS - 1
+        activity._cache["github_events"] = (expired, EVENTS)
         failing = AsyncMock(side_effect=RuntimeError("rate limited"))
         with patch.object(activity, "_load_github_events", failing):
             assert await activity._github_events() == EVENTS

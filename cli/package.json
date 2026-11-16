@@ -2,7 +2,12 @@
   "name": "arunangshu",
   "version": "1.0.0",
   "description": "Arunangshu Pramanik's resume, in your terminal. Run: npx arunangshu",
-  "keywords": ["resume", "cli", "portfolio", "business-card"],
+  "keywords": [
+    "resume",
+    "cli",
+    "portfolio",
+    "business-card"
+  ],
   "author": "Arunangshu Pramanik <arunangshu01@gmail.com>",
   "license": "Apache-2.0",
   "homepage": "https://arunangshu-pramanik-portfolio.web.app/",
@@ -25,7 +30,7 @@
   "scripts": {
     "start": "node bin/arunangshu.js",
     "snapshot": "node scripts/snapshot.js",
-    "test": "node --test test/",
-    "prepublishOnly": "node scripts/snapshot.js && node --test test/"
+    "test": "node --test",
+    "prepublishOnly": "node scripts/snapshot.js && node --test"
   }
 }

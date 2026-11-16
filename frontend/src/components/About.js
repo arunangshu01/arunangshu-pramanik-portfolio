@@ -54,7 +54,7 @@ export default function About({ info, experience, awards, skills, education }) {
   ].filter(([, v]) => v);
 
   return (
-    <Section id="about" num="01" eyebrow="the engineer behind the suit" title="About">
+    <Section id="about">
       {() => (
         <div className="grid items-start gap-8 md:grid-cols-[minmax(0,280px)_1fr] md:gap-10">
           <motion.figure

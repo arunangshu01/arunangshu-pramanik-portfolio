@@ -59,7 +59,7 @@
         "Eclipse IDE",
         "Python IDLE"
       ],
-      "ai_tools": ["Cursor", "Devin AI"],
+      "ai_tools": ["Cursor AI", "Devin AI"],
       "web_technologies": ["HTML", "CSS", "Bootstrap", "Angular", "React"]
     }
   }

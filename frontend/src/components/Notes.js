@@ -64,7 +64,7 @@ export default function Notes() {
   if (!notes?.length) return null;
 
   return (
-    <Section id="notes" num="07" eyebrow="field notes" title="Notes">
+    <Section id="notes">
       {() => (
       <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

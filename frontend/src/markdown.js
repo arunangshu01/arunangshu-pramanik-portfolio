@@ -5,7 +5,7 @@ const escapeHtml = (s) =>
 
 const inline = (s) =>
   escapeHtml(s)
-    .replace(/`([^`]+)`/g, '<code class="rounded bg-white/10 px-1 font-mono text-[0.9em] text-accent [overflow-wrap:anywhere]">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="md-code rounded bg-white/10 px-1 font-mono text-[0.9em] text-accent [overflow-wrap:anywhere]">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,

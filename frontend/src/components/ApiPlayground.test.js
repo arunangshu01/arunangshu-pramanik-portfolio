@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import ApiPlayground, { ENDPOINTS } from "./ApiPlayground";
 import { highlightJson } from "../jsonHighlight";
 
@@ -55,7 +55,7 @@ test("reports network failures", async () => {
 
 test("validates path parameters before sending", () => {
   render(<ApiPlayground />);
-  fireEvent.change(screen.getByLabelText("Endpoint"), { target: { value: "/notes/{note_id}" } });
+  fireEvent.click(screen.getByRole("button", { name: "/notes/{note_id}" }));
   const send = screen.getByRole("button", { name: /send/i });
   expect(send).toBeDisabled();
   fireEvent.change(screen.getByPlaceholderText(/e\.g\./), { target: { value: "../etc" } });
@@ -81,4 +81,12 @@ test("highlightJson renders text, never HTML", () => {
   const { container } = render(<pre>{highlightJson('{"x": "<img src=x onerror=alert(1)>"}')}</pre>);
   expect(container.querySelector("img")).toBeNull();
   expect(container.textContent).toContain("<img src=x onerror=alert(1)>");
+});
+
+test("uses the same endpoint list on every device (no device-specific picker)", () => {
+  const { container } = render(<ApiPlayground />);
+  expect(container.querySelector("select")).toBeNull();
+  const list = screen.getByRole("navigation", { name: "API endpoints" });
+  expect(list.className).not.toMatch(/(^|\s)(hidden|lg:hidden)(\s|$)/);
+  expect(within(list).getAllByRole("button")).toHaveLength(ENDPOINTS.length);
 });

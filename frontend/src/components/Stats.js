@@ -44,7 +44,7 @@ function StatCard({ label, value, live }) {
 
 export default function Stats({ state, projectNames = {} }) {
   return (
-    <Section id="stats" num="08" eyebrow="transparency" title="Stats" state={state}>
+    <Section id="stats" state={state}>
       {(data) => {
         const daily = data.daily_views ?? [];
         const max = Math.max(1, ...daily.map((day) => day.views));

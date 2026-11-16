@@ -39,7 +39,7 @@ export default function GitHubFeed() {
               href={item.repo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex min-h-[44px] items-baseline gap-3 rounded-lg px-1 py-2 text-sm transition-colors hover:bg-white/5 sm:min-h-0 sm:py-1.5"
+              className="group flex min-h-[44px] items-baseline gap-3 rounded-lg px-1 py-2 text-sm transition-colors hover:bg-white/5 [@media(pointer:fine)]:min-h-0 sm:py-1.5"
             >
               <span className="w-14 shrink-0 font-mono text-xs text-accent/80">
                 {timeAgo(item.created_at)}

@@ -6,11 +6,10 @@ import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 import { useModal } from "../useModal";
+import { SECTIONS } from "../sections";
 
-const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Notes", "Contact", "Stats", "Guestbook"];
-const EXTRA_SECTIONS = [
-  { label: "API Playground", hash: "#api", keywords: "api playground console endpoints try request json" },
-];
+// Extra search terms; navigation entries themselves come from src/sections.js.
+const KEYWORDS = { api: "api playground console endpoints try request json backend" };
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
 const SOCIAL_LABELS = { github: "GitHub", linkedin: "LinkedIn", leetcode: "LeetCode" };
 
@@ -54,13 +53,9 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
   const actions = useMemo(() => {
     const go = (hash) => () => { window.location.hash = hash; };
     const items = [
-      ...SECTIONS.map((label) => ({
-        id: `section-${label.toLowerCase()}`, group: "Navigate", label: `Go to ${label}`,
-        keywords: label.toLowerCase(), run: go(`#${label.toLowerCase()}`),
-      })),
-      ...EXTRA_SECTIONS.map(({ label, hash, keywords }) => ({
-        id: `section-${hash.slice(1)}`, group: "Navigate", label: `Go to ${label}`,
-        keywords, run: go(hash),
+      ...SECTIONS.map(({ id, label }) => ({
+        id: `section-${id}`, group: "Navigate", label: `Go to ${label}`,
+        keywords: KEYWORDS[id] ?? `${id} ${label.toLowerCase()}`, run: go(`#${id}`),
       })),
       { id: "resume-view", group: "Actions", label: "View resume", icon: FiFileText,
         keywords: "resume view cv", run: () => window.open(RESUME_VIEW_URL, "_blank", "noopener") },
@@ -152,8 +147,9 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               );
             })}
           </ul>
-          <div className="hidden border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600 sm:block">
-            ↑↓ navigate · ↵ run · esc close
+          <div className="border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600">
+            <span className="[@media(pointer:coarse)]:hidden">↑↓ navigate · ↵ run · esc close</span>
+            <span className="hidden [@media(pointer:coarse)]:inline">tap a command to run · tap outside to close</span>
           </div>
         </div>
       </div>
