@@ -45,7 +45,7 @@ function Job({ job, index }) {
             type="button"
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-accent transition-colors hover:text-accent2"
+            className="-ml-2 mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-2 font-mono text-xs text-accent transition-colors hover:text-accent2"
           >
             <FiChevronDown
               aria-hidden="true"
@@ -61,7 +61,7 @@ function Job({ job, index }) {
 
 export default function Experience({ state }) {
   return (
-    <Section id="experience" num="04" eyebrow="where i've been" title="Experience" state={state}>
+    <Section id="experience" state={state}>
       {(jobs) => (
         <div className="relative ml-2 border-l border-edge pl-6 sm:ml-6 sm:pl-8">
           {jobs.map((job, i) => (

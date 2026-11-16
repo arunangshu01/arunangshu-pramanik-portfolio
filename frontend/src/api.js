@@ -1,8 +1,32 @@
 // In dev, requests go through src/setupProxy.js (target from API_PROXY_TARGET),
 // avoiding CORS. In prod set REACT_APP_API_BASE.
-const API_BASE =
+export const API_BASE =
   process.env.REACT_APP_API_BASE ??
   "/arunangshu_pramanik/portfolio/v1";
+
+// Absolute API origin + prefix, for display (e.g. "copy as curl").
+export const apiUrl = (path) =>
+  new URL(`${API_BASE}${path}`, window.location.origin).toString();
+
+// Raw GET for the API playground: resolves for any HTTP status so the caller
+// can display error responses too. Rejects only on network failure/timeout.
+export async function rawGet(path, signal) {
+  const started = performance.now();
+  const res = await fetch(`${API_BASE}${path}`, {
+    signal,
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  const text = await res.text();
+  return {
+    status: res.status,
+    ok: res.ok,
+    ms: Math.round(performance.now() - started),
+    contentType: res.headers.get("content-type") ?? "",
+    bytes: new Blob([text]).size,
+    text,
+  };
+}
 
 async function get(path) {
   const res = await fetch(`${API_BASE}${path}`);
@@ -36,18 +60,23 @@ export const getNotes = () => get("/notes");
 export const getNote = (id) => get(`/notes/${id}`);
 export const getGuestbook = () => get("/guestbook");
 
-export async function signGuestbook(name, message) {
+export async function signGuestbook(name, message, website = "") {
   const res = await fetch(`${API_BASE}/guestbook`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, message }),
+    body: JSON.stringify({ name, message, website }),
   });
   if (!res.ok) {
     const detail = await res.json().catch(() => null);
+    const validation = Array.isArray(detail?.detail) ? detail.detail : [];
     const error = new Error(
       res.status === 429
         ? "Too many entries. Please try again later."
-        : detail?.detail?.error_message ?? "Could not sign the guestbook."
+        : validation.some((d) => String(d.msg).includes("links"))
+          ? "Links aren't allowed in guestbook entries."
+          : validation.length
+            ? "Please check your name and message."
+            : detail?.detail?.error_message ?? "Could not sign the guestbook."
     );
     error.status = res.status;
     throw error;

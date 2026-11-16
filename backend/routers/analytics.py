@@ -1,5 +1,4 @@
 import asyncio
-import secrets
 import time
 from fastapi import APIRouter, Header, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
@@ -9,11 +8,12 @@ from source.projects_extract import known_project_ids
 from utility.view_counter import view_counter
 from model.base_models_errors import ErrorResponseModel
 from utility.analytics import tracker
-from utility.analytics_sink import analytics_sink
+from utility.admin_auth import require_admin
+from utility.analytics_sink import TRENDS_WINDOWS, analytics_sink
 from utility.client_ip import client_ip
 from utility.logger import Logger
 from utility.rate_limit import InMemoryRateLimiter
-from utility.settings import ANALYTICS_ADMIN_TOKEN, ANALYTICS_RATE_LIMIT_MAX_REQUESTS, \
+from utility.settings import ANALYTICS_RATE_LIMIT_MAX_REQUESTS, \
     ANALYTICS_RATE_LIMIT_WINDOW_SECONDS, ANALYTICS_RATE_LIMIT_GLOBAL_MAX_REQUESTS
 
 logger = Logger(__name__)
@@ -69,26 +69,14 @@ async def track_event(event: AnalyticsEvent, request: Request):
 @router.get('/analytics/summary', status_code=status.HTTP_200_OK)
 async def analytics_summary(request: Request, recent: int = 20,
                             x_admin_token: str = Header(default="")):
-    if not ANALYTICS_ADMIN_TOKEN:
-        _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
-               "Error: Analytics summary is not enabled on this server.")
-    if not secrets.compare_digest(x_admin_token, ANALYTICS_ADMIN_TOKEN):
-        logger.warning(f"Unauthorized analytics summary request from {client_ip(request)}")
-        _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
-               "Error: Invalid or missing admin token.")
+    require_admin(request, x_admin_token, "Analytics summaries")
     return tracker.summary(recent=max(1, min(recent, 500)))
 
 
 @router.get('/analytics/warehouse', status_code=status.HTTP_200_OK)
 async def analytics_warehouse(request: Request, days: int = 14,
                               x_admin_token: str = Header(default="")):
-    if not ANALYTICS_ADMIN_TOKEN:
-        _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
-               "Error: Analytics warehouse is not enabled on this server.")
-    if not secrets.compare_digest(x_admin_token, ANALYTICS_ADMIN_TOKEN):
-        logger.warning(f"Unauthorized analytics warehouse request from {client_ip(request)}")
-        _error(status.HTTP_401_UNAUTHORIZED, "Unauthorized",
-               "Error: Invalid or missing admin token.")
+    require_admin(request, x_admin_token, "Analytics warehouse queries")
     if not analytics_sink.enabled:
         _error(status.HTTP_503_SERVICE_UNAVAILABLE, "NotConfigured",
                "Error: Analytics warehouse is not enabled on this server.")
@@ -109,8 +97,12 @@ async def analytics_trends(request: Request, response: Response, days: int = 14)
     if not analytics_sink.enabled:
         return JSONResponse(status_code=503, content={"detail": "Trends unavailable"},
                             headers={"Cache-Control": "no-store"})
+    if days not in TRENDS_WINDOWS:
+        return JSONResponse(status_code=422,
+                            content={"detail": f"days must be one of {list(TRENDS_WINDOWS)}"},
+                            headers={"Cache-Control": "no-store"})
     try:
-        return await asyncio.to_thread(analytics_sink.public_trends, max(1, min(days, 90)))
+        return await asyncio.to_thread(analytics_sink.public_trends, days)
     except Exception:
         logger.warning("Analytics trends query failed")
         return JSONResponse(status_code=503, content={"detail": "Trends unavailable"},

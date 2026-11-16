@@ -63,7 +63,14 @@ if GUESTBOOK_BACKEND not in ('memory', 'firestore'):
 GUESTBOOK_RATE_LIMIT_MAX_REQUESTS = int(os.getenv('GUESTBOOK_RATE_LIMIT_MAX_REQUESTS', '3'))
 GUESTBOOK_RATE_LIMIT_WINDOW_SECONDS = int(os.getenv('GUESTBOOK_RATE_LIMIT_WINDOW_SECONDS', '3600'))
 GUESTBOOK_RATE_LIMIT_GLOBAL_MAX_REQUESTS = int(os.getenv('GUESTBOOK_RATE_LIMIT_GLOBAL_MAX_REQUESTS', '20'))
-GUESTBOOK_MAX_ENTRIES = int(os.getenv('GUESTBOOK_MAX_ENTRIES', '50'))
+GUESTBOOK_MAX_ENTRIES = int(os.getenv('GUESTBOOK_MAX_ENTRIES', '20'))
+GUESTBOOK_CACHE_SECONDS = int(os.getenv('GUESTBOOK_CACHE_SECONDS', '120'))
+
+# Now-status overrides from PUT /status: memory locally, Firestore on Cloud Run
+# (the container filesystem is ephemeral, so file writes would be lost).
+NOW_STATUS_BACKEND = os.getenv('NOW_STATUS_BACKEND', 'memory')
+if NOW_STATUS_BACKEND not in ('memory', 'firestore'):
+    raise ValueError('NOW_STATUS_BACKEND must be memory or firestore')
 
 # Public origin of the site; used for per-project share links and OG images.
 SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app').rstrip('/')
@@ -72,6 +79,8 @@ SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app'
 GITHUB_USERNAME = os.getenv('GITHUB_USERNAME', 'arunangshu01')
 LEETCODE_USERNAME = os.getenv('LEETCODE_USERNAME', 'arunangshu01')
 SOCIAL_CACHE_SECONDS = int(os.getenv('SOCIAL_CACHE_SECONDS', '600'))
+# Optional fine-grained, read-only token: raises GitHub's limit from 60 to 5000 req/hr.
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
 # Ask-my-resume assistant. Disabled when no provider key is configured.
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')

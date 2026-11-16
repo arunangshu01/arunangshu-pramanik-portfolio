@@ -1,11 +1,17 @@
 import { motion } from "framer-motion";
 import { trackOnce } from "../api";
+import { sectionMeta } from "../sections";
 
 export default function Section({ id, num, eyebrow, title, state, children }) {
+  // Registered sections get their number, eyebrow, and title from src/sections.js.
+  const meta = sectionMeta(id);
+  num = num ?? meta?.num;
+  eyebrow = eyebrow ?? meta?.eyebrow;
+  title = title ?? meta?.label;
   return (
     <motion.section
       id={id}
-      className="scroll-mt-20 py-12 sm:scroll-mt-24 sm:py-20"
+      className="scroll-mt-36 py-12 sm:py-20"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}

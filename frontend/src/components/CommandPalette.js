@@ -6,8 +6,10 @@ import { SiGithub, SiLeetcode } from "react-icons/si";
 import { FaLinkedin } from "react-icons/fa";
 import { RESUME_DOWNLOAD_URL, RESUME_PRINT_URL, RESUME_VIEW_URL, trackEvent } from "../api";
 import { useModal } from "../useModal";
+import { SECTIONS } from "../sections";
 
-const SECTIONS = ["About", "Skills", "Projects", "Experience", "Education", "Awards", "Notes", "Contact", "Stats", "Guestbook"];
+// Extra search terms; navigation entries themselves come from src/sections.js.
+const KEYWORDS = { api: "api playground console endpoints try request json backend" };
 const SOCIAL_ICONS = { github: SiGithub, linkedin: FaLinkedin, leetcode: SiLeetcode };
 const SOCIAL_LABELS = { github: "GitHub", linkedin: "LinkedIn", leetcode: "LeetCode" };
 
@@ -51,9 +53,9 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
   const actions = useMemo(() => {
     const go = (hash) => () => { window.location.hash = hash; };
     const items = [
-      ...SECTIONS.map((label) => ({
-        id: `section-${label.toLowerCase()}`, group: "Navigate", label: `Go to ${label}`,
-        keywords: label.toLowerCase(), run: go(`#${label.toLowerCase()}`),
+      ...SECTIONS.map(({ id, label }) => ({
+        id: `section-${id}`, group: "Navigate", label: `Go to ${label}`,
+        keywords: KEYWORDS[id] ?? `${id} ${label.toLowerCase()}`, run: go(`#${id}`),
       })),
       { id: "resume-view", group: "Actions", label: "View resume", icon: FiFileText,
         keywords: "resume view cv", run: () => window.open(RESUME_VIEW_URL, "_blank", "noopener") },
@@ -116,7 +118,7 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               onKeyDown={onInputKey}
               placeholder="Type a command or search…"
               aria-label="Command palette search"
-              className="w-full bg-transparent font-mono text-sm text-white outline-none placeholder:text-slate-600"
+              className="w-full bg-transparent font-mono text-base text-white sm:text-sm outline-none placeholder:text-slate-600"
             />
             <button type="button" onClick={() => setOpen(false)} aria-label="Close command palette"
               className="shrink-0 rounded border border-edge px-1.5 py-0.5 font-mono text-[10px] text-slate-500 transition-colors hover:border-accent/60 hover:text-accent">esc</button>
@@ -145,8 +147,9 @@ export default function CommandPalette({ info, light, onToggleTheme }) {
               );
             })}
           </ul>
-          <div className="hidden border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600 sm:block">
-            ↑↓ navigate · ↵ run · esc close
+          <div className="border-t border-edge/60 px-4 py-2 font-mono text-[10px] text-slate-600">
+            <span className="[@media(pointer:coarse)]:hidden">↑↓ navigate · ↵ run · esc close</span>
+            <span className="hidden [@media(pointer:coarse)]:inline">tap a command to run · tap outside to close</span>
           </div>
         </div>
       </div>

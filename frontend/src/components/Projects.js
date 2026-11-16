@@ -103,7 +103,7 @@ function ProjectCard({ project }) {
 
 export default function Projects({ state }) {
   return (
-    <Section id="projects" num="03" eyebrow="what i've built" title="Projects" state={state}>
+    <Section id="projects" state={state}>
       {(projects) => projects.length ? (
         <div className="space-y-8">{projects.map((project) => <ProjectCard key={project.id} project={project} />)}</div>
       ) : <p className="font-mono text-sm text-slate-400">More projects coming soon.</p>}

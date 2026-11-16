@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { sendContactEmail, trackOnce } from "../api";
+import { section } from "../sections";
+
+const META = section("contact");
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -27,7 +30,7 @@ export default function Contact() {
   return (
     <motion.section
       id="contact"
-      className="scroll-mt-20 py-12 sm:scroll-mt-24 sm:py-20"
+      className="scroll-mt-36 py-12 sm:py-20"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
@@ -35,11 +38,11 @@ export default function Contact() {
       transition={{ duration: 0.6 }}
     >
       <p className="mb-2 font-mono text-sm uppercase tracking-widest text-accent">
-        <span className="mr-3 text-slate-600">07 /</span>
-        let's talk
+        <span className="mr-3 text-slate-600">{META.num} /</span>
+        {META.eyebrow}
       </p>
       <h2 className="section-title mb-10">
-        <span className="shimmer-text">Contact</span>
+        <span className="shimmer-text">{META.label}</span>
       </h2>
 
       <form

@@ -33,6 +33,7 @@ import Guestbook from "./components/Guestbook";
 
 // Skills carries ~80 KB of brand icons; split it out of the critical bundle.
 const Skills = lazy(() => import("./components/Skills"));
+const ApiPlayground = lazy(() => import("./components/ApiPlayground"));
 
 function App() {
   const info = useApi(getPersonalInfo);
@@ -105,6 +106,9 @@ function App() {
         <Contact />
         <Stats state={dashboard} projectNames={projectNames} />
         <Guestbook />
+        <Suspense fallback={<section id="api" className="min-h-[40vh]" />}>
+          <ApiPlayground />
+        </Suspense>
       </main>
       <Footer info={info.data} />
     </div>

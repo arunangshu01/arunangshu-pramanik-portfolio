@@ -1,0 +1,382 @@
+{
+  "info": {
+    "name": "Arunangshu Pramanik",
+    "phone": "+91-78906-69228",
+    "location": {
+      "city": "Bangalore (Bengaluru)",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    "email": "arunangshu01@gmail.com",
+    "social_media_profiles": {
+      "linkedin": "https://www.linkedin.com/in/arunangshu-pramanik-1896168b",
+      "github": "https://github.com/arunangshu01",
+      "leetcode": "https://leetcode.com/u/arunangshu01"
+    }
+  },
+  "summary": {
+    "summary": "Senior Software Engineer with 7+ years of experience architecting data and cloud solutions across Azure and GCP. Proven track record of designing and delivering production-grade data pipelines, SaaS platforms, and AI-powered tooling - spanning BigQuery and Airflow ingestion frameworks, near real-time integration architectures, intelligent agents, and data-catalog assistants for Enterprise Retail & FMCG customers."
+  },
+  "experience": [
+    {
+      "role": "Senior Software Engineer",
+      "company": "Impact Analytics",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "December 2024 - Present",
+      "clients_or_customers": "Retail & FMCG Enterprises - Notable customers include Bealls, Ralph Lauren, Peter Millar, Swarovski, Gap, Foot Locker, Patagonia, Under Armour, and Levi's",
+      "responsibilities": [
+        "Design, develop, test, and integrate core data engineering pipelines powering the organization's AI-driven retail product suite - PlanSmart, DemandSmart, InventorySmart, PriceSmart, PromoSmart, MarkSmart, and DataSmart - for Retail and FMCG customers.",
+        "Architected a two-stage Airflow and GCP pipeline: a Sourcing layer that extracts data from heterogeneous databases, warehouses, cloud storage, and file transfer systems into BigQuery, and an Ingestion layer that cleanses, validates, and transforms the data into master entity tables consumed by in-house products.",
+        "Integrated client data across OLTP and OLAP databases, data warehouses and workspaces, cloud storage, and file transfer connectors for every retailer subscribed to the product suite.",
+        "Architected the pipeline codebase and designed a near real-time integration framework covering ingestion and cancellation flows, leveraging Cloud SQL, Cloud Run Functions, Cloud Tasks, BigQuery, Cloud Storage, Secret Manager, Workflows, Eventarc, and PostgreSQL.",
+        "Collaborated with cross-functional team members in design sessions to define pipeline architecture, data models, and integration strategies.",
+        "Built an AI agent for internal pipelines that detects and diagnoses failed database, warehouse, cloud storage, and file transfer connectors based on pipeline flow, significantly reducing manual triage effort.",
+        "Developed a chatbot that generates pipeline tasks and processes tailored to client requirements and data-driven insights.",
+        "Developed an AI chatbot and search engine spanning databases, warehouses, workspaces, and BigQuery - comparable to the native assistants in Databricks and Snowflake - offering a browsable data catalog, schema-based data inspection, table relationship mapping, and SQL query generation from natural-language requirements.",
+        "Built cost and runtime reporting dashboards for Cloud Run, Cloud Run Functions, and Compute Engine VMs, providing granular visibility into cloud spend and resource utilization.",
+        "Integrated Google Authentication SSO for Airflow services, enabling secure, seamless user login through the Airflow UI.",
+        "Lead and mentor a team of junior engineers, developing their technical capabilities and reviewing their deliverables.",
+        "Upgraded standalone codebases and legacy systems, improving code efficiency and accuracy by ~90%.",
+        "Diagnosed and resolved customer issues, identifying recurring bottlenecks on both internal and client sides to prevent repeat incidents."
+      ]
+    },
+    {
+      "role": "Digital Engineering Lead Engineer",
+      "company": "Apisero Inc. (Now Acquired by NTT Data Services)",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "August 2021 - December 2024",
+      "clients_or_customers": "Blue Yonder",
+      "responsibilities": [
+        "Developed a SaaS application built on event-driven architecture using Azure Event Hubs, ELK Stack, Snowflake, Azure Blob Storage, and Python.",
+        "Modernized and modularized legacy codebases to contemporary development standards within a Data Platform, delivering real-time data pipeline solutions to over a dozen enterprise customers, including JCPenney, ASDA, 7-Eleven, CVS, Heineken, and Walmart.",
+        "Designed and maintained ETL applications for analytics platforms, processing billions of transaction records across the customer base.",
+        "Identified and resolved customer-facing bottlenecks, improving the integration and utilization of OLAP and OLTP databases across homogeneous and heterogeneous data migration processes.",
+        "Managed and upgraded standalone codebases and existing systems, achieving over 90% code coverage while deploying software tools, processes, visualization, and metrics.",
+        "Partnered with senior stakeholders to translate business requirements into configuration blueprints for data migration platforms, enhancing customer adoption and analytics capabilities."
+      ]
+    },
+    {
+      "role": "Systems Engineer",
+      "company": "Infosys Limited",
+      "location": "Bangalore (Bengaluru), Karnataka, India",
+      "duration": "October 2019 - July 2021",
+      "clients_or_customers": "Cisco Systems",
+      "responsibilities": [
+        "Researched, designed, implemented, and managed software programs to ensure optimal performance and scalability.",
+        "Collaborated with project team members to identify and deliver modifications and enhancements to existing programs.",
+        "Authored efficient, maintainable code with a focus on operational practicality and robustness.",
+        "Developed client-side and server-side architecture using modern front-end and back-end technologies.",
+        "Engineered and maintained robust databases and applications supporting core business needs.",
+        "Designed and documented APIs, rigorously testing features to ensure responsiveness and efficiency.",
+        "Implemented comprehensive security and data protection measures.",
+        "Tested and evaluated new programs, establishing quality assurance procedures that achieved 95% efficiency.",
+        "Maintained and upgraded existing systems, deploying software tools, processes, and metrics to improve performance."
+      ]
+    }
+  ],
+  "skills": {
+    "programming_languages": [
+      "Python",
+      "SQL",
+      "Java",
+      "JavaScript",
+      "TypeScript"
+    ],
+    "databases_and_datawarehouses": [
+      "Microsoft SQL Server",
+      "Oracle",
+      "PostgreSQL",
+      "Snowflake",
+      "Databricks",
+      "BigQuery"
+    ],
+    "data_analysis": [
+      "Pandas",
+      "NumPy",
+      "PySpark"
+    ],
+    "frameworks": [
+      "FastAPI",
+      "Django",
+      "Spring Boot",
+      "RESTful APIs"
+    ],
+    "cloud_platforms": [
+      "Azure",
+      "GCP"
+    ],
+    "orchestrator": [
+      "Apache Airflow"
+    ],
+    "others": {
+      "azure_resources": [
+        "Azure Event Hubs",
+        "Azure Files",
+        "Azure Blob Storage",
+        "Azure Storage Explorer",
+        "Azure Container Registry",
+        "Azure Container Services",
+        "Azure Key Vault"
+      ],
+      "gcp_resources": [
+        "Cloud Tasks",
+        "Cloud Run",
+        "Cloud Run Functions",
+        "Cloud SQL",
+        "Cloud Scheduler",
+        "Workflows",
+        "Eventarc",
+        "Cloud Storage",
+        "Secret Manager",
+        "Pub/Sub",
+        "Dataflow",
+        "Compute Engine",
+        "Analytics Hub",
+        "IAM",
+        "VPC",
+        "Cloud Networking",
+        "Google Cloud APIs",
+        "Databricks Workspace"
+      ],
+      "devops": [
+        "Docker",
+        "Kubernetes",
+        "Jenkins",
+        "Git",
+        "GitHub",
+        "GitHub Actions",
+        "Bitbucket",
+        "Bitbucket Pipelines",
+        "Shell Scripting",
+        "YAML"
+      ],
+      "monitoring_and_logging": [
+        "Datadog",
+        "Elasticsearch",
+        "Kibana"
+      ],
+      "messaging_and_caching": [
+        "Kafka",
+        "Redis"
+      ],
+      "collaboration_and_project_management": [
+        "Jira",
+        "Confluence",
+        "Slack",
+        "Microsoft Teams"
+      ],
+      "database_and_api_tools": [
+        "DBeaver",
+        "Offset Explorer",
+        "Postman"
+      ],
+      "ides_and_editors": [
+        "Visual Studio Code",
+        "PyCharm",
+        "IntelliJ IDEA Community Edition",
+        "Eclipse IDE",
+        "Python IDLE"
+      ],
+      "ai_tools": [
+        "Cursor",
+        "Devin AI"
+      ],
+      "web_technologies": [
+        "HTML",
+        "CSS",
+        "Bootstrap",
+        "Angular",
+        "React"
+      ]
+    }
+  },
+  "projects": [
+    {
+      "id": "mahakal",
+      "name": "M.A.H.A.K.A.L.",
+      "duration": "October 2026 - Present",
+      "description": "M.A.H.A.K.A.L.: Modular Agentic Hub for Automation, Knowledge & Adaptive Logic. A personal voice AI assistant built with FastAPI and React, powered by Groq (GPT-OSS 120B + Whisper) with Gemini fallback, plus Edge TTS.",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "Groq",
+        "Whisper",
+        "Gemini",
+        "Edge TTS",
+        "React",
+        "Vite",
+        "Firestore",
+        "Cloud Run",
+        "Firebase Hosting",
+        "Docker"
+      ],
+      "live_url": "https://mahakal-ai.web.app/",
+      "github_url": "https://github.com/arunangshu01/mahakal",
+      "highlights": [
+        "Voice and text conversations with streamed responses, Whisper speech recognition, and Edge TTS playback.",
+        "Automatic Gemini fallback when the primary Groq provider fails or reaches its rate limit.",
+        "Google sign-in with guest-to-user conversation migration, persistent Firestore history, and long-term memory.",
+        "Tool calling for weather, time, Wikipedia lookup, and remembering or forgetting user preferences.",
+        "Cloud Run and Firebase Hosting deployment with Secret Manager, keyless GitHub authentication, and CI-gated releases."
+      ],
+      "status": "live",
+      "featured": true,
+      "image": "/mahakal-preview.png",
+      "preview_enabled": true,
+      "case_study": {
+        "problem": "Personal AI assistants usually live behind closed products. I wanted a JARVIS-style assistant I fully controlled: voice-first, with persistent memory, tool calling, and a provider setup that would not fall over when a free-tier LLM hit its rate limit.",
+        "approach": [
+          "FastAPI backend orchestrating LLM calls, speech-to-text, text-to-speech, and tool execution behind a single streaming endpoint.",
+          "React + Vite frontend with a sci-fi HUD, live diagnostics, streaming replies, and a music player.",
+          "Firestore for conversation history and long-term memory, keyed by Google sign-in or a guest identity.",
+          "Keyless GitHub Actions pipeline deploying to Cloud Run and Firebase Hosting in a dedicated GCP project."
+        ],
+        "decisions": [
+          {
+            "title": "Groq primary with Gemini fallback",
+            "detail": "Groq gives near-instant inference on GPT-OSS 120B and hosted Whisper, but free-tier limits are real. Every LLM call wraps the primary provider and falls back to Gemini on failure or rate limiting, so the assistant keeps answering instead of erroring."
+          },
+          {
+            "title": "Guest sessions that migrate on sign-in",
+            "detail": "Letting people try the assistant before signing in improves the demo. Guests get a message budget; when they authenticate with Google, their Firestore conversation history is migrated to the permanent identity rather than discarded."
+          },
+          {
+            "title": "Firestore over a relational store",
+            "detail": "Conversation and memory documents are write-simple and read-heavy with no joins, so a document database keeps the data layer at zero operational cost on the free tier."
+          }
+        ],
+        "challenges": [
+          "Streaming voice replies while keeping Whisper transcription latency low required careful chunking of STT, LLM, and TTS stages.",
+          "Merging guest history into an authenticated account without duplicating or reordering messages.",
+          "Keeping a fully themed HUD responsive on mobile while the diagnostics panels animate."
+        ],
+        "outcome": "A live, publicly accessible assistant at mahakal-ai.web.app that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
+      }
+    },
+    {
+      "id": "doppel",
+      "name": "doppel - Mock API playground",
+      "duration": "November 2026 - Present",
+      "description": "doppel: your backend stand-in. A schema-driven mock REST API generator that turns a JSON schema into a working API with realistic seeded data, resource relationships, and an interactive playground. Built with FastAPI, React, and Faker.",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "Faker",
+        "React",
+        "Vite",
+        "Cloud Run",
+        "Firebase Hosting",
+        "Docker",
+        "GitHub Actions"
+      ],
+      "live_url": "https://doppel-app.web.app/",
+      "github_url": "https://github.com/arunangshu01/doppel",
+      "highlights": [
+        "Define resources, field types, and ref() foreign-key links in JSON, then generate reproducible data from a fixed seed.",
+        "Typed generators for uuid, person, email, date, datetime, money, enums, sentences, and more across five locales.",
+        "Dynamic REST endpoints with pagination, exact-match filtering, sorting, and per-dataset OpenAPI docs.",
+        "Interactive playground with Table and JSON views, cURL copying, starter templates, and schema import/export.",
+        "Isolated read-only public demo and per-user playgrounds on Cloud Run and Firebase Hosting, with bounded request simulation and CI-gated keyless deploys."
+      ],
+      "status": "live",
+      "featured": true,
+      "image": "/doppel-preview.png",
+      "preview_enabled": true,
+      "case_study": {
+        "problem": "Frontend and QA work routinely stalls waiting for a real backend. Existing fake-API tools return placeholder gibberish, lack relationships between resources, and cannot reproduce the same dataset twice.",
+        "approach": [
+          "A schema language in plain JSON: resources, field types, row counts, constraints, and ref() links between resources.",
+          "A deterministic generator built on Faker so the same seed always produces the same dataset, across five locales.",
+          "Dynamic FastAPI routes per dataset with pagination, exact-match filtering, sorting, and auto-generated OpenAPI docs.",
+          "A React playground with a schema editor, Table/JSON response explorer, cURL copying, and starter templates."
+        ],
+        "decisions": [
+          {
+            "title": "Seeded generation over random-on-request",
+            "detail": "Deterministic output means two developers, or a developer and a CI run, see identical data. The seed lives in the schema itself, so sharing a schema reproduces an exact API."
+          },
+          {
+            "title": "Isolated playgrounds, no accounts",
+            "detail": "Generating an API creates an isolated per-user playground instead of requiring sign-up, keeping the demo zero-friction. A read-only public demo gives visitors instant access while bounding abuse."
+          },
+          {
+            "title": "Bounded request simulation",
+            "detail": "Optional delay, HTTP error, and empty-list simulation let developers test loading and failure states against the mock before pointing the same code at production."
+          }
+        ],
+        "challenges": [
+          "Resolving ref() relationships so foreign keys always point at rows that actually exist, regardless of generation order.",
+          "Validating user schemas safely in a public app without executing arbitrary input.",
+          "Keeping the workbench drafts (imports, template and locale changes) from clobbering a working API until generation succeeds."
+        ],
+        "outcome": "A public tool at doppel-app.web.app that turns a JSON schema into a realistic, relational, reproducible REST API in seconds, deployed keylessly to Cloud Run and Firebase Hosting in its own GCP project."
+      }
+    },
+    {
+      "id": "flowbench",
+      "name": "Flowbench - data pipeline playground",
+      "duration": "November 2026 - Present",
+      "description": "Flowbench: build a pipeline, break it, inspect every row. An interactive data pipeline playground that runs real validation and transformation pipelines on seeded datasets, compiles them to DuckDB SQL, and lets you open every stage: records in and out, rejections with reasons, and record-level lineage. Built with FastAPI and React.",
+      "technologies": [
+        "Python",
+        "FastAPI",
+        "DuckDB",
+        "React",
+        "Vite",
+        "Cloud Run",
+        "Firebase Hosting",
+        "GitHub Actions"
+      ],
+      "live_url": "https://flowbench-app.web.app/",
+      "github_url": "https://github.com/arunangshu01/flowbench",
+      "highlights": [
+        "Typed pipeline builder: every validator and transform has a schema-aware editor with field pickers limited to the fields that exist at that stage.",
+        "Static planning before execution: the planner propagates the schema through each stage and reports errors and warnings; the API refuses to run a pipeline that has errors.",
+        "Real, bounded execution: rows stream lazily through stage iterators with exact, conserved counts (in = out + rejected + filtered) and per-stage timing.",
+        "Stage-level inspection: sampled input, output, and rejected records, a per-field profile over all rows, and schema in vs. out for every node.",
+        "Record-level lineage: every source row carries an ID you can trace through the stages, reporting honestly when a trace is not possible.",
+        "Failure to fix to replay to compare: a deliberately faulty dataset demonstrates rejection handling, replay-with-edits that links back to the original run, and run comparison that tolerates added or removed stages."
+      ],
+      "status": "live",
+      "featured": true,
+      "current": true,
+      "image": "/flowbench-preview.png",
+      "preview_enabled": true,
+      "case_study": {
+        "problem": "Portfolio data projects usually show a static dashboard. I wanted to demonstrate real data-engineering judgment: pipeline design, validation, observability, and failure recovery as something a visitor can interact with, not read about.",
+        "approach": [
+          "A whitelisted catalog of validators and transforms with typed parameter editors, so pipelines are configured, never scripted.",
+          "A static planner that propagates schemas through each stage before execution, catching bad params and missing fields without touching data.",
+          "Bounded in-process execution that streams rows lazily through stage iterators, with exact conserved counts and per-stage timing.",
+          "An inspection layer over an SVG pipeline graph: sampled records, rejections with reasons, per-field profiles, and lineage tracing per source row."
+        ],
+        "decisions": [
+          {
+            "title": "Whitelisted operations over arbitrary SQL/Python",
+            "detail": "A public demo cannot execute visitor code safely. A fixed catalog of validators and transforms keeps the surface abuse-resistant while still covering the stages a real pipeline needs."
+          },
+          {
+            "title": "Plan-then-run over run-and-fail",
+            "detail": "The planner catches schema errors statically and the API refuses to run pipelines that have them, so failures during execution are meaningful data failures, not typos."
+          },
+          {
+            "title": "Honest inspection over polished output",
+            "detail": "Lineage traces report 'cannot tell' when a record is not in the recorded samples rather than guessing; counts are exact and conserved so the numbers can actually be trusted."
+          }
+        ],
+        "challenges": [
+          "Propagating schemas through renames, drops, casts, and lookup joins so the planner's view of the data stays correct at every stage.",
+          "Aligning stages by operation when comparing two runs, so added or removed stages do not misalign the rest of the comparison.",
+          "Keeping a lazy, bounded execution model that still produces exact per-stage counts, timing, and full-dataset field profiles."
+        ],
+        "outcome": "A live playground at flowbench-app.web.app where visitors assemble pipelines from typed operations, run them on seeded datasets, inspect every stage and rejection, and demonstrate failure handling through a faulty-data demo with replay and run comparison."
+      }
+    }
+  ],
+  "education": {
+    "degree": "Bachelor of Technology in Computer Science & Engineering",
+    "institution": "Institute of Engineering & Management, Kolkata",
+    "duration": "2015-2019",
+    "dgpa": 8.53
+  }
+}

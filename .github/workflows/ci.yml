@@ -58,3 +58,20 @@ jobs:
         run: npm test -- --watchAll=false
       - name: Build
         run: npm run build
+
+  cli:
+    name: Terminal resume CLI tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Regenerate snapshot from portfolio data
+        run: npm run snapshot
+      - name: Run tests
+        run: npm test

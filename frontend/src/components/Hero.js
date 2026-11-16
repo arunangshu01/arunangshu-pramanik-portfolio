@@ -150,7 +150,7 @@ export default function Hero({ info, summary, projects }) {
             className="flex items-center justify-center gap-2 rounded-xl border border-accent/50 px-4 py-3 text-accent transition-colors hover:bg-accent/10"
           >
             <FiDownload className="text-lg" />
-            <span className="sm:hidden">Download</span>
+            <span>Download</span>
           </a>
           <a
             href={RESUME_PRINT_URL}
@@ -161,7 +161,7 @@ export default function Hero({ info, summary, projects }) {
             className="flex items-center justify-center gap-2 rounded-xl border border-accent/50 px-4 py-3 text-accent transition-colors hover:bg-accent/10"
           >
             <FiPrinter className="text-lg" />
-            <span className="sm:hidden">Print</span>
+            <span>Print</span>
           </a>
           {socials &&
             Object.entries(socials).map(([label, url]) => {

@@ -21,7 +21,7 @@ All endpoints below are relative to the base URL.
 
 ## Conventions
 
-- **Auth:** most endpoints are public. Admin endpoints (`/analytics/summary`, `/analytics/warehouse`, `PUT /status`) require the `X-Admin-Token` header matching the `ANALYTICS_ADMIN_TOKEN` env var; they return `503` when it isn't configured and `401` on a mismatch.
+- **Auth:** most endpoints are public. Admin endpoints (`/analytics/summary`, `/analytics/warehouse`, `PUT`/`DELETE /status`, `DELETE /guestbook/{entry_id}`) require the `X-Admin-Token` header matching the `ANALYTICS_ADMIN_TOKEN` env var; they return `503` when it isn't configured and `401` on a mismatch.
 - **GET endpoints** return `application/json` with no request body, no query params - **except** the resume endpoints, which return `application/pdf`, and `/resume/print` + `/share/{project_id}`, which return `text/html`.
 - **POST /send_email** consumes `multipart/form-data` (or `application/x-www-form-urlencoded`), **not** `application/json`. From the browser, use `FormData` - a JSON body returns `422`.
 - **POST /send_email** is rate-limited per client IP (default **3 requests/hour**); exceeding it returns `429`.
@@ -56,11 +56,13 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/repo_health` | Stars, issues, language, last push per showcased repo |
 | GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
 | GET | `/status` | "Now playing" badge content from `information/now_status.json` |
-| PUT | `/status` | Update the now-status JSON (admin token required) |
+| PUT | `/status` | Set the now-status override (admin token required) |
+| DELETE | `/status` | Clear the override, revert to `now_status.json` (admin token required) |
 | GET | `/notes` | Note cards from `information/notes/*.md` (title, date, excerpt) |
 | GET | `/notes/{note_id}` | Full markdown body of one note |
 | GET | `/guestbook` | Recent guestbook entries (cached 60s) |
 | POST | `/guestbook` | Sign the guestbook (rate-limited) |
+| DELETE | `/guestbook/{entry_id}` | Remove an entry (admin token required) |
 | GET | `/share/{project_id}` | Per-project Open Graph page; redirects humans to `/#projects` |
 | GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
 | POST | `/ask` | Ask a question grounded in the portfolio data (rate-limited) |
@@ -69,7 +71,7 @@ For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `p
 | GET | `/analytics/dashboard` | Public Stats aggregates: views, daily views, event/project counts |
 | GET | `/analytics/summary` | In-memory event counts (admin token required) |
 | GET | `/analytics/warehouse` | BigQuery event aggregates (admin token required) |
-| GET | `/analytics/trends` | Public-safe BigQuery aggregates (cached 5 min) |
+| GET | `/analytics/trends` | Public-safe BigQuery aggregates (`days` = 7, 14, or 30; cached 5 min) |
 | GET | `/analytics/views` | Public aggregate total and estimated active sessions |
 | POST | `/analytics/views` | Register a view or heartbeat with anonymous UUIDs |
 
@@ -298,6 +300,8 @@ Print-friendly HTML resume rendered from the same `information/*.json` data as t
 
 Public coding-activity cards. Both proxy upstream APIs (`api.github.com`, `leetcode.com/graphql`), cache responses for `SOCIAL_CACHE_SECONDS` (default 600), and return `Cache-Control: public, max-age=300`. Usernames come from `GITHUB_USERNAME` / `LEETCODE_USERNAME`.
 
+**Upstream resilience (all GitHub/LeetCode endpoints):** `/github_activity`, `/github_feed`, and `/github_wrapped` share one cached `events/public` fetch. Concurrent cold-cache requests collapse into a single upstream call. After a failure, the API waits 60 seconds before retrying and keeps serving the last good value meanwhile, so a `503` only appears if no successful fetch has happened yet. Set `GITHUB_TOKEN`, a read-only fine-grained token, to raise GitHub's limit from 60 to 5,000 requests/hour.
+
 `github_activity` returns `username`, `public_repos`, `followers`, `recent_events`, `recent_pushes`, `latest_activity`, `profile_url`. `leetcode_stats` returns `username`, `solved`, `easy`, `medium`, `hard`, `ranking`, `profile_url`.
 
 **Errors:** `503` with `ActivityUnavailable` when the upstream call fails - the frontend hides the cards rather than showing stale or zeroed data.
@@ -345,17 +349,19 @@ For each `github_url` in `projects.json` (max 8), returns `{repo, repo_url, star
 
 ### `GET /notes` and `GET /notes/{note_id}`
 
-Markdown notes in `backend/information/notes/`, named `YYYY-MM-DD-slug.md`. The first `# ` heading is the title; the first non-heading line is the excerpt. `GET /notes` returns `{notes: [{id, title, date, excerpt}]}` newest-first (`max-age=60`); `GET /notes/{id}` adds the raw `markdown` body (`max-age=300`). IDs must match `[a-z0-9-]+`; unknown or malformed IDs return `404` `NoteNotFound`. The frontend renders markdown with its own minimal renderer (headings, lists, code, links) after HTML-escaping.
+Markdown notes in `backend/information/notes/`, named `YYYY-MM-DD-slug.md`. The first `# ` heading is the title; the first non-heading line is the excerpt. `GET /notes` returns `{notes: [{id, title, date, excerpt}]}` newest-first (`max-age=60`); `GET /notes/{id}` adds the raw `markdown` body (`max-age=300`). IDs must match the full slug exactly (`[a-z0-9]+(-[a-z0-9]+)*`, ≤80 chars); partial, unknown, or malformed IDs return `404` `NoteNotFound`. Notes are parsed into one index that rebuilds when files change; files over 200 KB are skipped. The frontend renders markdown with its own minimal renderer (headings, lists, code, links) after HTML-escaping.
 
 ### `GET /guestbook` and `POST /guestbook`
 
-`GET /guestbook?limit=N` (≤ `GUESTBOOK_MAX_ENTRIES`, default 50) returns `{entries: [{name, message, created_at}]}` newest-first, `max-age=60`.
+`GET /guestbook?limit=N` (≤ `GUESTBOOK_MAX_ENTRIES`, default 20) returns `{entries: [{id, name, message, created_at}]}` newest-first, `max-age=30`. The list is cached in-process for `GUESTBOOK_CACHE_SECONDS` (default 120) and invalidated on every write, which bounds Firestore reads to the free tier.
 
-`POST /guestbook` takes JSON `{name (1-60), message (1-280)}` and returns `201`. Rate-limited to 3 posts/hour/IP and 20/hour globally (`GUESTBOOK_RATE_LIMIT_*`), `429` with `Retry-After: 60` beyond that. Storage is Firestore when `GUESTBOOK_BACKEND=firestore` (collection `guestbook`), otherwise a bounded in-memory deque. Entries render as escaped text; no HTML, markdown, or links are interpreted.
+`POST /guestbook` takes JSON `{name (1-60), message (1-280), website?}` and returns `201` with `{message, entry}`, the created entry, so clients can show it without waiting for the cached list. Messages containing links are rejected with `422`; control and bidi-override characters are stripped. `website` is a honeypot: if non-empty, the API returns `201` with `entry: null` and stores nothing. Rate-limited to 3 posts/hour/IP and 20/hour globally (`GUESTBOOK_RATE_LIMIT_*`), `429` with `Retry-After: 60` beyond that. Storage is Firestore when `GUESTBOOK_BACKEND=firestore` (collection `guestbook`), otherwise a bounded in-memory deque. Entries render as escaped text.
+
+`DELETE /guestbook/{entry_id}` removes an entry (moderation). Requires `X-Admin-Token`; `404` `EntryNotFound` for unknown or malformed IDs.
 
 ### `GET /analytics/trends`
 
-Public-safe aggregates from the BigQuery sink: `{days, daily, top_events, total_events}` - daily event counts and top event names only, no client IPs or metadata. Cached 5 minutes server-side and `max-age=300`. `503` when `ANALYTICS_SINK` isn't `bigquery`; rate-limited like `/analytics/dashboard`. Queries still honor `maximum_bytes_billed`.
+Public-safe aggregates from the BigQuery sink: `{days, daily, top_events, total_events}` - daily event counts and top event names only, no client IPs or metadata. `days` must be `7`, `14` (default), or `30` (`422` otherwise), bounding the number of distinct cached queries. Cached 5 minutes server-side per window and `max-age=300`. `503` when `ANALYTICS_SINK` isn't `bigquery`; rate-limited like `/analytics/dashboard`. Queries still honor `maximum_bytes_billed`.
 
 ---
 
@@ -381,7 +387,9 @@ The footer "now" badge. `GET /status` is public and returns `Cache-Control: publ
 }
 ```
 
-`PUT /status` accepts the same JSON shape (**without** `updated_at` - it is overwritten with the current UTC date) and rewrites `now_status.json`, so changes take effect without a redeploy. **Protected** - requires `X-Admin-Token`. Errors: `401` missing/wrong token, `503` when `ANALYTICS_ADMIN_TOKEN` isn't configured, `422` for invalid kinds/oversized fields. `PUT` is not in the CORS allowlist; call it from curl or a server, not the browser.
+`PUT /status` accepts the same JSON shape (`updated_at` is overwritten with the current UTC date) and stores it as an **override** that wins over `now_status.json`, so changes take effect without a redeploy. The override lives in Firestore (`portfolio_config/now_status`) when `NOW_STATUS_BACKEND=firestore` - required on Cloud Run, whose filesystem is ephemeral - and in process memory otherwise. Firestore reads are cached for 30 seconds. `DELETE /status` clears the override and returns the file default. `label` whitespace is collapsed; `url` must be `http(s)://` because the badge renders it as a link.
+
+Both writes are **protected** by `X-Admin-Token`. Errors: `401` missing/wrong token, `503` `NotConfigured` when `ANALYTICS_ADMIN_TOKEN` isn't set, `503` `StorageUnavailable` when Firestore fails, `422` for invalid kinds, URLs, or oversized fields. `PUT`/`DELETE` are not in the CORS allowlist; call them from curl or `scripts/portfolio_now.py`, not the browser. If the override store is unreachable, `GET /status` falls back to the file default.
 
 ---
 
@@ -653,7 +661,14 @@ interface SendMessageSuccess {
   message: string;
 }
 
-interface NowStatus {           // GET/PUT /status
+interface GuestbookEntry {      // GET /guestbook entries[], POST /guestbook .entry
+  id: string;
+  name: string;
+  message: string;
+  created_at: string;           // ISO 8601, UTC
+}
+
+interface NowStatus {           // GET/PUT/DELETE /status
   kind: "building" | "reading" | "learning" | "exploring" | "listening";
   label: string;                // 1-120 chars
   url?: string | null;

@@ -1,5 +1,6 @@
 import pytest
 import routers.analytics as analytics_router
+import utility.admin_auth as admin_auth
 from utility.analytics import tracker
 
 
@@ -24,13 +25,13 @@ def test_track_event_validation(client, api_base):
 
 
 def test_summary_unavailable_without_token_config(client, api_base, monkeypatch):
-    monkeypatch.setattr(analytics_router, "ANALYTICS_ADMIN_TOKEN", None)
+    monkeypatch.setattr(admin_auth, "ANALYTICS_ADMIN_TOKEN", None)
     res = client.get(f"{api_base}/analytics/summary")
     assert res.status_code == 503
 
 
 def test_summary_rejects_wrong_token(client, api_base, monkeypatch):
-    monkeypatch.setattr(analytics_router, "ANALYTICS_ADMIN_TOKEN", "secret-token")
+    monkeypatch.setattr(admin_auth, "ANALYTICS_ADMIN_TOKEN", "secret-token")
     res = client.get(f"{api_base}/analytics/summary")
     assert res.status_code == 401
     res = client.get(f"{api_base}/analytics/summary",
@@ -39,7 +40,7 @@ def test_summary_rejects_wrong_token(client, api_base, monkeypatch):
 
 
 def test_summary_with_token(client, api_base, monkeypatch):
-    monkeypatch.setattr(analytics_router, "ANALYTICS_ADMIN_TOKEN", "secret-token")
+    monkeypatch.setattr(admin_auth, "ANALYTICS_ADMIN_TOKEN", "secret-token")
     client.post(f"{api_base}/analytics/track", json={"event": "page_view", "page": "/"})
     res = client.get(f"{api_base}/analytics/summary",
                      headers={"X-Admin-Token": "secret-token"})

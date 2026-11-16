@@ -35,6 +35,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Touchscreens: iOS Safari zooms the page when a focused field is under 16px.
+   Keyed on the input type, not width - landscape phones and tablets are wide. */
+@media (pointer: coarse) {
+  input:not([aria-hidden="true"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -78,8 +88,37 @@ html.light .hover\:text-white:hover {
 html.light .text-emerald-400 {
   color: #047857;
 }
-html.light .text-red-400 {
+html.light .text-red-400,
+html.light .text-red-300 {
   color: #b91c1c;
+}
+html.light .text-slate-100 {
+  color: #1c1917;
+}
+html.light .placeholder\:text-slate-500::placeholder,
+html.light .placeholder\:text-slate-600::placeholder {
+  color: #a8a29e;
+}
+html.light .md-code {
+  color: #92600e;
+}
+/* JSON syntax highlighting (API playground) */
+html.light .text-sky-300 {
+  color: #0369a1;
+}
+html.light .text-emerald-300 {
+  color: #047857;
+}
+html.light .text-violet-300 {
+  color: #6d28d9;
+}
+/* Translucent dark/white fills that vanish or go muddy on the light background */
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+html.light .bg-slate-700\/60,
+html.light .bg-slate-800\/60 {
+  background-color: rgba(120, 90, 30, 0.08);
 }
 html.light .shimmer-text {
   background-image: linear-gradient(

@@ -14,7 +14,10 @@ Personal portfolio with a J.A.R.V.I.S.-themed React frontend and a FastAPI backe
 | `backend/` | Python 3.12, FastAPI, Pydantic, Uvicorn |
 | `backend/information/` | Portfolio JSON data |
 | `backend/assets/` | Resume PDF |
-| `.github/workflows/ci.yml` | Backend tests and frontend tests/build |
+| `backend/information/notes/` | Markdown notes for the Notes section |
+| `cli/` | `npx arunangshu` terminal resume (zero-dependency Node package) |
+| `scripts/portfolio_now.py` | Update the now-status badge from the terminal |
+| `.github/workflows/ci.yml` | Backend tests, frontend tests/build, and CLI tests |
 | `.github/CODEOWNERS` | Review routing to @arunangshu01 |
 
 The frontend includes an animated boot sequence, skills grid, experience timeline, awards, responsive light/dark themes, resume links, contact form, optional ambient audio, and SEO metadata. API GET requests retry transient failures to accommodate hosting cold starts.
@@ -76,10 +79,13 @@ Open `http://localhost:3000`. The development proxy forwards `/arunangshu_praman
 | `ANALYTICS_SINK` | `none` (default) or `bigquery`: buffers `/analytics/track` events and flushes them to BigQuery via free batch load jobs |
 | `BQ_ANALYTICS_DATASET`, `BQ_ANALYTICS_TABLE` | BigQuery destination, `portfolio_analytics.events`; created automatically on first flush |
 | `BQ_FLUSH_SECONDS`, `BQ_FLUSH_BATCH` | Flush triggers: every `300`s or at `50` buffered events, whichever comes first |
-| `BQ_MAX_BYTES_BILLED` | Per-query scan cap on `/analytics/warehouse`, `104857600` (100 MB) — keeps reads inside the free tier |
+| `BQ_MAX_BYTES_BILLED` | Per-query scan cap on `/analytics/warehouse`, `104857600` (100 MB) - keeps reads inside the free tier |
 | `GUESTBOOK_BACKEND` | `memory` locally (default), `firestore` on Cloud Run; entries live in the `guestbook` collection |
 | `GUESTBOOK_RATE_LIMIT_*` | Guestbook posts: `3`/hour/IP and `20`/hour globally |
-| `GUESTBOOK_MAX_ENTRIES` | Entries returned by `GET /guestbook` and retained by the memory store, `50` |
+| `GUESTBOOK_MAX_ENTRIES` | Entries returned by `GET /guestbook` and retained by the memory store, `20` |
+| `GUESTBOOK_CACHE_SECONDS` | In-process cache for the guestbook list (invalidated on writes), `120` - bounds Firestore reads |
+| `NOW_STATUS_BACKEND` | Where `PUT /status` overrides live: `memory` locally (default), `firestore` on Cloud Run (`portfolio_config/now_status`) |
+| `GITHUB_TOKEN` | Optional read-only token; raises GitHub's API limit from 60 to 5000 requests/hour |
 | `SITE_URL` | Public site origin used for share links and OG images |
 | `GITHUB_USERNAME`, `LEETCODE_USERNAME` | Public profiles behind the coding-activity cards |
 | `SOCIAL_CACHE_SECONDS` | Server cache for GitHub/LeetCode responses, `600` |
@@ -119,12 +125,14 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/github_wrapped` | Aggregate stats over ~90 days of GitHub events: active days, streak, top repos |
 | GET | `/repo_health` | Stars, open issues, language, and last push for each showcased repo |
 | GET | `/leetcode_stats` | Cached LeetCode solved counts and ranking |
-| GET | `/status` | "Now playing" status from `information/now_status.json`; cached 60s |
-| PUT | `/status` | Update the now-status JSON; requires `X-Admin-Token` |
+| GET | `/status` | "Now playing" badge: the stored override, else `information/now_status.json`; cached 60s |
+| PUT | `/status` | Set the badge override (persists in Firestore in production); requires `X-Admin-Token` |
+| DELETE | `/status` | Clear the override and revert to `now_status.json`; requires `X-Admin-Token` |
 | GET | `/notes` | Note cards: title, date, excerpt from `information/notes/*.md` |
 | GET | `/notes/{note_id}` | Full markdown body for one note |
-| GET | `/guestbook` | Recent guestbook entries (public, cached 60s) |
-| POST | `/guestbook` | Sign the guestbook (name ≤60, message ≤280 chars); rate-limited |
+| GET | `/guestbook` | Recent guestbook entries with IDs (public, cached 30s) |
+| POST | `/guestbook` | Sign the guestbook (name ≤60, message ≤280 chars, no links); rate-limited, returns the new entry |
+| DELETE | `/guestbook/{entry_id}` | Moderation: remove an entry; requires `X-Admin-Token` |
 | GET | `/share/{project_id}` | Per-project Open Graph page; humans are redirected to `/#projects` |
 | GET | `/ask/status` | Whether the ask-my-resume assistant is enabled |
 | POST | `/ask` | Ask a question grounded in the portfolio data; rate-limited, `503` when no LLM key is configured |
@@ -133,7 +141,7 @@ All paths below are prefixed with `/arunangshu_pramanik/portfolio/v1`.
 | GET | `/analytics/dashboard` | Public Stats section: aggregate views, daily views, event and project counts; cached 30s, rate-limited |
 | GET | `/analytics/summary` | Private in-memory event counts; requires `X-Admin-Token` |
 | GET | `/analytics/warehouse` | Aggregated BigQuery event counts (`?days=`); requires `X-Admin-Token`, `503` when the sink is off |
-| GET | `/analytics/trends` | Public-safe BigQuery aggregates (daily counts, top events); cached 5 min, `503` when the sink is off |
+| GET | `/analytics/trends` | Public-safe BigQuery aggregates (`?days=7\|14\|30`); cached 5 min per window, `503` when the sink is off |
 | GET | `/analytics/views` | Public aggregate total views and estimated active sessions; does not increment |
 | POST | `/analytics/views` | Register a page load or refresh presence with anonymous UUIDs; rate-limited |
 
@@ -175,8 +183,19 @@ The footer displays **total views** and **viewing now (approx.)**. It refreshes 
 - `GET /resume/print` renders a print-friendly HTML resume from the same JSON data as the site, so it stays in sync with content edits. Reachable via the command palette's "Print resume" action.
 - The coding-activity cards under About call cached `GET /github_activity` (public profile + recent event counts) and `GET /leetcode_stats` (solved counts + ranking via LeetCode's public GraphQL). Each is cached server-side for `SOCIAL_CACHE_SECONDS` and hides entirely on failure - no false zeros.
 - Below those cards, a "Recently updated" card lists `GET /github_feed` events (pushes, PRs, reviews, releases, deduplicated per action+repo), and the footer shows a pulsing "now" badge from `GET /status`. Update the badge without a deploy via `PUT /status` and the admin token, or edit `backend/information/now_status.json` (`kind`: `building`/`reading`/`learning`/`exploring`/`listening`, plus `label` and optional `url`). Both components self-hide on failure or empty data.
-- With `ANALYTICS_SINK=bigquery`, tracked events are buffered and flushed to `portfolio_analytics.events` via batch load jobs, which are free (streaming inserts are billed and deliberately unused). The runtime service account needs `roles/bigquery.dataEditor` + `roles/bigquery.jobUser`. `GET /analytics/warehouse?days=N` returns admin aggregates; every query sets `maximum_bytes_billed` so reads cannot exceed the free tier. Failed flushes re-buffer rows, and a final flush runs at shutdown. The Stats section also renders `GET /analytics/trends` — the same data stripped of client IPs and metadata — and hides it when the sink is off.
-- Below the activity cards, `/github_wrapped` chips show 90-day event totals, active days, and streak; `/repo_health` chips show each showcased repo's stars, language, and last push. A **Guestbook** section lets visitors leave short notes (`POST /guestbook`, 3/hour/IP); entries are stored in Firestore (`GUESTBOOK_BACKEND=firestore`) or a bounded memory deque locally. A **Notes** section renders markdown files from `backend/information/notes/` (`YYYY-MM-DD-slug.md`, title from the first `# ` heading) as cards with a reader modal. `scripts/portfolio_now.py` updates the now-status badge from the terminal via `PUT /status`.
+- With `ANALYTICS_SINK=bigquery`, tracked events are buffered and flushed to `portfolio_analytics.events` via batch load jobs, which are free (streaming inserts are billed and deliberately unused). The runtime service account needs `roles/bigquery.dataEditor` + `roles/bigquery.jobUser`. `GET /analytics/warehouse?days=N` returns admin aggregates; every query sets `maximum_bytes_billed` so reads cannot exceed the free tier. Failed flushes re-buffer rows, and a final flush runs at shutdown. The Stats section also renders `GET /analytics/trends` - the same data stripped of client IPs and metadata - and hides it when the sink is off.
+- Below the activity cards, `/github_wrapped` chips show 90-day event totals, active days, and streak; `/repo_health` chips show each showcased repo's stars, language, and last push. A **Guestbook** section lets visitors leave short notes (`POST /guestbook`, 3/hour/IP); entries are stored in Firestore (`GUESTBOOK_BACKEND=firestore`) or a bounded memory deque locally. Links are rejected, control/bidi characters are stripped, and a hidden honeypot field silently drops bot submissions; remove anything unwanted with `DELETE /guestbook/{id}`. A **Notes** section renders markdown files from `backend/information/notes/` (`YYYY-MM-DD-slug.md`, title from the first `# ` heading) as cards with a reader modal; IDs must match exactly.
+- GitHub-backed endpoints share one cached events fetch, collapse concurrent cold requests into a single upstream call, back off for 60s after a failure, and keep serving the last good data during an outage. Set the `GITHUB_TOKEN` secret if the shared Cloud Run egress IP hits GitHub's 60/hour anonymous limit.
+- **Now-status badge.** `PUT /status` stores an override in Firestore (`NOW_STATUS_BACKEND=firestore`), because the Cloud Run filesystem is ephemeral and file writes would be lost on the next cold start. The override wins over `now_status.json` until `DELETE /status` clears it. From the terminal:
+
+  ```bash
+  export ANALYTICS_ADMIN_TOKEN=...
+  python3 scripts/portfolio_now.py "fixing airflow retries" --kind building
+  python3 scripts/portfolio_now.py --show
+  python3 scripts/portfolio_now.py --reset   # back to now_status.json
+  ```
+- **API Playground** (`#api`, also in the command palette and footer). Visitors can pick any public read-only endpoint, send a real request, and see the status, latency, size, and syntax-highlighted JSON, or copy it as `curl`. Write and admin endpoints are excluded, requests are throttled client-side, and responses render as text (never HTML). Usage is tracked as the `api_try` event.
+- **Terminal resume** (`cli/`). `npx arunangshu` prints a boxed resume card fetched live from the API, falling back per section to a bundled snapshot. It has zero dependencies and strips control characters from fetched data. The playground shows an `npx arunangshu` card only once the package exists on npm. See [cli/README.md](cli/README.md) for publishing.
 
 ## Verification and contribution workflow
 
@@ -196,11 +215,18 @@ CI=true npm test -- --watchAll=false
 CI=true npm run build
 ```
 
+Terminal resume CLI (Node 18+, no install step):
+
+```sh
+cd cli
+npm test
+```
+
 Backend tests mock email delivery; CI requires no production secrets. Backend CI also builds the Linux/amd64 API container before merging. Frontend production builds treat warnings as errors in CI.
 
 Work on a feature branch, run the checks, and open a pull request into the default branch. Include a summary, test results, UI screenshots when applicable, and any deployment/environment changes. Never include real credentials or private contact-form payloads.
 
-CI runs both jobs for every pull request, pushes to `main`/`master`, and manual dispatch. There are no path filters, so required checks are not left pending for documentation-only changes. CODEOWNERS requests review; GitHub rulesets enforce approval and checks, not this file alone.
+CI runs all three jobs for every pull request, pushes to `main`/`master`, and manual dispatch. There are no path filters, so required checks are not left pending for documentation-only changes. CODEOWNERS requests review; GitHub rulesets enforce approval and checks, not this file alone.
 
 ## Deployment: Google Cloud (same pattern as Mahakal)
 
