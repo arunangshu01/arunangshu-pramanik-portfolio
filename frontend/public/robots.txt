@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://arunangshu-pramanik-portfolio.web.app/sitemap.xml
+Sitemap: https://arunangshupramanik.com/sitemap.xml

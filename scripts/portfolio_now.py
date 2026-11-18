@@ -10,7 +10,7 @@ Usage:
     python3 scripts/portfolio_now.py --reset    # revert to backend/information/now_status.json
 
 Env vars:
-    PORTFOLIO_API          site origin (default: https://arunangshu-pramanik-portfolio.web.app)
+    PORTFOLIO_API          site origin (default: https://arunangshupramanik.com)
     ANALYTICS_ADMIN_TOKEN  admin token (required for updates and --reset)
 """
 import argparse
@@ -20,7 +20,7 @@ import sys
 import urllib.error
 import urllib.request
 
-API = os.getenv("PORTFOLIO_API", "https://arunangshu-pramanik-portfolio.web.app").rstrip("/")
+API = os.getenv("PORTFOLIO_API", "https://arunangshupramanik.com").rstrip("/")
 PATH = "/arunangshu_pramanik/portfolio/v1/status"
 KINDS = ["building", "reading", "learning", "exploring", "listening"]
 

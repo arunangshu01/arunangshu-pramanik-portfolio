@@ -4,7 +4,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 
 const DEFAULT_API =
-  "https://arunangshu-pramanik-portfolio.web.app/arunangshu_pramanik/portfolio/v1";
+  "https://arunangshupramanik.com/arunangshu_pramanik/portfolio/v1";
 const SNAPSHOT = path.join(__dirname, "..", "data", "snapshot.json");
 const ENDPOINTS = {
   info: "/personal_info",
