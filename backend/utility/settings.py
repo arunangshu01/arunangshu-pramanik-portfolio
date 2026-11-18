@@ -73,7 +73,7 @@ if NOW_STATUS_BACKEND not in ('memory', 'firestore'):
     raise ValueError('NOW_STATUS_BACKEND must be memory or firestore')
 
 # Public origin of the site; used for per-project share links and OG images.
-SITE_URL = os.getenv('SITE_URL', 'https://arunangshu-pramanik-portfolio.web.app').rstrip('/')
+SITE_URL = os.getenv('SITE_URL', 'https://arunangshupramanik.com').rstrip('/')
 
 # Public profiles surfaced by the coding-activity endpoints.
 GITHUB_USERNAME = os.getenv('GITHUB_USERNAME', 'arunangshu01')

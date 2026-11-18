@@ -45,4 +45,4 @@ npm publish --access public
 
 Bump `version` in `package.json` before each publish (`npm version patch`).
 
-Website: https://arunangshu-pramanik-portfolio.web.app/
+Website: https://arunangshupramanik.com/

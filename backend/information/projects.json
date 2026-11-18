@@ -5,7 +5,7 @@
     "duration": "October 2026 - Present",
     "description": "M.A.H.A.K.A.L.: Modular Agentic Hub for Automation, Knowledge & Adaptive Logic. A personal voice AI assistant built with FastAPI and React, powered by Groq (GPT-OSS 120B + Whisper) with Gemini fallback, plus Edge TTS.",
     "technologies": ["Python", "FastAPI", "Groq", "Whisper", "Gemini", "Edge TTS", "React", "Vite", "Firestore", "Cloud Run", "Firebase Hosting", "Docker"],
-    "live_url": "https://mahakal-ai.web.app/",
+    "live_url": "https://mahakal.arunangshupramanik.com/",
     "github_url": "https://github.com/arunangshu01/mahakal",
     "highlights": [
       "Voice and text conversations with streamed responses, Whisper speech recognition, and Edge TTS playback.",
@@ -36,7 +36,7 @@
         "Merging guest history into an authenticated account without duplicating or reordering messages.",
         "Keeping a fully themed HUD responsive on mobile while the diagnostics panels animate."
       ],
-      "outcome": "A live, publicly accessible assistant at mahakal-ai.web.app that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
+      "outcome": "A live, publicly accessible assistant at mahakal.arunangshupramanik.com that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
     }
   },
   {
@@ -45,7 +45,7 @@
     "duration": "November 2026 - Present",
     "description": "doppel: your backend stand-in. A schema-driven mock REST API generator that turns a JSON schema into a working API with realistic seeded data, resource relationships, and an interactive playground. Built with FastAPI, React, and Faker.",
     "technologies": ["Python", "FastAPI", "Faker", "React", "Vite", "Cloud Run", "Firebase Hosting", "Docker", "GitHub Actions"],
-    "live_url": "https://doppel-app.web.app/",
+    "live_url": "https://doppel.arunangshupramanik.com/",
     "github_url": "https://github.com/arunangshu01/doppel",
     "highlights": [
       "Define resources, field types, and ref() foreign-key links in JSON, then generate reproducible data from a fixed seed.",
@@ -76,7 +76,7 @@
         "Validating user schemas safely in a public app without executing arbitrary input.",
         "Keeping the workbench drafts (imports, template and locale changes) from clobbering a working API until generation succeeds."
       ],
-      "outcome": "A public tool at doppel-app.web.app that turns a JSON schema into a realistic, relational, reproducible REST API in seconds, deployed keylessly to Cloud Run and Firebase Hosting in its own GCP project."
+      "outcome": "A public tool at doppel.arunangshupramanik.com that turns a JSON schema into a realistic, relational, reproducible REST API in seconds, deployed keylessly to Cloud Run and Firebase Hosting in its own GCP project."
     }
   },
   {
@@ -85,7 +85,7 @@
     "duration": "November 2026 - Present",
     "description": "Flowbench: build a pipeline, break it, inspect every row. An interactive data pipeline playground that runs real validation and transformation pipelines on seeded datasets, compiles them to DuckDB SQL, and lets you open every stage: records in and out, rejections with reasons, and record-level lineage. Built with FastAPI and React.",
     "technologies": ["Python", "FastAPI", "DuckDB", "React", "Vite", "Cloud Run", "Firebase Hosting", "GitHub Actions"],
-    "live_url": "https://flowbench-app.web.app/",
+    "live_url": "https://flowbench.arunangshupramanik.com/",
     "github_url": "https://github.com/arunangshu01/flowbench",
     "highlights": [
       "Typed pipeline builder: every validator and transform has a schema-aware editor with field pickers limited to the fields that exist at that stage.",
@@ -118,7 +118,7 @@
         "Aligning stages by operation when comparing two runs, so added or removed stages do not misalign the rest of the comparison.",
         "Keeping a lazy, bounded execution model that still produces exact per-stage counts, timing, and full-dataset field profiles."
       ],
-      "outcome": "A live playground at flowbench-app.web.app where visitors assemble pipelines from typed operations, run them on seeded datasets, inspect every stage and rejection, and demonstrate failure handling through a faulty-data demo with replay and run comparison."
+      "outcome": "A live playground at flowbench.arunangshupramanik.com where visitors assemble pipelines from typed operations, run them on seeded datasets, inspect every stage and rejection, and demonstrate failure handling through a faulty-data demo with replay and run comparison."
     }
   }
 ]

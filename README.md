@@ -2,8 +2,8 @@
 
 Personal portfolio with a J.A.R.V.I.S.-themed React frontend and a FastAPI backend serving portfolio data, resume PDFs, contact emails, and analytics.
 
-- GCP target site (available after provisioning and deployment): https://arunangshu-pramanik-portfolio.web.app/
-- GCP API docs (same Hosting origin): https://arunangshu-pramanik-portfolio.web.app/arunangshu_pramanik/portfolio/v1/docs
+- GCP target site (available after provisioning and deployment): https://arunangshupramanik.com/
+- GCP API docs (same Hosting origin): https://arunangshupramanik.com/arunangshu_pramanik/portfolio/v1/docs
 - Detailed API reference: [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION.md)
 
 ## Repository layout
@@ -158,7 +158,7 @@ To refresh the Mahakal screenshot using installed Google Chrome (the pinned Play
 ```bash
 npm exec --yes --package=playwright@1.55.1 -- playwright screenshot \
   --channel chrome --viewport-size '1440,900' --wait-for-timeout 12000 \
-  --timeout 60000 --block-service-workers https://mahakal-ai.web.app/ \
+  --timeout 60000 --block-service-workers https://mahakal.arunangshupramanik.com/ \
   frontend/public/mahakal-preview.png
 ```
 
