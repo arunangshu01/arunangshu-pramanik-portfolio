@@ -101,7 +101,7 @@ function render(data, { color = true, width = 80, full = false, source = "live" 
     "",
     ...rows([
       ...(info.email ? [["email", clean(info.email)]] : []),
-      ["web", "arunangshu-pramanik-portfolio.web.app"],
+      ["web", "arunangshupramanik.com"],
       ...Object.entries(socials).map(([name, url]) => [clean(name), displayUrl(url)]),
     ], width - 4, c),
   ];

@@ -19,7 +19,7 @@ Options:
   -v, --version Show the version
 `;
 
-const SITE = "https://arunangshu-pramanik-portfolio.web.app/";
+const SITE = "https://arunangshupramanik.com/";
 
 function openSite() {
   const { spawn } = require("node:child_process");

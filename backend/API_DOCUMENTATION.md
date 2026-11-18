@@ -7,7 +7,7 @@ REST API for the portfolio frontend. Built with FastAPI; serves resume/portfolio
 | Environment | Base URL |
 |---|---|
 | Local | `http://localhost:8080/arunangshu_pramanik/portfolio/v1` |
-| Production | `https://arunangshu-pramanik-portfolio.web.app/arunangshu_pramanik/portfolio/v1` |
+| Production | `https://arunangshupramanik.com/arunangshu_pramanik/portfolio/v1` |
 
 Production serves the frontend on Firebase Hosting; a Hosting rewrite proxies `/arunangshu_pramanik/**` to the `portfolio-api` Cloud Run service (`asia-south1`), so the API is same-origin in the browser.
 
@@ -31,7 +31,7 @@ All endpoints below are relative to the base URL.
 
 `CORSMiddleware` is configured with `allow_credentials=False`, `allow_methods=["GET", "POST"]`, `allow_headers=["Content-Type", "X-Admin-Token"]`, and `allow_origins` populated from the **`CORS_ORIGINS` env var** (comma-separated; defaults to `http://localhost:3000`).
 
-The frontend origin **must be listed in `CORS_ORIGINS`** or browser requests are blocked. Production uses `CORS_ORIGINS=https://arunangshu-pramanik-portfolio.web.app,https://arunangshu-pramanik-portfolio.firebaseapp.com` (add the localhost origin too if needed for dev). Browser clients can't send `PUT`, so `PUT /status` is intended for server-side/curl use with the admin token.
+The frontend origin **must be listed in `CORS_ORIGINS`** or browser requests are blocked. Production uses `CORS_ORIGINS=https://arunangshupramanik.com,https://www.arunangshupramanik.com,https://arunangshu-pramanik-portfolio.web.app,https://arunangshu-pramanik-portfolio.firebaseapp.com` (add the localhost origin too if needed for dev). Browser clients can't send `PUT`, so `PUT /status` is intended for server-side/curl use with the admin token.
 
 For local dev, an alternative is adding `"proxy": "http://localhost:8080"` to `package.json` (CRA) and calling same-origin paths.
 

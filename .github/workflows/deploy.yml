@@ -34,7 +34,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: production
-      url: https://arunangshu-pramanik-portfolio.web.app
+      url: https://arunangshupramanik.com
     permissions:
       contents: read
       id-token: write
@@ -134,3 +134,5 @@ jobs:
           SITE=$(node -p "require('./firebase.json').hosting.site")
           curl --fail --silent --show-error --retry 5 --retry-all-errors --max-time 60 "https://${SITE}.web.app/" > /dev/null
           curl --fail --silent --show-error --retry 5 --retry-all-errors --max-time 60 "https://${SITE}.web.app/arunangshu_pramanik/portfolio/v1/health"
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --max-time 60 "https://arunangshupramanik.com/" > /dev/null
+          curl --fail --silent --show-error --retry 5 --retry-all-errors --max-time 60 "https://arunangshupramanik.com/arunangshu_pramanik/portfolio/v1/health"
