@@ -1,5 +1,7 @@
+import { useSyncExternalStore } from "react";
 import Section from "./Section";
 import WarehouseTrends from "./WarehouseTrends";
+import { subscribeLiveStats, getLiveStats } from "../liveStats";
 
 const EVENT_LABELS = {
   page_view: "Page views",
@@ -43,6 +45,9 @@ function StatCard({ label, value, live }) {
 }
 
 export default function Stats({ state, projectNames = {} }) {
+  // The dashboard payload is fetched once and cached server-side; the footer's
+  // 30s poll publishes fresher totals, so prefer it when available.
+  const live = useSyncExternalStore(subscribeLiveStats, getLiveStats);
   return (
     <Section id="stats" state={state}>
       {(data) => {
@@ -50,11 +55,13 @@ export default function Stats({ state, projectNames = {} }) {
         const max = Math.max(1, ...daily.map((day) => day.views));
         const events = Object.entries(data.events ?? {}).slice(0, 8);
         const projects = Object.entries(data.projects ?? {});
+        const totalViews = live?.total_views ?? data.total_views;
+        const viewingNow = live?.viewing_now ?? data.viewing_now;
         return (
           <div className="space-y-8">
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
-              <StatCard label="Total views" value={data.total_views} />
-              <StatCard label="Viewing now" value={data.viewing_now} live />
+              <StatCard label="Total views" value={totalViews} />
+              <StatCard label="Viewing now" value={viewingNow} live />
               <StatCard label="Views · 14 days" value={daily.reduce((sum, day) => sum + day.views, 0)} />
             </div>
 
