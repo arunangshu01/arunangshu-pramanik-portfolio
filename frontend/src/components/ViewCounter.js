@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ANALYTICS_ENABLED, getViewStats, updateViewPresence } from "../api";
+import { publishLiveStats } from "../liveStats";
 
 let identity;
 
@@ -57,6 +58,7 @@ export default function ViewCounter() {
         if (!disposed && attempt === generation) {
           setCounts(result);
           setUnavailable(false);
+          publishLiveStats(result);
         }
       } catch (error) {
         if (error.status === 429) delay = 60000;

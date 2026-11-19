@@ -114,6 +114,10 @@ class FirestoreViewCounter:
             transaction.set(session, {"last_seen": now, "expires_at": expires_at})
 
         record(self.client.transaction(max_attempts=3))
+        # The snapshot may predate this heartbeat's session write; drop it so
+        # the returned stats count the caller instead of a stale aggregate.
+        with self._lock:
+            self._snapshot = None
         return self.stats()
 
     def record_event(self, event, project=None):

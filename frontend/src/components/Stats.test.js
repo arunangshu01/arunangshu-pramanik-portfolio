@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import Stats from "./Stats";
+import { publishLiveStats } from "../liveStats";
 
 const data = {
   total_views: 142,
@@ -37,4 +38,12 @@ test("handles sparse data without rendering empty blocks", () => {
   expect(screen.queryByRole("img", { name: /Daily views/ })).not.toBeInTheDocument();
   expect(screen.queryByText("Event counts")).not.toBeInTheDocument();
   expect(screen.queryByText("Project engagement")).not.toBeInTheDocument();
+});
+
+test("prefers live view stats over the dashboard snapshot", () => {
+  act(() => publishLiveStats({ total_views: 200, viewing_now: 1 }));
+  render(<Stats state={{ data, loading: false }} />);
+  expect(screen.getByText("200")).toBeInTheDocument();
+  expect(screen.getByText("1")).toBeInTheDocument();
+  act(() => publishLiveStats(null));
 });
