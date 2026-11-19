@@ -28,19 +28,45 @@ export async function rawGet(path, signal) {
   };
 }
 
+// In-flight request counter so the boot screen can wait for the whole initial
+// data burst (useApi hooks + component-level fetches), not just the hooks.
+let pendingRequests = 0;
+const pendingListeners = new Set();
+
+export function subscribePendingRequests(listener) {
+  pendingListeners.add(listener);
+  return () => pendingListeners.delete(listener);
+}
+export function getPendingRequestCount() {
+  return pendingRequests;
+}
+function beginRequest() {
+  pendingRequests += 1;
+  pendingListeners.forEach((listener) => listener());
+}
+function endRequest() {
+  pendingRequests -= 1;
+  pendingListeners.forEach((listener) => listener());
+}
+
 async function get(path) {
-  const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    const msg =
-      detail && !Array.isArray(detail.detail) && detail.detail?.error_message
-        ? detail.detail.error_message
-        : `GET ${path} failed: ${res.status}`;
-    const error = new Error(msg);
-    error.status = res.status;
-    throw error;
+  beginRequest();
+  try {
+    const res = await fetch(`${API_BASE}${path}`);
+    if (!res.ok) {
+      const detail = await res.json().catch(() => null);
+      const msg =
+        detail && !Array.isArray(detail.detail) && detail.detail?.error_message
+          ? detail.detail.error_message
+          : `GET ${path} failed: ${res.status}`;
+      const error = new Error(msg);
+      error.status = res.status;
+      throw error;
+    }
+    return res.json();
+  } finally {
+    endRequest();
   }
-  return res.json();
 }
 
 export const getPersonalInfo = () => get("/personal_info");
@@ -111,13 +137,18 @@ export async function askQuestion(question) {
 }
 
 async function viewRequest(options) {
-  const res = await fetch(`${API_BASE}/analytics/views`, { cache: "no-store", ...options });
-  if (!res.ok) {
-    const error = new Error("View statistics unavailable");
-    error.status = res.status;
-    throw error;
+  beginRequest();
+  try {
+    const res = await fetch(`${API_BASE}/analytics/views`, { cache: "no-store", ...options });
+    if (!res.ok) {
+      const error = new Error("View statistics unavailable");
+      error.status = res.status;
+      throw error;
+    }
+    return res.json();
+  } finally {
+    endRequest();
   }
-  return res.json();
 }
 
 export const getViewStats = (signal) => viewRequest({ signal });
