@@ -80,6 +80,18 @@ test("pauses hidden tabs and resumes with the same view ID", async () => {
   expect(updateViewPresence.mock.calls[1][0]).toEqual(updateViewPresence.mock.calls[0][0]);
 });
 
+test("keeps last counts when a later poll fails", async () => {
+  updateViewPresence
+    .mockResolvedValueOnce({ total_views: 5, viewing_now: 1 })
+    .mockRejectedValueOnce(new Error("offline"));
+  render(<ViewCounter />);
+  await act(async () => {});
+  expect(screen.getByText(/5 total views/)).toBeInTheDocument();
+  await act(async () => jest.advanceTimersByTime(30000));
+  expect(screen.getByText(/5 total views/)).toBeInTheDocument();
+  expect(screen.queryByText(/unavailable/)).not.toBeInTheDocument();
+});
+
 test("degrades gracefully and recovers without showing a false zero", async () => {
   updateViewPresence.mockRejectedValueOnce(new Error("offline"))
     .mockResolvedValue({ total_views: 9, viewing_now: 1 });
