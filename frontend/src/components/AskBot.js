@@ -104,7 +104,7 @@ export default function AskBot() {
   const latest = messages[messages.length - 1];
   const followUps = latest?.role === "assistant" && !latest.error
     ? [
-        ...["Flowbench", "doppel", "M.A.H.A.K.A.L."].filter((name) =>
+        ...["Ask the Multiverse", "Flowbench", "doppel", "M.A.H.A.K.A.L."].filter((name) =>
           latest.text.toLowerCase().includes(name.toLowerCase())
         ).map((name) => `Tell me more about ${name}`),
         "What is his experience at Impact Analytics?",
