@@ -10,18 +10,34 @@ def project(**changes):
             "technologies": ["React"], **changes}
 
 
-def test_projects_endpoint_serves_mahakal(client, api_base):
+def test_projects_endpoint_serves_newest_first(client, api_base):
     response = client.get(f"{api_base}/projects")
     assert response.status_code == 200
     data = response.json()
-    assert data[0]["id"] == "mahakal"
-    assert "GPT-OSS 120B" in data[0]["description"]
-    assert data[0]["highlights"]
-    assert data[0]["image"] == "/mahakal-preview.png"
-    assert data[0]["preview_enabled"] is True
-    assert data[0]["case_study"]["problem"]
-    assert data[0]["case_study"]["decisions"]
+    assert [entry["id"] for entry in data] == ["ask-the-multiverse", "flowbench", "doppel", "mahakal"]
+    newest = data[0]
+    assert newest["name"] == "Ask the Multiverse - cited Marvel multiverse Q&A"
+    assert newest["live_url"] == "https://multiverse.arunangshupramanik.com/"
+    assert newest["github_url"] == "https://github.com/arunangshu01/ask-the-multiverse"
+    assert newest["status"] == "live" and newest["featured"] is True and newest["current"] is True
+    assert newest["image"] == "/ask-the-multiverse-preview.png"
+    assert newest["preview_enabled"] is True
+    assert len(newest["highlights"]) == 6
+    disclaimer = "Fan-made project. Not affiliated with or endorsed by Marvel or Disney."
+    assert disclaimer in newest["description"] and disclaimer in newest["case_study"]["outcome"]
+    assert newest["case_study"]["problem"] and newest["case_study"]["approach"]
     assert all(entry["duration"] for entry in data)
+
+
+def test_projects_endpoint_serves_mahakal(client, api_base):
+    data = client.get(f"{api_base}/projects").json()
+    mahakal = next(entry for entry in data if entry["id"] == "mahakal")
+    assert "GPT-OSS 120B" in mahakal["description"]
+    assert mahakal["highlights"]
+    assert mahakal["image"] == "/mahakal-preview.png"
+    assert mahakal["preview_enabled"] is True
+    assert mahakal["case_study"]["problem"]
+    assert mahakal["case_study"]["decisions"]
 
 
 def test_project_links_can_be_absent_and_order_is_preserved(client, api_base, tmp_path, monkeypatch):

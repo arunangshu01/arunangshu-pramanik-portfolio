@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ANALYTICS_ENABLED, getViewStats, updateViewPresence } from "../api";
+import { publishLiveStats } from "../liveStats";
 
 let identity;
 
@@ -42,7 +43,7 @@ export default function ViewCounter() {
       const attempt = ++generation;
       controller = new AbortController();
       const currentController = controller;
-      const timeout = setTimeout(() => currentController.abort(), 10000);
+      const timeout = setTimeout(() => currentController.abort(), 30000);
       requestTimeout = timeout;
       let delay = 30000;
       try {
@@ -57,11 +58,13 @@ export default function ViewCounter() {
         if (!disposed && attempt === generation) {
           setCounts(result);
           setUnavailable(false);
+          publishLiveStats(result);
         }
       } catch (error) {
         if (error.status === 429) delay = 60000;
         if (!disposed && attempt === generation) {
-          setCounts(null);
+          // Keep the last good counts on failure; "unavailable" only shows
+          // when nothing has ever loaded, matching the Stats cards.
           setUnavailable(true);
         }
       } finally {

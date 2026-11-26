@@ -47,6 +47,12 @@ def test_share_page_has_og_tags_and_redirect(client, api_base):
     assert "window.location.replace" in body and "#projects" in body
 
 
+def test_share_page_for_ask_the_multiverse_uses_its_screenshot(client, api_base):
+    response = client.get(f"{api_base}/share/ask-the-multiverse")
+    assert response.status_code == 200
+    assert 'property="og:image"' in response.text and "/ask-the-multiverse-preview.png" in response.text
+
+
 def test_share_unknown_project_is_404(client, api_base):
     response = client.get(f"{api_base}/share/not-a-project")
     assert response.status_code == 404
@@ -115,4 +121,4 @@ def test_current_project_flag_is_served(client, api_base):
     response = client.get(f"{api_base}/projects")
     assert response.status_code == 200
     flagged = [p for p in response.json() if p.get("current")]
-    assert [p["id"] for p in flagged] == ["flowbench"]
+    assert [p["id"] for p in flagged] == ["ask-the-multiverse", "flowbench"]

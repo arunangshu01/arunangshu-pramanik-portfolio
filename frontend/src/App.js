@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { MotionConfig } from "framer-motion";
 import { useApi } from "./useApi";
 import {
@@ -12,6 +12,8 @@ import {
   getDashboard,
   trackEvent,
   trackOnce,
+  subscribePendingRequests,
+  getPendingRequestCount,
 } from "./api";
 import BootSequence from "./components/BootSequence";
 import CommandPalette from "./components/CommandPalette";
@@ -48,6 +50,25 @@ function App() {
     () => Object.fromEntries((projects.data ?? []).map((project) => [project.id, project.name])),
     [projects.data]
   );
+  // Hold the boot screen until the whole initial data burst has landed:
+  // every in-flight API request settled AND every useApi hook resolved
+  // (loading stays true through retries, covering counter dips between attempts).
+  const pendingRequests = useSyncExternalStore(
+    subscribePendingRequests,
+    getPendingRequestCount
+  );
+  const apiReady =
+    pendingRequests === 0 &&
+    [
+      info,
+      summary,
+      skills,
+      experience,
+      education,
+      awards,
+      projects,
+      dashboard,
+    ].every((s) => !s.loading);
   const [light, setLight] = useState(
     () => localStorage.getItem("theme") === "light"
   );
@@ -74,7 +95,7 @@ function App() {
         <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-red-700/10 blur-[100px]" />
       </div>
 
-      <BootSequence />
+      <BootSequence ready={apiReady} />
       <CommandPalette info={info.data} light={light} onToggleTheme={() => {
           trackEvent("theme_toggle", { theme: light ? "dark" : "light", source: "palette" });
           setLight((v) => !v);
