@@ -3,6 +3,7 @@ import Hero from "./Hero";
 import Experience from "./Experience";
 import CodingActivity from "./CodingActivity";
 import AskBot from "./AskBot";
+import Projects from "./Projects";
 
 jest.mock("../api", () => ({
   ...jest.requireActual("../api"),
@@ -32,6 +33,33 @@ test("hero shows the current project's now-status", () => {
   render(<Hero info={INFO} summary="s" projects={projects} />);
   expect(screen.getByText("Flowbench - data pipeline playground")).toBeInTheDocument();
   expect(screen.getByText(/now/)).toBeInTheDocument();
+});
+
+test("hero shows the first current project, Ask the Multiverse, ahead of Flowbench", () => {
+  const projects = [
+    { id: "ask-the-multiverse", name: "Ask the Multiverse - cited Marvel multiverse Q&A", current: true },
+    { id: "mahakal", name: "M.A.H.A.K.A.L.", current: false },
+    { id: "flowbench", name: "Flowbench - data pipeline playground", current: true },
+  ];
+  render(<Hero info={INFO} summary="s" projects={projects} />);
+  expect(screen.getByText("Ask the Multiverse - cited Marvel multiverse Q&A")).toBeInTheDocument();
+  expect(screen.queryByText("Flowbench - data pipeline playground")).not.toBeInTheDocument();
+});
+
+test("ask the multiverse project card renders its live and GitHub links", () => {
+  const project = {
+    id: "ask-the-multiverse", name: "Ask the Multiverse - cited Marvel multiverse Q&A",
+    description: "An unofficial, fan-made explorer. Fan-made project. Not affiliated with or endorsed by Marvel or Disney.",
+    technologies: ["Python", "FastAPI", "DuckDB"], highlights: ["Grounded answers."],
+    live_url: "https://multiverse.arunangshupramanik.com/", github_url: "https://github.com/arunangshu01/ask-the-multiverse",
+    image: "/ask-the-multiverse-preview.png", status: "live", featured: true, current: true, preview_enabled: true,
+  };
+  render(<Projects state={{ data: [project], loading: false }} />);
+  expect(screen.getByRole("heading", { name: project.name })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /Open live app/ })).toHaveAttribute("href", project.live_url);
+  expect(screen.getByRole("link", { name: /Source code/ })).toHaveAttribute("href", project.github_url);
+  expect(screen.getByRole("img", { name: /Screenshot of Ask the Multiverse/ })).toHaveAttribute("src", project.image);
+  expect(screen.getByText(/Not affiliated with or endorsed by Marvel or Disney/)).toBeInTheDocument();
 });
 
 test("hero hides the now-strip when no project is current", () => {
@@ -105,6 +133,20 @@ test("ask bot renders safe readable links and sends project follow-ups", async (
   expect(screen.getByText("longword".repeat(50)).closest(".break-words")).not.toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Tell me more about Flowbench" }));
   expect(api.askQuestion).toHaveBeenLastCalledWith("Tell me more about Flowbench");
+  await waitFor(() => expect(screen.queryByLabelText("Assistant is thinking")).not.toBeInTheDocument());
+});
+
+test("ask bot offers an Ask the Multiverse follow-up", async () => {
+  api.getAskStatus.mockResolvedValue({ enabled: true });
+  api.askQuestion.mockResolvedValue({ answer: "His newest project is **Ask the Multiverse**, alongside Flowbench." });
+  render(<AskBot />);
+  fireEvent.click(await screen.findByRole("button", { name: /ask me anything/i }));
+  fireEvent.change(screen.getByLabelText("Question"), { target: { value: "newest project?" } });
+  fireEvent.click(screen.getByRole("button", { name: /send question/i }));
+  const followUp = await screen.findByRole("button", { name: "Tell me more about Ask the Multiverse" });
+  expect(screen.getByRole("button", { name: "Tell me more about Flowbench" })).toBeInTheDocument();
+  fireEvent.click(followUp);
+  expect(api.askQuestion).toHaveBeenLastCalledWith("Tell me more about Ask the Multiverse");
   await waitFor(() => expect(screen.queryByLabelText("Assistant is thinking")).not.toBeInTheDocument());
 });
 

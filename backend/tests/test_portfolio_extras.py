@@ -38,6 +38,13 @@ def test_status_serves_committed_default(client, api_base):
     assert res.headers["cache-control"] == "public, max-age=60"
 
 
+def test_status_default_points_at_ask_the_multiverse(client, api_base):
+    body = client.get(f"{api_base}/status").json()
+    assert body["kind"] == "building"
+    assert body["label"] == "Ask the Multiverse - cited Marvel multiverse Q&A"
+    assert body["url"] == "https://multiverse.arunangshupramanik.com/"
+
+
 def test_status_update_requires_token(client, api_base, monkeypatch):
     body = {"kind": "reading", "label": "DDIA"}
     assert client.put(f"{api_base}/status", json=body).status_code == 401

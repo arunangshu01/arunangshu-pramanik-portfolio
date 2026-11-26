@@ -1,5 +1,48 @@
 [
   {
+    "id": "ask-the-multiverse",
+    "name": "Ask the Multiverse - cited Marvel multiverse Q&A",
+    "duration": "November 2026 - Present",
+    "description": "Ask the Multiverse: ask anything about the multiverse. Every answer cites its sources. An unofficial, fan-made explorer and Q&A bot over a knowledge graph built from the Marvel Database and MCU Wiki (Fandom, CC BY-SA) and Wikidata (CC0). An LLM (Groq gpt-oss-120b, Gemini fallback, rule-based planner without keys) turns a question into a typed graph query or a guarded read-only DuckDB SELECT; the answer is built only from the returned rows, shows the query it ran, and links to the exact wiki pages and revisions used. Built with FastAPI, DuckDB and React. Fan-made project. Not affiliated with or endorsed by Marvel or Disney.",
+    "technologies": ["Python", "FastAPI", "DuckDB", "React", "Vite", "Groq", "Gemini", "Cloud Run", "Firebase Hosting", "Cloud Storage", "GitHub Actions"],
+    "live_url": "https://multiverse.arunangshupramanik.com/",
+    "github_url": "https://github.com/arunangshu01/ask-the-multiverse",
+    "highlights": [
+      "Grounded answers: every answer is built only from query rows and cites the wiki pages and revisions it used; if the data can't answer, it says so.",
+      "LLM to typed tools or guarded SQL: 18 typed query tools, plus model-written SQL that must be a single read-only SELECT on whitelisted tables, capped at 200 rows and 3 seconds.",
+      "Evaluation set: 80 questions with expected plans and answer facts, scoring 100% plan and answer accuracy with both the rule planner and the LLM planner.",
+      "\"Who fought whom\" from story roles: opposite sides of the same story (antagonist vs. featured or supporting), never mentions or visions, across 985k appearances.",
+      "Honest data pipeline: polite MediaWiki API ingest (1 request/s, cached, resumable), infobox-based classification, quality checks that block publishing, and a Coverage page listing every rejected or unlinked page.",
+      "Production: Firebase Hosting + Cloud Run (scale to zero) + GCS snapshots, keyless Workload Identity Federation, approval-gated deploys, and a weekly data sync that publishes only when every check passes."
+    ],
+    "status": "live",
+    "featured": true,
+    "current": true,
+    "image": "/ask-the-multiverse-preview.png",
+    "preview_enabled": true,
+    "case_study": {
+      "problem": "Fan wikis hold huge, structured knowledge about the multiverse, but chatbots answer from memory and invent facts. I wanted an LLM that works over structured data and shows its work.",
+      "approach": [
+        "Knowledge-graph ETL from the wiki APIs: polite MediaWiki API ingest of the Marvel Database and MCU Wiki plus Wikidata, with infobox-based classification and quality checks that block publishing.",
+        "Typed tools plus guarded SQL: 18 typed query tools, and model-written SQL limited to a single read-only SELECT on whitelisted tables, capped at 200 rows and 3 seconds.",
+        "Name resolution across realities.",
+        "Answers built only from the returned rows, showing the query that ran and citing the exact wiki pages and revisions used.",
+        "An evaluation set of 80 questions with expected plans and answer facts that scores both plans and answers."
+      ],
+      "decisions": [
+        {"title": "Answers only from returned rows", "detail": "The LLM never answers from memory. It plans a typed graph query or a guarded DuckDB SELECT, the answer is built only from the rows that come back, and when the data can't answer the question, the app says so."},
+        {"title": "Typed tools first, guarded SQL second", "detail": "18 typed query tools cover common questions. Model-written SQL is allowed only as a single read-only SELECT on whitelisted tables, capped at 200 rows and 3 seconds. Groq gpt-oss-120b plans, Gemini is the fallback, and a rule-based planner works without keys."},
+        {"title": "\"Who fought whom\" from story roles", "detail": "Fights come from characters on opposite sides of the same story (antagonist vs. featured or supporting), never from mentions or visions."}
+      ],
+      "challenges": [
+        "Resolving names across 5,531 realities, dimensions and realms and 8,030 variant groups.",
+        "Deriving opponents from story roles across 985,849 story appearances without counting mentions or visions.",
+        "Ingesting the wiki APIs politely (1 request/s, cached, resumable) while listing every rejected or unlinked page on a Coverage page."
+      ],
+      "outcome": "A live explorer at multiverse.arunangshupramanik.com. The latest sync holds 5,531 realities, dimensions and realms, 106,838 characters (with origin, powers, deaths), 12,142 teams, 387 events, 77,880 stories, 985,849 story appearances with roles, 169,249 sourced relationships, 8,030 variant groups, and an MCU timeline with 6 phases and all 71 titles linked. The 80-question evaluation set scores 100% plan and answer accuracy with both the rule planner and the LLM planner. Fan-made project. Not affiliated with or endorsed by Marvel or Disney."
+    }
+  },
+  {
     "id": "mahakal",
     "name": "M.A.H.A.K.A.L.",
     "duration": "October 2026 - Present",

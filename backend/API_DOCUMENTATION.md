@@ -381,9 +381,9 @@ The footer "now" badge. `GET /status` is public and returns `Cache-Control: publ
 ```json
 {
   "kind": "building",
-  "label": "Flowbench - data pipeline playground",
-  "url": "https://github.com/arunangshu01/flowbench",
-  "updated_at": "2026-11-15"
+  "label": "Ask the Multiverse - cited Marvel multiverse Q&A",
+  "url": "https://multiverse.arunangshupramanik.com/",
+  "updated_at": "2026-11-26"
 }
 ```
 
