@@ -256,65 +256,63 @@
       }
     },
     {
-      "id": "mahakal",
-      "name": "M.A.H.A.K.A.L.",
-      "duration": "October 2026 - Present",
-      "description": "M.A.H.A.K.A.L.: Modular Agentic Hub for Automation, Knowledge & Adaptive Logic. A personal voice AI assistant built with FastAPI and React, powered by Groq (GPT-OSS 120B + Whisper) with Gemini fallback, plus Edge TTS.",
+      "id": "flowbench",
+      "name": "Flowbench - data pipeline playground",
+      "duration": "November 2026 - Present",
+      "description": "Flowbench: build a pipeline, break it, inspect every row. An interactive data pipeline playground that runs real validation and transformation pipelines on seeded datasets, compiles them to DuckDB SQL, and lets you open every stage: records in and out, rejections with reasons, and record-level lineage. Built with FastAPI and React.",
       "technologies": [
         "Python",
         "FastAPI",
-        "Groq",
-        "Whisper",
-        "Gemini",
-        "Edge TTS",
+        "DuckDB",
         "React",
         "Vite",
-        "Firestore",
         "Cloud Run",
         "Firebase Hosting",
-        "Docker"
+        "GitHub Actions"
       ],
-      "live_url": "https://mahakal.arunangshupramanik.com/",
-      "github_url": "https://github.com/arunangshu01/mahakal",
+      "live_url": "https://flowbench.arunangshupramanik.com/",
+      "github_url": "https://github.com/arunangshu01/flowbench",
       "highlights": [
-        "Voice and text conversations with streamed responses, Whisper speech recognition, and Edge TTS playback.",
-        "Automatic Gemini fallback when the primary Groq provider fails or reaches its rate limit.",
-        "Google sign-in with guest-to-user conversation migration, persistent Firestore history, and long-term memory.",
-        "Tool calling for weather, time, Wikipedia lookup, and remembering or forgetting user preferences.",
-        "Cloud Run and Firebase Hosting deployment with Secret Manager, keyless GitHub authentication, and CI-gated releases."
+        "Typed pipeline builder: every validator and transform has a schema-aware editor with field pickers limited to the fields that exist at that stage.",
+        "Static planning before execution: the planner propagates the schema through each stage and reports errors and warnings; the API refuses to run a pipeline that has errors.",
+        "Real, bounded execution: rows stream lazily through stage iterators with exact, conserved counts (in = out + rejected + filtered) and per-stage timing.",
+        "Stage-level inspection: sampled input, output, and rejected records, a per-field profile over all rows, and schema in vs. out for every node.",
+        "Record-level lineage: every source row carries an ID you can trace through the stages, reporting honestly when a trace is not possible.",
+        "Failure to fix to replay to compare: a deliberately faulty dataset demonstrates rejection handling, replay-with-edits that links back to the original run, and run comparison that tolerates added or removed stages."
       ],
       "status": "live",
       "featured": true,
-      "image": "/mahakal-preview.png",
+      "current": true,
+      "image": "/flowbench-preview.png",
       "preview_enabled": true,
       "case_study": {
-        "problem": "Personal AI assistants usually live behind closed products. I wanted a JARVIS-style assistant I fully controlled: voice-first, with persistent memory, tool calling, and a provider setup that would not fall over when a free-tier LLM hit its rate limit.",
+        "problem": "Portfolio data projects usually show a static dashboard. I wanted to demonstrate real data-engineering judgment: pipeline design, validation, observability, and failure recovery as something a visitor can interact with, not read about.",
         "approach": [
-          "FastAPI backend orchestrating LLM calls, speech-to-text, text-to-speech, and tool execution behind a single streaming endpoint.",
-          "React + Vite frontend with a sci-fi HUD, live diagnostics, streaming replies, and a music player.",
-          "Firestore for conversation history and long-term memory, keyed by Google sign-in or a guest identity.",
-          "Keyless GitHub Actions pipeline deploying to Cloud Run and Firebase Hosting in a dedicated GCP project."
+          "A whitelisted catalog of validators and transforms with typed parameter editors, so pipelines are configured, never scripted.",
+          "A static planner that propagates schemas through each stage before execution, catching bad params and missing fields without touching data.",
+          "Bounded in-process execution that streams rows lazily through stage iterators, with exact conserved counts and per-stage timing.",
+          "An inspection layer over an SVG pipeline graph: sampled records, rejections with reasons, per-field profiles, and lineage tracing per source row."
         ],
         "decisions": [
           {
-            "title": "Groq primary with Gemini fallback",
-            "detail": "Groq gives near-instant inference on GPT-OSS 120B and hosted Whisper, but free-tier limits are real. Every LLM call wraps the primary provider and falls back to Gemini on failure or rate limiting, so the assistant keeps answering instead of erroring."
+            "title": "Whitelisted operations over arbitrary SQL/Python",
+            "detail": "A public demo cannot execute visitor code safely. A fixed catalog of validators and transforms keeps the surface abuse-resistant while still covering the stages a real pipeline needs."
           },
           {
-            "title": "Guest sessions that migrate on sign-in",
-            "detail": "Letting people try the assistant before signing in improves the demo. Guests get a message budget; when they authenticate with Google, their Firestore conversation history is migrated to the permanent identity rather than discarded."
+            "title": "Plan-then-run over run-and-fail",
+            "detail": "The planner catches schema errors statically and the API refuses to run pipelines that have them, so failures during execution are meaningful data failures, not typos."
           },
           {
-            "title": "Firestore over a relational store",
-            "detail": "Conversation and memory documents are write-simple and read-heavy with no joins, so a document database keeps the data layer at zero operational cost on the free tier."
+            "title": "Honest inspection over polished output",
+            "detail": "Lineage traces report 'cannot tell' when a record is not in the recorded samples rather than guessing; counts are exact and conserved so the numbers can actually be trusted."
           }
         ],
         "challenges": [
-          "Streaming voice replies while keeping Whisper transcription latency low required careful chunking of STT, LLM, and TTS stages.",
-          "Merging guest history into an authenticated account without duplicating or reordering messages.",
-          "Keeping a fully themed HUD responsive on mobile while the diagnostics panels animate."
+          "Propagating schemas through renames, drops, casts, and lookup joins so the planner's view of the data stays correct at every stage.",
+          "Aligning stages by operation when comparing two runs, so added or removed stages do not misalign the rest of the comparison.",
+          "Keeping a lazy, bounded execution model that still produces exact per-stage counts, timing, and full-dataset field profiles."
         ],
-        "outcome": "A live, publicly accessible assistant at mahakal.arunangshupramanik.com that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
+        "outcome": "A live playground at flowbench.arunangshupramanik.com where visitors assemble pipelines from typed operations, run them on seeded datasets, inspect every stage and rejection, and demonstrate failure handling through a faulty-data demo with replay and run comparison."
       }
     },
     {
@@ -377,63 +375,65 @@
       }
     },
     {
-      "id": "flowbench",
-      "name": "Flowbench - data pipeline playground",
-      "duration": "November 2026 - Present",
-      "description": "Flowbench: build a pipeline, break it, inspect every row. An interactive data pipeline playground that runs real validation and transformation pipelines on seeded datasets, compiles them to DuckDB SQL, and lets you open every stage: records in and out, rejections with reasons, and record-level lineage. Built with FastAPI and React.",
+      "id": "mahakal",
+      "name": "M.A.H.A.K.A.L.",
+      "duration": "October 2026 - Present",
+      "description": "M.A.H.A.K.A.L.: Modular Agentic Hub for Automation, Knowledge & Adaptive Logic. A personal voice AI assistant built with FastAPI and React, powered by Groq (GPT-OSS 120B + Whisper) with Gemini fallback, plus Edge TTS.",
       "technologies": [
         "Python",
         "FastAPI",
-        "DuckDB",
+        "Groq",
+        "Whisper",
+        "Gemini",
+        "Edge TTS",
         "React",
         "Vite",
+        "Firestore",
         "Cloud Run",
         "Firebase Hosting",
-        "GitHub Actions"
+        "Docker"
       ],
-      "live_url": "https://flowbench.arunangshupramanik.com/",
-      "github_url": "https://github.com/arunangshu01/flowbench",
+      "live_url": "https://mahakal.arunangshupramanik.com/",
+      "github_url": "https://github.com/arunangshu01/mahakal",
       "highlights": [
-        "Typed pipeline builder: every validator and transform has a schema-aware editor with field pickers limited to the fields that exist at that stage.",
-        "Static planning before execution: the planner propagates the schema through each stage and reports errors and warnings; the API refuses to run a pipeline that has errors.",
-        "Real, bounded execution: rows stream lazily through stage iterators with exact, conserved counts (in = out + rejected + filtered) and per-stage timing.",
-        "Stage-level inspection: sampled input, output, and rejected records, a per-field profile over all rows, and schema in vs. out for every node.",
-        "Record-level lineage: every source row carries an ID you can trace through the stages, reporting honestly when a trace is not possible.",
-        "Failure to fix to replay to compare: a deliberately faulty dataset demonstrates rejection handling, replay-with-edits that links back to the original run, and run comparison that tolerates added or removed stages."
+        "Voice and text conversations with streamed responses, Whisper speech recognition, and Edge TTS playback.",
+        "Automatic Gemini fallback when the primary Groq provider fails or reaches its rate limit.",
+        "Google sign-in with guest-to-user conversation migration, persistent Firestore history, and long-term memory.",
+        "Tool calling for weather, time, Wikipedia lookup, and remembering or forgetting user preferences.",
+        "Cloud Run and Firebase Hosting deployment with Secret Manager, keyless GitHub authentication, and CI-gated releases."
       ],
       "status": "live",
       "featured": true,
-      "current": true,
-      "image": "/flowbench-preview.png",
+      "image": "/mahakal-preview.png",
       "preview_enabled": true,
       "case_study": {
-        "problem": "Portfolio data projects usually show a static dashboard. I wanted to demonstrate real data-engineering judgment: pipeline design, validation, observability, and failure recovery as something a visitor can interact with, not read about.",
+        "problem": "Personal AI assistants usually live behind closed products. I wanted a JARVIS-style assistant I fully controlled: voice-first, with persistent memory, tool calling, and a provider setup that would not fall over when a free-tier LLM hit its rate limit.",
         "approach": [
-          "A whitelisted catalog of validators and transforms with typed parameter editors, so pipelines are configured, never scripted.",
-          "A static planner that propagates schemas through each stage before execution, catching bad params and missing fields without touching data.",
-          "Bounded in-process execution that streams rows lazily through stage iterators, with exact conserved counts and per-stage timing.",
-          "An inspection layer over an SVG pipeline graph: sampled records, rejections with reasons, per-field profiles, and lineage tracing per source row."
+          "FastAPI backend orchestrating LLM calls, speech-to-text, text-to-speech, and tool execution behind a single streaming endpoint.",
+          "React + Vite frontend with a sci-fi HUD, live diagnostics, streaming replies, and a music player.",
+          "Firestore for conversation history and long-term memory, keyed by Google sign-in or a guest identity.",
+          "Keyless GitHub Actions pipeline deploying to Cloud Run and Firebase Hosting in a dedicated GCP project."
         ],
         "decisions": [
           {
-            "title": "Whitelisted operations over arbitrary SQL/Python",
-            "detail": "A public demo cannot execute visitor code safely. A fixed catalog of validators and transforms keeps the surface abuse-resistant while still covering the stages a real pipeline needs."
+            "title": "Groq primary with Gemini fallback",
+            "detail": "Groq gives near-instant inference on GPT-OSS 120B and hosted Whisper, but free-tier limits are real. Every LLM call wraps the primary provider and falls back to Gemini on failure or rate limiting, so the assistant keeps answering instead of erroring."
           },
           {
-            "title": "Plan-then-run over run-and-fail",
-            "detail": "The planner catches schema errors statically and the API refuses to run pipelines that have them, so failures during execution are meaningful data failures, not typos."
+            "title": "Guest sessions that migrate on sign-in",
+            "detail": "Letting people try the assistant before signing in improves the demo. Guests get a message budget; when they authenticate with Google, their Firestore conversation history is migrated to the permanent identity rather than discarded."
           },
           {
-            "title": "Honest inspection over polished output",
-            "detail": "Lineage traces report 'cannot tell' when a record is not in the recorded samples rather than guessing; counts are exact and conserved so the numbers can actually be trusted."
+            "title": "Firestore over a relational store",
+            "detail": "Conversation and memory documents are write-simple and read-heavy with no joins, so a document database keeps the data layer at zero operational cost on the free tier."
           }
         ],
         "challenges": [
-          "Propagating schemas through renames, drops, casts, and lookup joins so the planner's view of the data stays correct at every stage.",
-          "Aligning stages by operation when comparing two runs, so added or removed stages do not misalign the rest of the comparison.",
-          "Keeping a lazy, bounded execution model that still produces exact per-stage counts, timing, and full-dataset field profiles."
+          "Streaming voice replies while keeping Whisper transcription latency low required careful chunking of STT, LLM, and TTS stages.",
+          "Merging guest history into an authenticated account without duplicating or reordering messages.",
+          "Keeping a fully themed HUD responsive on mobile while the diagnostics panels animate."
         ],
-        "outcome": "A live playground at flowbench.arunangshupramanik.com where visitors assemble pipelines from typed operations, run them on seeded datasets, inspect every stage and rejection, and demonstrate failure handling through a faulty-data demo with replay and run comparison."
+        "outcome": "A live, publicly accessible assistant at mahakal.arunangshupramanik.com that handles voice and text, remembers preferences across sessions, calls tools for weather, time and Wikipedia, and ships through a fully keyless CI/CD pipeline."
       }
     }
   ],

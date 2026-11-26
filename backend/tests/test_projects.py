@@ -10,11 +10,11 @@ def project(**changes):
             "technologies": ["React"], **changes}
 
 
-def test_projects_endpoint_serves_ask_the_multiverse_first(client, api_base):
+def test_projects_endpoint_serves_newest_first(client, api_base):
     response = client.get(f"{api_base}/projects")
     assert response.status_code == 200
     data = response.json()
-    assert [entry["id"] for entry in data] == ["ask-the-multiverse", "mahakal", "doppel", "flowbench"]
+    assert [entry["id"] for entry in data] == ["ask-the-multiverse", "flowbench", "doppel", "mahakal"]
     newest = data[0]
     assert newest["name"] == "Ask the Multiverse - cited Marvel multiverse Q&A"
     assert newest["live_url"] == "https://multiverse.arunangshupramanik.com/"
